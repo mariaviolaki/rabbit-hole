@@ -18,33 +18,56 @@ public class TextBuilder
 	{
 		this.tmpText = tmpText;
 		this.speed = Mathf.Clamp(speed, minSpeed, maxSpeed);
+
+		this.tmpText.text = "";
 	}
 
-	public bool BuildNew(string newText)
+	public bool Write(string newText)
 	{
-		bool isBuilding = buildProcess != null;
-		if (isBuilding)
-		{
-			CompleteProcess();
-		}
+		bool hadActiveProcess = CompleteCurrentProcess();
 
 		// If the player interacts before the text is completed, complete it immediately
-		string text = isBuilding ? tmpText.text : newText;
-		int textSpeed = isBuilding ? maxSpeed : speed;
+		string text = hadActiveProcess ? tmpText.text : newText;
+		int textSpeed = hadActiveProcess ? maxSpeed : speed;
 
-		buildProcess = tmpText.StartCoroutine(Build(text, textSpeed));
+		tmpText.maxVisibleCharacters = 0;
+		tmpText.text = text;
+		buildProcess = tmpText.StartCoroutine(Build(textSpeed));
 
 		// Return whether the new text provided was used or not
-		return !isBuilding;
+		return !hadActiveProcess;
 	}
 
-	IEnumerator Build(string text, int textSpeed)
+	public bool Append(string newText)
 	{
-		int textCount = text.Count();
+		// Don't append new text if the current one hasn't been completed
+		if (buildProcess != null)
+		{
+			// Instantly complete writing the previous text
+			return Write(newText);
+		}
 
-		tmpText.text = text;
-		tmpText.maxVisibleCharacters = 0;
-		tmpText.ForceMeshUpdate();
+		// Start with only the previous text fully revealed
+		tmpText.maxVisibleCharacters = tmpText.textInfo.characterCount;
+		tmpText.text += newText;
+		tmpText.ForceMeshUpdate(); // regenerate textInfo
+
+		buildProcess = tmpText.StartCoroutine(Build(speed));
+		return true;
+	}
+
+	bool CompleteCurrentProcess()
+	{
+		// There was no active building process
+		if (buildProcess == null) return false;
+
+		CompleteProcess();
+		return true;
+	}
+
+	IEnumerator Build(int textSpeed)
+	{
+		int textCount = tmpText.textInfo.characterCount;
 
 		while (tmpText.maxVisibleCharacters < textCount)
 		{
@@ -64,6 +87,7 @@ public class TextBuilder
 		}
 
 		CompleteProcess();
+		yield return null;
 	}
 
 	void CompleteProcess()
