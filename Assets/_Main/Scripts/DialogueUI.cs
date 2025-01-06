@@ -21,7 +21,7 @@ public class DialogueUI : MonoBehaviour
 
     void Awake()
     {
-		textBuilder = new TextBuilder(dialogueText, 6);
+		textBuilder = new TextBuilder(dialogueText, 1);
     }
 
     void Update()
@@ -35,6 +35,6 @@ public class DialogueUI : MonoBehaviour
 	void DisplayText()
 	{
 		string text = testStrings[Random.Range(0, testStrings.Length - 1)];
-		textBuilder.Build(text);
+		textBuilder.BuildNew(text);
 	}
 }

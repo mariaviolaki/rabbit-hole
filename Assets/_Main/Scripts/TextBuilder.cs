@@ -20,7 +20,7 @@ public class TextBuilder
 		this.speed = Mathf.Clamp(speed, minSpeed, maxSpeed);
 	}
 
-	public void Build(string text)
+	public bool BuildNew(string newText)
 	{
 		bool isBuilding = buildProcess != null;
 		if (isBuilding)
@@ -29,12 +29,16 @@ public class TextBuilder
 		}
 
 		// If the player interacts before the text is completed, complete it immediately
+		string text = isBuilding ? tmpText.text : newText;
 		int textSpeed = isBuilding ? maxSpeed : speed;
 
-		buildProcess = tmpText.StartCoroutine(BuildText(text, textSpeed));
+		buildProcess = tmpText.StartCoroutine(Build(text, textSpeed));
+
+		// Return whether the new text provided was used or not
+		return !isBuilding;
 	}
 
-	IEnumerator BuildText(string text, int textSpeed)
+	IEnumerator Build(string text, int textSpeed)
 	{
 		int textCount = text.Count();
 
