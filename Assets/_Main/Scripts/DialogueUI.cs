@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class DialogueUI : MonoBehaviour
 {
+	[SerializeField][Range(1, 12)] float speed;
+	[SerializeField] TextBuilder.TextMode textMode;
 	[SerializeField] TextMeshProUGUI nameText;
 	[SerializeField] TextMeshProUGUI dialogueText;
 
@@ -29,12 +31,18 @@ public class DialogueUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
 		{
 			string text = testStrings[Random.Range(0, testStrings.Length - 1)];
-			textBuilder.Write(text, TextBuilder.TextType.TypedFade);
+			textBuilder.Speed = speed;
+			textBuilder.Write(text, textMode);
 		}
 		else if (Input.GetKeyDown(KeyCode.A))
 		{
 			string text = testStrings[Random.Range(0, testStrings.Length - 1)];
-			textBuilder.Append(text, TextBuilder.TextType.TypedFade);
+			textBuilder.Speed = speed;
+			textBuilder.Append(text, textMode);
 		}
-    }
+		else if (Input.GetKeyDown(KeyCode.S))
+		{
+			textBuilder.Stop();
+		}
+	}
 }

@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class TextBuilder
 {
-	public enum TextType { Instant, Typed, InstantFade, TypedFade }
-	enum BuildType { Write, Append }
+	public enum TextMode { Instant, Typed, InstantFade, TypedFade }
+	enum BuildMode { Write, Append }
 
 	const float maxSpeed = 15f;
 	const float minWaitTime = 0.02f;
@@ -18,7 +18,7 @@ public class TextBuilder
 
 	// Configurable from outside
 	TMP_Text tmpText;
-	TextType textType;
+	TextMode textType;
 	float speed;
 
 	public float MaxSpeed { get { return maxSpeed; } }
@@ -32,42 +32,41 @@ public class TextBuilder
 		this.tmpText.text = "";
 	}
 
-	public bool Write(string newText, TextType textType)
+	public bool Write(string newText, TextMode textType)
 	{
-		return StartProcess(newText, BuildType.Write, textType);
+		return StartProcess(newText, BuildMode.Write, textType);
 	}
 
-	public bool Append(string newText, TextType textType)
+	public bool Append(string newText, TextMode textType)
 	{
-		return StartProcess(newText, BuildType.Append, textType);
+		return StartProcess(newText, BuildMode.Append, textType);
 	}
 
-	bool StartProcess(string newText, BuildType buildType, TextType textType)
-	{
-		// Only if the player didn't interrupt the previous process, add the new text at the selected speed
-		bool isProcessInterrupted = CompleteCurrentProcess();
-
-		this.textType = isProcessInterrupted ? TextType.Instant : textType;
-		string oldText = tmpText.text;
-		string preText = buildType == BuildType.Append || isProcessInterrupted ? oldText : "";
-		int preTextLength = BuildPreText(preText);
-
-		if (isProcessInterrupted) return false;
-
-		if (textType == TextType.Instant || textType == TextType.InstantFade)
-			BuildInstantText(newText, preTextLength);
-		else
-			BuildTypedText(newText, preTextLength);
-
-		return true;
-	}
-
-	bool CompleteCurrentProcess()
+	public bool Stop()
 	{
 		// There was no active building process
 		if (buildProcess == null) return false;
 
 		CompleteProcess();
+		return true;
+	}
+
+	bool StartProcess(string newText, BuildMode buildType, TextMode textType)
+	{
+		bool isProcessInterrupted = Stop();
+
+		this.textType = isProcessInterrupted ? TextMode.Instant : textType;
+		string oldText = tmpText.text;
+		string preText = (buildType == BuildMode.Append || isProcessInterrupted) ? oldText : "";
+		int preTextLength = BuildPreText(preText);
+
+		if (isProcessInterrupted) return false;
+
+		if (textType == TextMode.Instant || textType == TextMode.InstantFade)
+			BuildInstantText(newText, preTextLength);
+		else
+			BuildTypedText(newText, preTextLength);
+
 		return true;
 	}
 
@@ -90,7 +89,7 @@ public class TextBuilder
 		int fullTextLenth = tmpText.textInfo.characterCount;
 		tmpText.maxVisibleCharacters = fullTextLenth;
 
-		if (textType == TextType.InstantFade)
+		if (textType == TextMode.InstantFade)
 		{
 			int newTextLength = fullTextLenth - preTextLength;
 			buildProcess = tmpText.StartCoroutine(StartInstantFadingIn(preTextLength, newTextLength));
@@ -104,7 +103,7 @@ public class TextBuilder
 
 		int fullTextLength = tmpText.textInfo.characterCount;
 		int newTextLength = fullTextLength - preTextLength;
-		if (textType == TextType.TypedFade)
+		if (textType == TextMode.TypedFade)
 			tmpText.maxVisibleCharacters = fullTextLength;
 
 		float rawTimePerCharacter = (1f / speed) * typeSpeedMultiplier;
@@ -112,9 +111,9 @@ public class TextBuilder
 		int charactersPerIteration = GetCharactersPerIteration(newTextLength, rawTimePerCharacter);
 		float maxTime = timePerCharacter * Mathf.CeilToInt((float)newTextLength / charactersPerIteration);
 
-		if (textType == TextType.Typed)
+		if (textType == TextMode.Typed)
 			buildProcess = tmpText.StartCoroutine(StartTyping(maxTime, timePerCharacter, newTextLength, charactersPerIteration));
-		else if (textType == TextType.TypedFade)
+		else if (textType == TextMode.TypedFade)
 			buildProcess = tmpText.StartCoroutine(StartFadingIn(maxTime, preTextLength, newTextLength, charactersPerIteration));
 	}
 
