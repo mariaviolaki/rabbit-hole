@@ -1,58 +1,64 @@
+using System;
 using System.Collections;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 
 public class TextBuilder
 {
-	const int minSpeed = 1;
-	const int maxSpeed = 10; // instant
+	public enum TextType { Instant, Typed, InstantFade, TypedFade }
+	enum BuildType { Write, Append }
+
+	const float maxSpeed = 15f;
+	const float minWaitTime = 0.02f;
+	const float instantSpeedMultiplier = 5f;
+	const float typeSpeedMultiplier = 0.1f;
+	const float fadeSpeedMultiplier = 0.095f;
 
 	Coroutine buildProcess;
+
+	// Configurable from outside
 	TMP_Text tmpText;
-	int speed;
+	TextType textType;
+	float speed;
 
-	public int Speed { get { return speed; } set { speed = Mathf.Clamp(value, minSpeed, maxSpeed); } }
-
-	public TextBuilder(TMP_Text tmpText, int speed)
+	public float MaxSpeed { get { return maxSpeed; } }
+	public float Speed { get { return speed; } set { speed = Mathf.Clamp(value, 1f, MaxSpeed); } }
+	
+	public TextBuilder(TMP_Text tmpText)
 	{
 		this.tmpText = tmpText;
-		this.speed = Mathf.Clamp(speed, minSpeed, maxSpeed);
 
+		this.speed = MaxSpeed / 2;
 		this.tmpText.text = "";
 	}
 
-	public bool Write(string newText)
+	public bool Write(string newText, TextType textType)
 	{
-		bool hadActiveProcess = CompleteCurrentProcess();
-
-		// If the player interacts before the text is completed, complete it immediately
-		string text = hadActiveProcess ? tmpText.text : newText;
-		int textSpeed = hadActiveProcess ? maxSpeed : speed;
-
-		tmpText.maxVisibleCharacters = 0;
-		tmpText.text = text;
-		buildProcess = tmpText.StartCoroutine(Build(textSpeed));
-
-		// Return whether the new text provided was used or not
-		return !hadActiveProcess;
+		return StartProcess(newText, BuildType.Write, textType);
 	}
 
-	public bool Append(string newText)
+	public bool Append(string newText, TextType textType)
 	{
-		// Don't append new text if the current one hasn't been completed
-		if (buildProcess != null)
-		{
-			// Instantly complete writing the previous text
-			return Write(newText);
-		}
+		return StartProcess(newText, BuildType.Append, textType);
+	}
 
-		// Start with only the previous text fully revealed
-		tmpText.maxVisibleCharacters = tmpText.textInfo.characterCount;
-		tmpText.text += newText;
-		tmpText.ForceMeshUpdate(); // regenerate textInfo
+	bool StartProcess(string newText, BuildType buildType, TextType textType)
+	{
+		// Only if the player didn't interrupt the previous process, add the new text at the selected speed
+		bool isProcessInterrupted = CompleteCurrentProcess();
 
-		buildProcess = tmpText.StartCoroutine(Build(speed));
+		this.textType = isProcessInterrupted ? TextType.Instant : textType;
+		string oldText = tmpText.text;
+		string preText = buildType == BuildType.Append || isProcessInterrupted ? oldText : "";
+		int preTextLength = BuildPreText(preText);
+
+		if (isProcessInterrupted) return false;
+
+		if (textType == TextType.Instant || textType == TextType.InstantFade)
+			BuildInstantText(newText, preTextLength);
+		else
+			BuildTypedText(newText, preTextLength);
+
 		return true;
 	}
 
@@ -65,29 +71,140 @@ public class TextBuilder
 		return true;
 	}
 
-	IEnumerator Build(int textSpeed)
+	int BuildPreText(string preText)
 	{
-		int textCount = tmpText.textInfo.characterCount;
+		tmpText.text = preText;
+		tmpText.ForceMeshUpdate();
 
-		while (tmpText.maxVisibleCharacters < textCount)
+		int preTextLength = tmpText.textInfo.characterCount;
+		tmpText.maxVisibleCharacters = preTextLength;
+
+		return preTextLength;
+	}
+
+	void BuildInstantText(string newText, int preTextLength)
+	{
+		tmpText.text += newText;
+
+		tmpText.ForceMeshUpdate();
+		int fullTextLenth = tmpText.textInfo.characterCount;
+		tmpText.maxVisibleCharacters = fullTextLenth;
+
+		if (textType == TextType.InstantFade)
 		{
-			// Skip some frames for speed 1-5
-			int iterations = textSpeed;
-			while (iterations < maxSpeed)
-			{
-				iterations += textSpeed;
-				yield return null;
-			}
+			int newTextLength = fullTextLenth - preTextLength;
+			buildProcess = tmpText.StartCoroutine(StartInstantFadingIn(preTextLength, newTextLength));
+		}
+	}
 
-			// After some frames are skipped or when speed is 6-10
-			// Immediately reveal 1-5 characters or the entire string
-			tmpText.maxVisibleCharacters += GetCharactersPerIteration(textCount, textSpeed);
-			tmpText.ForceMeshUpdate();
+	void BuildTypedText(string newText, int preTextLength)
+	{
+		tmpText.text += newText;
+		tmpText.ForceMeshUpdate();
+
+		int fullTextLength = tmpText.textInfo.characterCount;
+		int newTextLength = fullTextLength - preTextLength;
+		if (textType == TextType.TypedFade)
+			tmpText.maxVisibleCharacters = fullTextLength;
+
+		float rawTimePerCharacter = (1f / speed) * typeSpeedMultiplier;
+		float timePerCharacter = Mathf.Max(minWaitTime, rawTimePerCharacter);
+		int charactersPerIteration = GetCharactersPerIteration(newTextLength, rawTimePerCharacter);
+		float maxTime = timePerCharacter * Mathf.CeilToInt((float)newTextLength / charactersPerIteration);
+
+		if (textType == TextType.Typed)
+			buildProcess = tmpText.StartCoroutine(StartTyping(maxTime, timePerCharacter, newTextLength, charactersPerIteration));
+		else if (textType == TextType.TypedFade)
+			buildProcess = tmpText.StartCoroutine(StartFadingIn(maxTime, preTextLength, newTextLength, charactersPerIteration));
+	}
+
+	IEnumerator StartInstantFadingIn(int preTextLength, int newTextLength)
+	{
+		HideText(preTextLength);
+
+		float[] transparencyValues = new float[newTextLength];
+		float fadeTime = (1 / speed) * instantSpeedMultiplier;
+		float newestAlpha = 0;
+
+		while (newestAlpha < 255)
+		{
+			float frameTimeRatio = Time.deltaTime / fadeTime;
+			float transparencyStep = frameTimeRatio * 255;
+			newestAlpha = FadeInText(transparencyValues, 0, newTextLength - 1, preTextLength, transparencyStep);
+
 			yield return null;
 		}
 
 		CompleteProcess();
-		yield return null;
+	}
+
+	IEnumerator StartTyping(float maxTime, float timePerCharacter, int newTextLength, int charactersPerIteration)
+	{
+		float timeElapsed = 0;
+		float charTimeElapsed = 0;
+
+		while (timeElapsed < maxTime || tmpText.maxVisibleCharacters < newTextLength)
+		{
+			timeElapsed += Time.deltaTime;
+			charTimeElapsed += Time.deltaTime;
+			if (charTimeElapsed >= timePerCharacter)
+			{
+				charTimeElapsed -= timePerCharacter;
+				tmpText.maxVisibleCharacters += charactersPerIteration;
+				tmpText.ForceMeshUpdate();
+			}
+
+			yield return null;
+		}
+
+		CompleteProcess();
+	}
+
+	IEnumerator StartFadingIn(float maxTime, int preTextLength, int newTextLength, int charactersPerIteration)
+	{
+		HideText(preTextLength);
+
+		float[] transparencyValues = new float[newTextLength];
+		float timePerCharacter = maxTime / newTextLength;
+
+		int minRange = 0;
+		int maxRange = charactersPerIteration;
+		float newestAlpha = 0;
+
+		float charTimeElapsed = 0;
+		float fadeTimeElapsed = 0;
+
+		while ((maxRange < transparencyValues.Length - 1) || newestAlpha < 255)
+		{
+			charTimeElapsed += Time.deltaTime;
+			fadeTimeElapsed += Time.deltaTime;
+
+			// Increase max range
+			if (charTimeElapsed >= timePerCharacter)
+			{
+				charTimeElapsed -= timePerCharacter;
+				maxRange = Mathf.Min(maxRange + charactersPerIteration, newTextLength - 1);
+			}
+
+			// Increase min range
+			if (transparencyValues[minRange] >= 255)
+			{
+				minRange = Mathf.Min(minRange + charactersPerIteration, newTextLength - 1);
+			}
+
+			// Fade in all the characters in the current range
+			if (fadeTimeElapsed >= minWaitTime)
+			{
+				fadeTimeElapsed -= minWaitTime;
+				float transparencyStep = fadeSpeedMultiplier * 255;
+				newestAlpha = FadeInText(transparencyValues, minRange, maxRange, preTextLength, transparencyStep);
+			}
+
+
+			yield return null;
+		}
+
+		CompleteProcess();
 	}
 
 	void CompleteProcess()
@@ -96,13 +213,66 @@ public class TextBuilder
 		buildProcess = null;
 	}
 
-	int GetCharactersPerIteration(int textCount, int textSpeed)
+	void HideText(int preTextLength)
 	{
-		// If speed is 10, all characters are revealed instantly
-		if (textSpeed == maxSpeed) return textCount;
-		// For speed 1-5, 1 character is revealed
-		else if (textSpeed < 6) return 1;
-		// For speed 6-9, 2-5 characters are revealed
-		else return textSpeed - 4;
+		tmpText.ForceMeshUpdate();
+
+		// Set all the new text characters to invisible
+		for (int i = 0; i < tmpText.textInfo.characterCount; i++)
+		{
+			int newAlpha = i < preTextLength ? 255 : 0;
+			ChangeCharacterTransparency(i, newAlpha);
+		}
+
+		tmpText.UpdateVertexData(TMP_VertexDataUpdateFlags.Colors32);
+	}
+
+	float FadeInText(float[] transparencyValues, int minRange, int maxRange, int preTextLength, float transparencyStep)
+	{
+		float newestAlpha = 0;
+
+		// Equally fade in all the characters in the given range by a given amount
+		for (int i = minRange; i <= maxRange; i++)
+		{
+			newestAlpha = Mathf.MoveTowards(transparencyValues[i], 255f, transparencyStep);
+			transparencyValues[i] = newestAlpha;
+			ChangeCharacterTransparency(preTextLength + i, newestAlpha);
+		}
+
+		tmpText.UpdateVertexData(TMP_VertexDataUpdateFlags.Colors32);
+		return newestAlpha;
+	}
+
+	int GetCharactersPerIteration(int textCount, float waitTime)
+	{
+		// Reveal more characters when the wait time is less than minimum
+		if (waitTime < minWaitTime)
+		{
+			float waitRatio = minWaitTime / waitTime;
+			int characterCount = Mathf.RoundToInt((waitRatio - 1f) * 5f) + 1;
+
+			return characterCount;
+		}
+
+		return 1;
+	}
+
+	void ChangeCharacterTransparency(int charIndex, float alpha)
+	{
+		TMP_TextInfo textInfo = tmpText.textInfo;
+
+		// Get information for the character at the current index
+		TMP_CharacterInfo charInfo = textInfo.characterInfo[charIndex];
+		if (!charInfo.isVisible) return;
+
+		// Get all vertex colors for this text using this character's material
+		int materialIndex = textInfo.characterInfo[charIndex].materialReferenceIndex;
+		Color32[] vertexColors = textInfo.meshInfo[materialIndex].colors32;
+
+		// Change the transparency for all 4 vertices of this character
+		vertexColors[charInfo.vertexIndex + 0].a = (byte)alpha;
+		vertexColors[charInfo.vertexIndex + 1].a = (byte)alpha;
+		vertexColors[charInfo.vertexIndex + 2].a = (byte)alpha;
+		vertexColors[charInfo.vertexIndex + 3].a = (byte)alpha;
 	}
 }
