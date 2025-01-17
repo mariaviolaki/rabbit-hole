@@ -1,48 +1,93 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 public class DialogueUI : MonoBehaviour
 {
-	[SerializeField][Range(1, 12)] float speed;
-	[SerializeField] TextBuilder.TextMode textMode;
 	[SerializeField] TextMeshProUGUI nameText;
 	[SerializeField] TextMeshProUGUI dialogueText;
 
+	[SerializeField] FileManagerSO fileManager;
+	[SerializeField][Range(1, 12)] float speed;
+	[SerializeField] TextBuilder.TextMode textMode;
+	[SerializeField] AssetLabelReference dialogueLabel;
+
 	TextBuilder textBuilder;
 
-	string[] testStrings =
-	{
-		//"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-		"Lorem <b>ipsum</b> dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-		"Ut <b>enim</b> ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-		"Duis <b>aute</b> irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-		"Excepteur <b>sint</b> occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-	};
+	string currentDialogueFile;
+	Dictionary<string, string> dialogueFiles = new Dictionary<string, string>();
+	List<string> dialogueStrings = new List<string>();
 
     void Awake()
     {
 		textBuilder = new TextBuilder(dialogueText);
+
+		fileManager.OnLoadTextFiles += CacheDialogueFiles;
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
 		{
-			string text = testStrings[Random.Range(0, testStrings.Length - 1)];
+			Debug.Log("Write");
+			if (dialogueStrings.Count == 0) return;
+			string text = dialogueStrings[Random.Range(0, dialogueStrings.Count - 1)];
 			textBuilder.Speed = speed;
 			textBuilder.Write(text, textMode);
 		}
 		else if (Input.GetKeyDown(KeyCode.A))
 		{
-			string text = testStrings[Random.Range(0, testStrings.Length - 1)];
+			Debug.Log("Append");
+			if (dialogueStrings.Count == 0) return;
+			string text = dialogueStrings[Random.Range(0, dialogueStrings.Count - 1)];
 			textBuilder.Speed = speed;
 			textBuilder.Append(text, textMode);
 		}
 		else if (Input.GetKeyDown(KeyCode.S))
 		{
+			Debug.Log("Stop");
 			textBuilder.Stop();
+		}
+		else if (Input.GetKeyDown(KeyCode.L))
+		{
+			Debug.Log("Load");
+			fileManager.LoadTextFiles(dialogueLabel);
+		}
+		else if (Input.GetKeyDown(KeyCode.R))
+		{
+			Debug.Log("Read");
+			ReadDialogueFile();
+		}
+	}
+
+	void CacheDialogueFiles(List<TextAsset> textAssets)
+	{
+		currentDialogueFile = textAssets[0].name;
+
+		foreach (TextAsset textAsset in textAssets)
+		{
+			dialogueFiles[textAsset.name] = textAsset.text;
+		}
+	}
+
+	void ReadDialogueFile()
+	{
+		if (currentDialogueFile == null) return;
+
+		dialogueStrings.Clear();
+		string fileContents = dialogueFiles[currentDialogueFile];
+
+		// Read the dialogue file contents line by line
+		using (StringReader sr = new StringReader(fileContents))
+		{
+			string line;
+			while ((line = sr.ReadLine()) != null)
+			{
+				if (!string.IsNullOrWhiteSpace(line))
+					dialogueStrings.Add(line);
+			}
 		}
 	}
 }
