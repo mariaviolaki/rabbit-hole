@@ -10,6 +10,7 @@ public class DialogueUI : MonoBehaviour
 	[SerializeField] TextMeshProUGUI dialogueText;
 
 	[SerializeField] FileManagerSO fileManager;
+	[SerializeField] DialogueParserSO textParser;
 	[SerializeField][Range(1, 12)] float speed;
 	[SerializeField] TextBuilder.TextMode textMode;
 	[SerializeField] AssetLabelReference dialogueLabel;
@@ -86,7 +87,13 @@ public class DialogueUI : MonoBehaviour
 			while ((line = sr.ReadLine()) != null)
 			{
 				if (!string.IsNullOrWhiteSpace(line))
+				{
 					dialogueStrings.Add(line);
+
+					Debug.Log($"Parsing: {line}");
+					DialogueLine dialogueLine = textParser.Parse(line);
+					dialogueLine.Print();
+				}
 			}
 		}
 	}

@@ -1504,6 +1504,7 @@ MonoBehaviour:
   nameText: {fileID: 1432513913}
   dialogueText: {fileID: 1411857741}
   fileManager: {fileID: 11400000, guid: 527643bfa3cac48449467bd17611abdd, type: 2}
+  textParser: {fileID: 11400000, guid: 48fd8ff6339db034caa644d2476c6da6, type: 2}
   speed: 0
   textMode: 2
   dialogueLabel:
