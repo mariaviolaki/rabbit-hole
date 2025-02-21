@@ -1,12 +1,10 @@
 using System.Text.RegularExpressions;
-using UnityEngine;
 
-[CreateAssetMenu(fileName = "DialogueParser", menuName = "Scriptable Objects/Dialogue Parser")]
-public class DialogueParserSO : ScriptableObject
+public static class DialogueParser
 {
 	const string commandRegexPattern = "\\w+\\S\\(";
 
-	public DialogueLine Parse(string rawLine)
+	public static DialogueLine Parse(string rawLine)
 	{
 		string speaker = "", dialogue = "", commands = "";
 
@@ -24,9 +22,7 @@ public class DialogueParserSO : ScriptableObject
 		if (dialogueStart > -1 && speakerLength > 0 && dialogueLength > 0)
 		{
 			speaker = rawLine.Substring(0, speakerLength)?.Trim();
-
-			if (speaker.Length > 0)
-				dialogue = rawLine.Substring(dialogueStart + 1, dialogueLength)?.Replace("\\\"", "\"").Trim();
+			dialogue = rawLine.Substring(dialogueStart + 1, dialogueLength)?.Replace("\\\"", "\"").Trim();
 		}
 
 		if (commandsLength > 0 && commandsStart > -1)
@@ -35,7 +31,7 @@ public class DialogueParserSO : ScriptableObject
 		return new DialogueLine(speaker, dialogue, commands);
 	}
 
-	(int, int) GetDialogueBounds(string rawLine, int firstCommandStart)
+	static (int, int) GetDialogueBounds(string rawLine, int firstCommandStart)
 	{
 		int dialogueStart = -1;
 		int dialogueEnd = -1;
@@ -79,7 +75,7 @@ public class DialogueParserSO : ScriptableObject
 		return (-1, -1);
 	}
 
-	int GetCommandsStart(MatchCollection commandMatches, int dialogueEnd)
+	static int GetCommandsStart(MatchCollection commandMatches, int dialogueEnd)
 	{
 		foreach (Match commandMatch in commandMatches)
 		{

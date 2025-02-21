@@ -1,7 +1,29 @@
-Line 1
+speaker0 "000 00000."
 
-Line 2
+speaker1 "111111 11111."
 
-Line 3
+speaker2 "22 22222 222 22."
 
-Line 4
+speaker0 "000 00000."
+
+speaker1 "111111 11111."
+
+speaker2 "22 22222 222 22."
+
+speaker0 "000 00000."
+
+speaker1 "111111 11111."
+
+speaker2 "22 22222 222 22."
+
+speaker0 "000 00000."
+
+speaker1 "111111 11111."
+
+speaker2 "22 22222 222 22."
+
+speaker0 "000 00000."
+
+speaker1 "111111 11111."
+
+speaker2 "22 22222 222 22."

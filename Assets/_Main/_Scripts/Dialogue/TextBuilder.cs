@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -21,15 +20,15 @@ public class TextBuilder
 	TextMode textType;
 	float speed;
 
+	public bool IsBuilding { get { return buildProcess != null; } }
 	public float MaxSpeed { get { return maxSpeed; } }
 	public float Speed { get { return speed; } set { speed = Mathf.Clamp(value, 1f, MaxSpeed); } }
-	
+
 	public TextBuilder(TMP_Text tmpText)
 	{
 		this.tmpText = tmpText;
-
-		this.speed = MaxSpeed / 2;
 		this.tmpText.text = "";
+		speed = MaxSpeed / 2;
 	}
 
 	public bool Write(string newText, TextMode textType)

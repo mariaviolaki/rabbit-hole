@@ -11,6 +11,8 @@ public class FileManagerSO : ScriptableObject
 
 	public void LoadTextFiles(AssetLabelReference assetLabel)
 	{
+		if (assetLabel == null) return;
+
 		AsyncOperationHandle asyncHandle = Addressables.LoadAssetsAsync<TextAsset>(assetLabel, null);
 		asyncHandle.Completed += (resultHandle) =>
 		{
