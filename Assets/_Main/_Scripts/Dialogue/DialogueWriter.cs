@@ -45,7 +45,6 @@ public class DialogueWriter
 		{
 			if (string.IsNullOrEmpty(line)) continue;
 
-			Debug.Log($"Parsing {line}");
 			DialogueLine dialogueLine = DialogueParser.Parse(line);
 
 			if (dialogueLine.Commands != null)
@@ -65,14 +64,40 @@ public class DialogueWriter
 	{
 		SetSpeaker(line.Speaker);
 
-		do
+		foreach (DialogueTextData.Segment segment in line.Dialogue.Segments)
 		{
-			textBuilder.Write(line.Dialogue, dialogueSystem.TextMode);
+			yield return WaitForNextDialogueSegment(segment);
+			yield return DisplayDialogueSegment(segment);
+		}
+	}
 
-			IsRunning = false;
+	IEnumerator WaitForNextDialogueSegment(DialogueTextData.Segment segment)
+	{
+		if (segment.IsAuto)
+		{
+			float startTime = Time.time;
+			yield return new WaitUntil(() => IsRunning || Time.time >= startTime + segment.WaitTime);
+		}
+		else
+		{
 			yield return new WaitUntil(() => IsRunning);
 		}
-		while (textBuilder.IsBuilding);
+	}
+
+	IEnumerator DisplayDialogueSegment(DialogueTextData.Segment segment)
+	{
+		while (true)
+		{
+			if (segment.IsAppended)
+				textBuilder.Append(segment.Text, dialogueSystem.TextMode);
+			else
+				textBuilder.Write(segment.Text, dialogueSystem.TextMode);
+
+			IsRunning = false;
+			yield return new WaitUntil(() => IsRunning || !textBuilder.IsBuilding);
+
+			if (!textBuilder.IsBuilding) break;
+		}
 	}
 
 	void SetSpeaker(string speakerName)

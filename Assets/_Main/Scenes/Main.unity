@@ -902,9 +902,8 @@ MonoBehaviour:
   dialogueUI: {fileID: 834904411}
   inputManager: {fileID: 11400000, guid: 9b3fa728f456aeb4bb05c35c62b6cfc2, type: 2}
   fileManager: {fileID: 11400000, guid: 527643bfa3cac48449467bd17611abdd, type: 2}
-  dialogueWriter: {fileID: 11400000, guid: 6c5cd8691a040c048a896ebcfc6369e2, type: 2}
   dialogueLabel:
-    m_LabelString: DialoguePart1
+    m_LabelString: DialoguePart3
   textSpeed: 1
   textMode: 3
 --- !u!1 &472097657
