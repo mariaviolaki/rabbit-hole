@@ -21,19 +21,25 @@ MonoBehaviour:
     m_Address: Assets/_Main/Dialogue/Part2
     m_ReadOnly: 0
     m_SerializedLabels:
-    - DialoguePart2
+    - Dialogue Part 2
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 80d8a2e13157437408736d932adc4e0f
     m_Address: Assets/_Main/Dialogue/Part1
     m_ReadOnly: 0
     m_SerializedLabels:
-    - DialoguePart1
+    - Dialogue Part 1
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9e0fe06b1eaa6fe4f95fb20e765eb973
     m_Address: Assets/_Main/Dialogue/Part3
     m_ReadOnly: 0
     m_SerializedLabels:
-    - DialoguePart3
+    - Dialogue Part 3
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6971d03068822064aa52486c7fb5420c
+    m_Address: Assets/_Main/Dialogue/Part4
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Dialogue Part 4
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 9a96d69e6c0910047aed3e71b766540f, type: 2}

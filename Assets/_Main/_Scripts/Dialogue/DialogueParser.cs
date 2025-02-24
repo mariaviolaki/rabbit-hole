@@ -2,13 +2,13 @@ using System.Text.RegularExpressions;
 
 public static class DialogueParser
 {
-	const string commandRegexPattern = @"\w+\S\(";
+	const string CommandRegexPattern = @"\w+\S\(";
 
 	public static DialogueLine Parse(string rawLine)
 	{
 		string speaker = "", dialogue = "", commands = "";
 
-		Regex commandRegex = new Regex(commandRegexPattern);
+		Regex commandRegex = new Regex(CommandRegexPattern);
 		MatchCollection commandMatches = commandRegex.Matches(rawLine);
 		int firstCommandStart = commandMatches.Count == 0 ? -1 : commandMatches[0].Index;
 

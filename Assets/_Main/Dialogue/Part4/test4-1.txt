@@ -1,0 +1,6 @@
+Speaker1 "1 Lorem ipsum dolor sit amet."
+Speaker2 as ??? "2 Lorem ipsum dolor sit amet."
+Speaker3 at 1 "3 Lorem ipsum dolor sit amet."
+Speaker4 at 1:4.3 "4 Lorem ipsum dolor sit amet."
+Speaker5 [face:happy , body : front ] "5 Lorem ipsum dolor sit amet."
+Speaker6 [face:happy  ]  at 1.7 :4.3  as Speaker2 ?? "6 Lorem ipsum dolor sit amet."

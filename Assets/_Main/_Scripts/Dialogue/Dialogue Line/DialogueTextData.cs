@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using UnityEngine;
 
 public class DialogueTextData
 {
@@ -26,40 +25,38 @@ public class DialogueTextData
 		}
 	}
 
-	const string separatorRegexPattern = @"\{[ac](\s\d+(\.\d+)?)?\}";
+	const string SegmentDelimiterPattern = @"\{[ac](\s\d+(\.\d+)?)?\}";
 
 	public List<Segment> Segments { get; private set; }
 
 	public DialogueTextData(string rawText)
 	{
-		Segments = GetTextSegments(rawText);
+		ParseTextSegments(rawText);
 	}
 
-	List<Segment> GetTextSegments(string dialogueText)
+	void ParseTextSegments(string dialogueText)
 	{
-		List<Segment> segments = new List<Segment>();
+		Segments = new List<Segment>();
 
-		Regex separatorRegex = new Regex(separatorRegexPattern);
-		MatchCollection separatorMatches = separatorRegex.Matches(dialogueText);
+		Regex delimiterRegex = new Regex(SegmentDelimiterPattern);
+		MatchCollection delimiterMatches = delimiterRegex.Matches(dialogueText);
 
 		// Segment separators are not necessary in the text - dialogue text might be the only segment
-		int firstSegmentEnd = separatorMatches.Count > 0 ? separatorMatches[0].Index : dialogueText.Length;
+		int firstSegmentEnd = delimiterMatches.Count > 0 ? delimiterMatches[0].Index : dialogueText.Length;
 		Segment firstSegment = new Segment(dialogueText.Substring(0, firstSegmentEnd), StartMode.None);
-		segments.Add(firstSegment);
+		Segments.Add(firstSegment);
 
 		// Split the dialogue into multiple text segments, each displayed separately
-		if (separatorMatches.Count > 0)
+		if (delimiterMatches.Count > 0)
 		{
-			for (int i = 0; i < separatorMatches.Count; i++)
+			for (int i = 0; i < delimiterMatches.Count; i++)
 			{
-				Match match = separatorMatches[i];
-				Match nextMatch = (i+1 == separatorMatches.Count) ? null : separatorMatches[i+1];
+				Match match = delimiterMatches[i];
+				Match nextMatch = (i + 1 == delimiterMatches.Count) ? null : delimiterMatches[i + 1];
 
-				segments.Add(GetSegmentBetweenMatches(dialogueText, match, nextMatch));
+				Segments.Add(GetSegmentBetweenMatches(dialogueText, match, nextMatch));
 			}
 		}
-
-		return segments;
 	}
 
 	Segment GetSegmentBetweenMatches(string rawText, Match match, Match nextMatch)
@@ -71,7 +68,7 @@ public class DialogueTextData
 
 		// How this text will be displayed
 		string startModeText = match.Value.Substring(1, match.Length - 2);
-		string[] startModeParams = startModeText.Split(' ');
+		string[] startModeParams = startModeText.Split(' ', System.StringSplitOptions.RemoveEmptyEntries);
 		StartMode startMode = GetStartModeFromText(startModeParams);
 
 		// Optionally, wait for a few seconds before automatically showing the text

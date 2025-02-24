@@ -86,9 +86,10 @@ MonoBehaviour:
     m_ProfileVersion: 1
   m_LabelTable:
     m_LabelNames:
-    - DialoguePart1
-    - DialoguePart2
-    - DialoguePart3
+    - Dialogue Part 1
+    - Dialogue Part 2
+    - Dialogue Part 3
+    - Dialogue Part 4
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 3f672e8c8583c344b8ea9ea75ac4d7aa, type: 2}

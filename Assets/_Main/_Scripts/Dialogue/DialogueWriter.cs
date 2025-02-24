@@ -43,6 +43,8 @@ public class DialogueWriter
 
 		foreach (string line in lines)
 		{
+			Debug.Log($"Parsing: {line}");
+
 			if (string.IsNullOrEmpty(line)) continue;
 
 			DialogueLine dialogueLine = DialogueParser.Parse(line);
@@ -62,11 +64,29 @@ public class DialogueWriter
 
 	IEnumerator DisplayDialogue(DialogueLine line)
 	{
-		SetSpeaker(line.Speaker);
+		bool isSpeakerSet = false;
+
+		// TODO remove test logs
+		Debug.Log("**********************************************************");
+		Debug.Log($"DisplayName: {line.Speaker.DisplayName}");
+		Debug.Log($"Name: {line.Speaker.Name}");
+		Debug.Log($"CastName: {line.Speaker.CastName}");
+		Debug.Log($"Pos: {line.Speaker.Pos}");
+		if (line.Speaker.Layers.ContainsKey(DialogueSpeakerData.Layer.Face))
+			Debug.Log($"Layers[DialogueSpeakerData.Layer.Face]: {line.Speaker.Layers[DialogueSpeakerData.Layer.Face]}");
+		if (line.Speaker.Layers.ContainsKey(DialogueSpeakerData.Layer.Body))
+			Debug.Log($"Layers[DialogueSpeakerData.Layer.Body]: {line.Speaker.Layers[DialogueSpeakerData.Layer.Body]}");
 
 		foreach (DialogueTextData.Segment segment in line.Dialogue.Segments)
 		{
 			yield return WaitForNextDialogueSegment(segment);
+
+			if (!isSpeakerSet)
+			{
+				SetSpeaker(line.Speaker.DisplayName);
+				isSpeakerSet = true;
+			}
+			
 			yield return DisplayDialogueSegment(segment);
 		}
 	}

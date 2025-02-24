@@ -904,7 +904,7 @@ MonoBehaviour:
   fileManager: {fileID: 11400000, guid: 527643bfa3cac48449467bd17611abdd, type: 2}
   dialogueLabel:
     m_LabelString: DialoguePart3
-  textSpeed: 1
+  textSpeed: 4.23
   textMode: 3
 --- !u!1 &472097657
 GameObject:
