@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.SceneManagement;
 
 public class DialogueSystem : MonoBehaviour
 {
@@ -31,9 +32,15 @@ public class DialogueSystem : MonoBehaviour
 
 	void Update()
 	{
+		// TODO start dialogue using other triggers
 		if (Input.GetKeyDown(KeyCode.Return))
 		{
 			StartDialogue();
+		}
+		// TODO remove test functionality
+		else if (Input.GetKeyDown(KeyCode.T))
+		{
+			RunTest();
 		}
 	}
 
@@ -67,5 +74,13 @@ public class DialogueSystem : MonoBehaviour
 		{
 			dialogueFiles[textAsset.name] = new DialogueFile(textAsset.name, textAsset.text);
 		}
+	}
+
+	// TODO remove test function
+	void RunTest()
+	{
+		int sceneIndex = SceneManager.GetActiveScene().buildIndex;
+		int nextSceneIndex = (sceneIndex + 1 == SceneManager.sceneCountInBuildSettings) ? 0 : sceneIndex + 1;
+		SceneManager.LoadScene(nextSceneIndex);
 	}
 }
