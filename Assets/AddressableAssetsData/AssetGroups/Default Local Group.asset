@@ -41,6 +41,12 @@ MonoBehaviour:
     m_SerializedLabels:
     - Dialogue Part 4
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a75a88400fddf4546ac46eb8075472ec
+    m_Address: Assets/_Main/Dialogue/Part5
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Dialogue Part 5
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 9a96d69e6c0910047aed3e71b766540f, type: 2}
   m_SchemaSet:

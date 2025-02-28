@@ -59,23 +59,18 @@ public class DialogueWriter
 
 	void RunCommands(DialogueLine line)
 	{
-		Debug.Log($"Commands: {line.Commands}");
+		foreach (DialogueCommandData.Command command in line.Commands.CommandList)
+		{
+			Debug.Log("**********************************************************");
+			Debug.Log($"Name: {command.Name}");
+			foreach (string arg in command.Arguments)
+				Debug.Log($"Argument: {arg}");
+		}
 	}
 
 	IEnumerator DisplayDialogue(DialogueLine line)
 	{
 		bool isSpeakerSet = false;
-
-		// TODO remove test logs
-		Debug.Log("**********************************************************");
-		Debug.Log($"DisplayName: {line.Speaker.DisplayName}");
-		Debug.Log($"Name: {line.Speaker.Name}");
-		Debug.Log($"CastName: {line.Speaker.CastName}");
-		Debug.Log($"Pos: {line.Speaker.Pos}");
-		if (line.Speaker.Layers.ContainsKey(DialogueSpeakerData.Layer.Face))
-			Debug.Log($"Layers[DialogueSpeakerData.Layer.Face]: {line.Speaker.Layers[DialogueSpeakerData.Layer.Face]}");
-		if (line.Speaker.Layers.ContainsKey(DialogueSpeakerData.Layer.Body))
-			Debug.Log($"Layers[DialogueSpeakerData.Layer.Body]: {line.Speaker.Layers[DialogueSpeakerData.Layer.Body]}");
 
 		foreach (DialogueTextData.Segment segment in line.Dialogue.Segments)
 		{

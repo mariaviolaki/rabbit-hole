@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 public static class DialogueParser
 {
-	const string CommandRegexPattern = @"\w+\S\(";
+	const string CommandRegexPattern = @"\w+\s*\(";
 
 	public static DialogueLine Parse(string rawLine)
 	{

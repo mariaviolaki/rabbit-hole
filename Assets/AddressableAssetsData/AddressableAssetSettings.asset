@@ -90,6 +90,7 @@ MonoBehaviour:
     - Dialogue Part 2
     - Dialogue Part 3
     - Dialogue Part 4
+    - Dialogue Part 5
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 3f672e8c8583c344b8ea9ea75ac4d7aa, type: 2}
