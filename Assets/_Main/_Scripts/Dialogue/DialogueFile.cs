@@ -1,24 +1,27 @@
 using System.Collections.Generic;
 using System.IO;
 
-public class DialogueFile
+namespace Dialogue
 {
-	List<string> lines = new List<string>();
-
-	public string FileName { get; private set; }
-	public List<string> Lines { get { return lines; } }
-
-	public DialogueFile(string fileName, string fileContents)
+	public class DialogueFile
 	{
-		FileName = fileName;
+		List<string> lines = new List<string>();
 
-		using StringReader sr = new StringReader(fileContents);
-		string line;
-		while ((line = sr.ReadLine()) != null)
+		public string FileName { get; private set; }
+		public List<string> Lines { get { return lines; } }
+
+		public DialogueFile(string fileName, string fileContents)
 		{
-			if (line == string.Empty) continue;
+			FileName = fileName;
 
-			lines.Add(line);
+			using StringReader sr = new StringReader(fileContents);
+			string line;
+			while ((line = sr.ReadLine()) != null)
+			{
+				if (line == string.Empty) continue;
+
+				lines.Add(line);
+			}
 		}
 	}
 }

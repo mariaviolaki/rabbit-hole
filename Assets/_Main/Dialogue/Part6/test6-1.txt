@@ -1,5 +1,6 @@
-test2(" lorem ipsum, "),   test3(5.5 , "(\")"), test4(" "), test1(lorem, )
-test5 (  "")
+Speaker0 "FuncName(Lorem Ipsum...)"
+LogLambda()
+LogLambda(), LogLambda()
 Speaker1 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." LogLambda(), LogLambdaArg(arg1), LogLambdaArgs(arg1, arg2)
 Speaker2 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." LogFunction(), LogFunctionArg(arg1), LogFunctionArgs(arg1, arg2)
 Speaker3 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."  wait   LogCoroutine(),wait LogCoroutineArg(arg1),     wait LogCoroutineArgs(arg1, arg2)

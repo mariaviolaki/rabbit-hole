@@ -1,89 +1,92 @@
 using System.Text.RegularExpressions;
 
-public static class DialogueParser
+namespace Dialogue
 {
-	const string CommandWaitKeyword = "wait";
-	readonly static string CommandRegexPattern = $@"({CommandWaitKeyword}\s+)?\w+\s*\(";
-
-	public static DialogueLine Parse(string rawLine)
+	public static class DialogueParser
 	{
-		string speaker = "", dialogue = "", commands = "";
+		const string CommandWaitKeyword = "wait";
+		readonly static string CommandRegexPattern = $@"({CommandWaitKeyword}\s+)?[a-zA-Z][a-zA-Z0-9]*\s*\(";
 
-		Regex commandRegex = new Regex(CommandRegexPattern);
-		MatchCollection commandMatches = commandRegex.Matches(rawLine);
-		int firstCommandStart = commandMatches.Count == 0 ? -1 : commandMatches[0].Index;
-
-		(int dialogueStart, int dialogueEnd) = GetDialogueBounds(rawLine, firstCommandStart);
-		int commandsStart = GetCommandsStart(commandMatches, dialogueEnd);
-
-		int speakerLength = dialogueStart - 1;
-		int dialogueLength = dialogueEnd - dialogueStart - 1;
-		int commandsLength = rawLine.Length - commandsStart;
-
-		if (dialogueStart > -1 && speakerLength > 0 && dialogueLength > 0)
+		public static DialogueLine Parse(string rawLine)
 		{
-			speaker = rawLine.Substring(0, speakerLength)?.Trim();
-			dialogue = rawLine.Substring(dialogueStart + 1, dialogueLength)?.Replace("\\\"", "\"").Trim();
-		}
+			string speaker = "", dialogue = "", commands = "";
 
-		if (commandsLength > 0 && commandsStart > -1)
-			commands = rawLine.Substring(commandsStart, commandsLength)?.Trim();
+			Regex commandRegex = new Regex(CommandRegexPattern);
+			MatchCollection commandMatches = commandRegex.Matches(rawLine);
+			int firstCommandStart = commandMatches.Count == 0 ? -1 : commandMatches[0].Index;
 
-		return new DialogueLine(speaker, dialogue, commands);
-	}
+			(int dialogueStart, int dialogueEnd) = GetDialogueBounds(rawLine, firstCommandStart);
+			int commandsStart = GetCommandsStart(commandMatches, dialogueEnd);
 
-	static (int, int) GetDialogueBounds(string rawLine, int firstCommandStart)
-	{
-		int dialogueStart = -1;
-		int dialogueEnd = -1;
+			int speakerLength = dialogueStart - 1;
+			int dialogueLength = dialogueEnd - dialogueStart - 1;
+			int commandsLength = rawLine.Length - commandsStart;
 
-		bool isEscaped = false;
-		for (int i = 0; i < rawLine.Length; i++)
-		{
-			char current = rawLine[i];
-
-			if (isEscaped)
+			if (dialogueStart > -1 && speakerLength > 0 && dialogueLength > 0)
 			{
-				isEscaped = false;
+				speaker = rawLine.Substring(0, speakerLength)?.Trim();
+				dialogue = rawLine.Substring(dialogueStart + 1, dialogueLength)?.Replace("\\\"", "\"").Trim();
 			}
-			else
-			{
-				if (current == '\\')
-				{
-					isEscaped = true;
-				}
-				else if (current == '\"')
-				{
-					if (dialogueStart == -1)
-					{
-						dialogueStart = i;
 
-						// Any dialogue commands should always follow the dialogue text
-						if (firstCommandStart != -1 && firstCommandStart < dialogueStart)
-							return (-1, -1);
-					}
-					else if (dialogueEnd == -1)
-					{
-						dialogueEnd = i;
+			if (commandsLength > 0 && commandsStart > -1)
+				commands = rawLine.Substring(commandsStart, commandsLength)?.Trim();
 
-						// A valid start and end of the dialogue has been found
-						return (dialogueStart, dialogueEnd);
-					}
-				}
-			}
+			return new DialogueLine(speaker, dialogue, commands);
 		}
 
-		return (-1, -1);
-	}
-
-	static int GetCommandsStart(MatchCollection commandMatches, int dialogueEnd)
-	{
-		foreach (Match commandMatch in commandMatches)
+		static (int, int) GetDialogueBounds(string rawLine, int firstCommandStart)
 		{
-			if (commandMatch.Index > dialogueEnd)
-				return commandMatch.Index;
+			int dialogueStart = -1;
+			int dialogueEnd = -1;
+
+			bool isEscaped = false;
+			for (int i = 0; i < rawLine.Length; i++)
+			{
+				char current = rawLine[i];
+
+				if (isEscaped)
+				{
+					isEscaped = false;
+				}
+				else
+				{
+					if (current == '\\')
+					{
+						isEscaped = true;
+					}
+					else if (current == '\"')
+					{
+						if (dialogueStart == -1)
+						{
+							dialogueStart = i;
+
+							// Any dialogue commands should always follow the dialogue text
+							if (firstCommandStart != -1 && firstCommandStart < dialogueStart)
+								return (-1, -1);
+						}
+						else if (dialogueEnd == -1)
+						{
+							dialogueEnd = i;
+
+							// A valid start and end of the dialogue has been found
+							return (dialogueStart, dialogueEnd);
+						}
+					}
+				}
+			}
+
+			return (-1, -1);
 		}
 
-		return -1;
+		static int GetCommandsStart(MatchCollection commandMatches, int dialogueEnd)
+		{
+			foreach (Match commandMatch in commandMatches)
+			{
+				if (commandMatch.Index > dialogueEnd)
+					return commandMatch.Index;
+			}
+
+			return -1;
+		}
 	}
 }

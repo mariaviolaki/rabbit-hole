@@ -1,5 +1,4 @@
-
-namespace DialogueCommands
+namespace Commands
 {
 	public abstract class DialogueCommand
 	{

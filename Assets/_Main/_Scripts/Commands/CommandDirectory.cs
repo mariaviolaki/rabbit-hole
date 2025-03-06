@@ -2,32 +2,35 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CommandDirectory
+namespace Commands
 {
-	// Command Manager will search our scripts and dynamically populate this with every class inheriting from DialogueCommand
-	Dictionary<string, Delegate> directory = new Dictionary<string, Delegate>();
-
-	public bool HasCommand(string commandName) => directory.ContainsKey(commandName);
-
-	public Delegate GetCommand(string commandName)
+	public class CommandDirectory
 	{
-		if (!HasCommand(commandName))
+		// Command Manager will search our scripts and dynamically populate this with every class inheriting from DialogueCommand
+		Dictionary<string, Delegate> directory = new Dictionary<string, Delegate>();
+
+		public bool HasCommand(string commandName) => directory.ContainsKey(commandName);
+
+		public Delegate GetCommand(string commandName)
 		{
-			Debug.LogError($"{commandName} is not registered to the Command Directory!");
-			return null;
+			if (!HasCommand(commandName))
+			{
+				Debug.LogError($"{commandName} is not registered to the Command Directory!");
+				return null;
+			}
+
+			return directory[commandName];
 		}
 
-		return directory[commandName];
-	}
-
-	public void AddCommand(string commandName, Delegate command)
-	{
-		if (HasCommand(commandName))
+		public void AddCommand(string commandName, Delegate command)
 		{
-			Debug.LogError($"Command Directory already includes {commandName}!");
-			return;
-		}
+			if (HasCommand(commandName))
+			{
+				Debug.LogError($"Command Directory already includes {commandName}!");
+				return;
+			}
 
-		directory[commandName] = command;
+			directory[commandName] = command;
+		}
 	}
 }

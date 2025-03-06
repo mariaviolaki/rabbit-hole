@@ -2,106 +2,109 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-public class DialogueSpeakerData
+namespace Dialogue
 {
-	public enum Layer { None, Face, Body };
-
-	const string CastDelimiter = " as ";
-	const string PosDelimiter = " at ";
-	const string LayerStartDelimiter = " [";
-	const string LayerEndDelimiter = "]";
-	const string RegexLayerDelimiter = @" \[";
-
-	const string PosAxisDelimiter = ":";
-	const string LayerTypeDelimiter = ",";
-	const string LayerValueDelimiter = ":";
-	readonly string DataDelimiterPattern = @$"{CastDelimiter}|{PosDelimiter}|{RegexLayerDelimiter}";
-
-	string name;
-	string castName;
-	Vector2 pos;
-	Dictionary<Layer, string> layers;
-
-	public string Name { get { return name; } }
-	public string CastName { get { return castName; } }
-	public Vector2 Pos { get { return pos; } }
-	public Dictionary<Layer, string> Layers { get { return layers; } }
-	public string DisplayName { get { return CastName == string.Empty ? Name : CastName; } }
-
-	public DialogueSpeakerData(string rawSpeaker)
+	public class DialogueSpeakerData
 	{
-		ParseSpeakerData(rawSpeaker);
-	}
+		public enum Layer { None, Face, Body };
 
-	void ParseSpeakerData(string rawSpeaker)
-	{
-		Regex delimiterRegex = new Regex(DataDelimiterPattern);
-		MatchCollection delimiterMatches = delimiterRegex.Matches(rawSpeaker);
+		const string CastDelimiter = " as ";
+		const string PosDelimiter = " at ";
+		const string LayerStartDelimiter = " [";
+		const string LayerEndDelimiter = "]";
+		const string RegexLayerDelimiter = @" \[";
 
-		name = "";
-		castName = "";
-		pos = new Vector2();
-		layers = new Dictionary<Layer, string>();
+		const string PosAxisDelimiter = ":";
+		const string LayerTypeDelimiter = ",";
+		const string LayerValueDelimiter = ":";
+		readonly string DataDelimiterPattern = @$"{CastDelimiter}|{PosDelimiter}|{RegexLayerDelimiter}";
 
-		// There should always be a speaker name - the rest are optional
-		if (delimiterMatches.Count == 0)
+		string name;
+		string castName;
+		Vector2 pos;
+		Dictionary<Layer, string> layers;
+
+		public string Name { get { return name; } }
+		public string CastName { get { return castName; } }
+		public Vector2 Pos { get { return pos; } }
+		public Dictionary<Layer, string> Layers { get { return layers; } }
+		public string DisplayName { get { return CastName == string.Empty ? Name : CastName; } }
+
+		public DialogueSpeakerData(string rawSpeaker)
 		{
-			name = rawSpeaker.Trim();
-			return;
+			ParseSpeakerData(rawSpeaker);
 		}
 
-		// The speaker name is always listed before all the other params
-		name = rawSpeaker.Substring(0, delimiterMatches[0].Index);
-
-		for (int i = 0; i < delimiterMatches.Count; i++)
+		void ParseSpeakerData(string rawSpeaker)
 		{
-			Match match = delimiterMatches[i];
-			Match nextMatch = (i + 1 == delimiterMatches.Count) ? null : delimiterMatches[i + 1];
+			Regex delimiterRegex = new Regex(DataDelimiterPattern);
+			MatchCollection delimiterMatches = delimiterRegex.Matches(rawSpeaker);
 
-			ParseDataBetweenMatches(rawSpeaker, match, nextMatch);
-		}
-	}
+			name = "";
+			castName = "";
+			pos = new Vector2();
+			layers = new Dictionary<Layer, string>();
 
-	void ParseDataBetweenMatches(string rawSpeaker, Match match, Match nextMatch)
-	{
-		int valueStart = match.Index + match.Length;
-		int valueLength = (nextMatch == null) ? (rawSpeaker.Length - valueStart) : (nextMatch.Index - valueStart);
-		string value = rawSpeaker.Substring(valueStart, valueLength);
-
-		if (match.Value == CastDelimiter)
-		{
-			castName = value;
-		}
-		else if (match.Value == PosDelimiter)
-		{
-			string[] posAxes = value.Split(PosAxisDelimiter, System.StringSplitOptions.RemoveEmptyEntries);
-
-			// TryParse automatically trims before parsing
-			float.TryParse(posAxes[0], out pos.x);
-			if (posAxes.Length > 1)
-				float.TryParse(posAxes[1], out pos.y);
-		}
-		else if (match.Value == LayerStartDelimiter)
-		{
-			// Remove the end bracket enclosing the value
-			value = value.Split(LayerEndDelimiter, System.StringSplitOptions.RemoveEmptyEntries)[0];
-
-			string[] layerStrings = value.Split(LayerTypeDelimiter, System.StringSplitOptions.RemoveEmptyEntries);
-			foreach (string layerString in layerStrings)
+			// There should always be a speaker name - the rest are optional
+			if (delimiterMatches.Count == 0)
 			{
-				string[] layerData = layerString.Split(LayerValueDelimiter, System.StringSplitOptions.RemoveEmptyEntries);
-				layers[GetLayerFromText(layerData[0].Trim())] = layerData[1].Trim();
+				name = rawSpeaker.Trim();
+				return;
+			}
+
+			// The speaker name is always listed before all the other params
+			name = rawSpeaker.Substring(0, delimiterMatches[0].Index);
+
+			for (int i = 0; i < delimiterMatches.Count; i++)
+			{
+				Match match = delimiterMatches[i];
+				Match nextMatch = i + 1 == delimiterMatches.Count ? null : delimiterMatches[i + 1];
+
+				ParseDataBetweenMatches(rawSpeaker, match, nextMatch);
 			}
 		}
-	}
 
-	Layer GetLayerFromText(string layerText)
-	{
-		switch (layerText)
+		void ParseDataBetweenMatches(string rawSpeaker, Match match, Match nextMatch)
 		{
-			case "face": return Layer.Face;
-			case "body": return Layer.Body;
-			default: return Layer.None;
+			int valueStart = match.Index + match.Length;
+			int valueLength = nextMatch == null ? rawSpeaker.Length - valueStart : nextMatch.Index - valueStart;
+			string value = rawSpeaker.Substring(valueStart, valueLength);
+
+			if (match.Value == CastDelimiter)
+			{
+				castName = value;
+			}
+			else if (match.Value == PosDelimiter)
+			{
+				string[] posAxes = value.Split(PosAxisDelimiter, System.StringSplitOptions.RemoveEmptyEntries);
+
+				// TryParse automatically trims before parsing
+				float.TryParse(posAxes[0], out pos.x);
+				if (posAxes.Length > 1)
+					float.TryParse(posAxes[1], out pos.y);
+			}
+			else if (match.Value == LayerStartDelimiter)
+			{
+				// Remove the end bracket enclosing the value
+				value = value.Split(LayerEndDelimiter, System.StringSplitOptions.RemoveEmptyEntries)[0];
+
+				string[] layerStrings = value.Split(LayerTypeDelimiter, System.StringSplitOptions.RemoveEmptyEntries);
+				foreach (string layerString in layerStrings)
+				{
+					string[] layerData = layerString.Split(LayerValueDelimiter, System.StringSplitOptions.RemoveEmptyEntries);
+					layers[GetLayerFromText(layerData[0].Trim())] = layerData[1].Trim();
+				}
+			}
+		}
+
+		Layer GetLayerFromText(string layerText)
+		{
+			switch (layerText)
+			{
+				case "face": return Layer.Face;
+				case "body": return Layer.Body;
+				default: return Layer.None;
+			}
 		}
 	}
 }
