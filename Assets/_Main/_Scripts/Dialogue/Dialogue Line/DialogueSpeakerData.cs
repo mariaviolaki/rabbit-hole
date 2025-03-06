@@ -15,7 +15,7 @@ public class DialogueSpeakerData
 	const string PosAxisDelimiter = ":";
 	const string LayerTypeDelimiter = ",";
 	const string LayerValueDelimiter = ":";
-	string DataDelimiterPattern = @$"{CastDelimiter}|{PosDelimiter}|{RegexLayerDelimiter}";
+	readonly string DataDelimiterPattern = @$"{CastDelimiter}|{PosDelimiter}|{RegexLayerDelimiter}";
 
 	string name;
 	string castName;

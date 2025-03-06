@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
-using UnityEngine;
+using System.Text.RegularExpressions;
 
 public class DialogueCommandData
 {
@@ -8,17 +8,22 @@ public class DialogueCommandData
 	{
 		public string Name { get; private set; }
 		public string[] Arguments { get; private set; }
+		public bool IsWaiting { get; private set; }
 
-		public Command(string name, string[] arguments)
+		public Command(string name, string[] arguments, bool isWaiting)
 		{
 			Name = name;
 			Arguments = arguments;
+			IsWaiting = isWaiting;
 		}
 	}
 
+	const string CommandWaitKeyword = "wait";
+	readonly string CommandDelimiterPattern = $@"\)\s*,\s*({CommandWaitKeyword}\s+)?[a-zA-Z][a-zA-Z0-9]*\s*\(";
 	const char CommandDelimiter = ',';
-	const char CommandNameDelimiter = '(';
-	const char CommandEndDelimiter = ')';
+	const char ArgsDelimiter = ',';
+	const char OpenArgsDelimiter = '(';
+	const char ClosedArgsDelimiter = ')';
 
 	public List<Command> CommandList { get; private set; }
 
@@ -27,96 +32,110 @@ public class DialogueCommandData
 		ParseCommandData(rawCommands);
 	}
 
-	public void ParseCommandData(string argumentsString)
+	void ParseCommandData(string rawCommands)
 	{
 		CommandList = new List<Command>();
-		List<string> arguments = new List<string>();
-		StringBuilder currentCommandName = new StringBuilder();
-		StringBuilder currentArgument = new StringBuilder();
 
-		bool isInQuotes = false;
-		bool isValidArgString = false;
-		bool hasOpenArgsDelimiter = false;
-		bool hasClosedArgsDelimiter = false;
+		Regex commandDelimiterRegex = new Regex(CommandDelimiterPattern);
+		MatchCollection delimiterMatches = commandDelimiterRegex.Matches(rawCommands);
 
-		foreach (char character in argumentsString)
+		List<string> commandStrings = new List<string>();
+
+		if (delimiterMatches.Count == 0)
 		{
+			AddCommandFromString(rawCommands.Trim());
+			return;
+		}
+
+		string firstCommandString = rawCommands.Substring(0, delimiterMatches[0].Index + delimiterMatches[0].Value.IndexOf(CommandDelimiter));
+		AddCommandFromString(firstCommandString.Trim());
+
+		for (int i = 0; i < delimiterMatches.Count; i++)
+		{
+			Match match = delimiterMatches[i];
+			Match nextMatch = (i + 1 == delimiterMatches.Count) ? null : delimiterMatches[i + 1];
+
+			int commandStart = match.Index + match.Value.IndexOf(CommandDelimiter) + 1;
+			int commandEnd = nextMatch == null ? rawCommands.Length : (nextMatch.Index + nextMatch.Value.IndexOf(CommandDelimiter));
+
+			string commandString = rawCommands.Substring(commandStart, commandEnd - commandStart);
+			AddCommandFromString(commandString.Trim());
+		}
+	}
+
+	void AddCommandFromString(string commandString)
+	{
+		bool isWaiting = commandString.StartsWith(CommandWaitKeyword + " ");
+		string name = null;
+		List<string> arguments = new List<string>();
+
+		int startIndex = isWaiting ? (CommandWaitKeyword + " ").Length : 0;
+		bool isEscaped = false;
+		bool isInQuotes = false;
+		bool isFullStringInQuotes = false;
+
+		StringBuilder nameBuilder = new StringBuilder();
+		StringBuilder argumentBuilder = new StringBuilder();
+
+		for (int i = startIndex; i < commandString.Length; i++)
+		{
+			char character = commandString[i];
 			if (char.IsWhiteSpace(character) && !isInQuotes) continue;
 
-			if (!hasOpenArgsDelimiter)
-				hasOpenArgsDelimiter = character == CommandNameDelimiter && !isInQuotes;
-			if (!hasClosedArgsDelimiter)
-				hasClosedArgsDelimiter = character == CommandEndDelimiter && !isInQuotes;
-			
-			if (!hasOpenArgsDelimiter && !hasClosedArgsDelimiter)
+			if (character == '\\' && (i + 1 != commandString.Length) && (commandString[i + 1] == '"'))
 			{
-				currentCommandName.Append(character);
+				isEscaped = true;
+				continue;
 			}
-			else if (hasOpenArgsDelimiter && hasClosedArgsDelimiter)
+			else if (character == '"' && !isEscaped)
 			{
-				if (character == CommandDelimiter)
-				{
-					hasOpenArgsDelimiter = false;
-					hasClosedArgsDelimiter = false;
-				}
-				else if (character == CommandEndDelimiter)
-				{
-					// Add the currently processed command to the list of commands
-					UpdateCommands(currentCommandName, currentArgument, arguments, isValidArgString);
-				}
+				isInQuotes = !isInQuotes;
+				isFullStringInQuotes = !isInQuotes;
+				continue;
 			}
-			else if (hasOpenArgsDelimiter && !hasClosedArgsDelimiter)
+
+			if (character == OpenArgsDelimiter && !isInQuotes && name == null)
 			{
-				if (character == CommandNameDelimiter && !isInQuotes) continue;
-
-				if (character == '"')
-				{
-					isInQuotes = !isInQuotes;
-					isValidArgString = !isInQuotes;
-				}
-				else if (character == CommandDelimiter && !isInQuotes)
-				{
-					// Add the currently processed argument to the list of arguments
-					UpdateLastArgument(currentArgument, arguments, isValidArgString);
-					isValidArgString = false;
-				}
-				else
-				{
-					currentArgument.Append(character);
-					isValidArgString = false;
-				}
+				name = GetStringFromBuilder(nameBuilder, false);
 			}
-		}
-	}
+			else if (character == ArgsDelimiter && !isInQuotes)
+			{
+				string argument = GetStringFromBuilder(argumentBuilder, isFullStringInQuotes);
+				if (argument != null)
+					arguments.Add(argument);
+			}
+			else if (character == ClosedArgsDelimiter && !isInQuotes)
+			{
+				string argument = GetStringFromBuilder(argumentBuilder, isFullStringInQuotes);
+				if (argument != null)
+					arguments.Add(argument);
+				break;
+			}
+			else if (name == null)
+			{
+				nameBuilder.Append(character);
+			}
+			else
+			{
+				argumentBuilder.Append(character);
+			}
 
-	// Runs after the entire command is processed
-	void UpdateCommands(StringBuilder nameBuilder, StringBuilder lastArgumentBuilder, List<string> arguments, bool isValidArgString)
-	{
-		// Use the string in the name builder as command name and clear it for the next command
-		string commandName = nameBuilder.ToString().Trim();
-		nameBuilder.Clear();
-
-		// If the last argument in the builder is valid, add it as a param to the command
-		string trimmedArgument = lastArgumentBuilder.ToString().Trim();
-		if (trimmedArgument.Length > 0 || isValidArgString)
-		{
-			arguments.Add(lastArgumentBuilder.ToString().Trim());
-			lastArgumentBuilder.Clear();
+			isEscaped = false;
+			isFullStringInQuotes = false;
 		}
 
-		// Save the name and all the argumens of this command
-		CommandList.Add(new Command(commandName, arguments.ToArray()));
-		arguments.Clear();
+		if (string.IsNullOrWhiteSpace(name)) return;
+
+		Command command = new Command(name, arguments.ToArray(), isWaiting);
+		CommandList.Add(command);
 	}
 
-	// Runs after each command argument is processed
-	void UpdateLastArgument(StringBuilder currentArgumentBuilder, List<string> arguments, bool isValidArgString)
+	string GetStringFromBuilder(StringBuilder stringBuilder, bool isFullStringInQuotes)
 	{
-		// Add the string in the builder as an argument for the current command being processed
-		string trimmedArgument = currentArgumentBuilder.ToString().Trim();
-		if (trimmedArgument.Length > 0 || isValidArgString)
-			arguments.Add(trimmedArgument);
+		// Don't return empty strings unless they are in quotes
+		string stringText = isFullStringInQuotes ? stringBuilder.ToString() : stringBuilder.ToString().Trim();
+		stringBuilder.Clear();
 
-		currentArgumentBuilder.Clear();
+		return (stringText.Length > 0 || isFullStringInQuotes) ? stringText : null;
 	}
 }

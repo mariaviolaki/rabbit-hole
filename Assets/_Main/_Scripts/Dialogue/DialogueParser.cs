@@ -2,7 +2,8 @@ using System.Text.RegularExpressions;
 
 public static class DialogueParser
 {
-	const string CommandRegexPattern = @"\w+\s*\(";
+	const string CommandWaitKeyword = "wait";
+	readonly static string CommandRegexPattern = $@"({CommandWaitKeyword}\s+)?\w+\s*\(";
 
 	public static DialogueLine Parse(string rawLine)
 	{

@@ -6,16 +6,18 @@ public class DialogueWriter
 {
 	DialogueSystem dialogueSystem;
 	DialogueUI dialogueUI;
+	CommandManager commandManager;
 	TextBuilder textBuilder;
 
 	Coroutine readProcess;
 
 	public bool IsRunning { get; set; }
 
-	public DialogueWriter(DialogueSystem dialogueSystem, DialogueUI dialogueUI)
+	public DialogueWriter(DialogueSystem dialogueSystem, DialogueUI dialogueUI, CommandManager commandManager)
 	{
 		this.dialogueSystem = dialogueSystem;
 		this.dialogueUI = dialogueUI;
+		this.commandManager = commandManager;
 
 		textBuilder = new TextBuilder(dialogueUI.DialogueText);
 	}
@@ -49,22 +51,22 @@ public class DialogueWriter
 
 			DialogueLine dialogueLine = DialogueParser.Parse(line);
 
-			if (dialogueLine.Commands != null)
-				RunCommands(dialogueLine);
-
 			if (dialogueLine.Dialogue != null)
 				yield return DisplayDialogue(dialogueLine);
+
+			if (dialogueLine.Commands != null)
+				yield return RunCommands(dialogueLine);
 		}
 	}
 
-	void RunCommands(DialogueLine line)
+	IEnumerator RunCommands(DialogueLine line)
 	{
 		foreach (DialogueCommandData.Command command in line.Commands.CommandList)
 		{
-			Debug.Log("**********************************************************");
-			Debug.Log($"Name: {command.Name}");
-			foreach (string arg in command.Arguments)
-				Debug.Log($"Argument: {arg}");
+			if (command.IsWaiting)
+				yield return commandManager.Execute(command.Name, command.Arguments);
+			else
+				commandManager.Execute(command.Name, command.Arguments);
 		}
 	}
 

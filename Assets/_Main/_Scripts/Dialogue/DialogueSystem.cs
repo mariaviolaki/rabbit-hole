@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class DialogueSystem : MonoBehaviour
 {
+	[SerializeField] CommandManager commandManager;
 	[SerializeField] DialogueUI dialogueUI;
 	[SerializeField] InputManagerSO inputManager;
 	[SerializeField] FileManagerSO fileManager;
@@ -22,7 +23,7 @@ public class DialogueSystem : MonoBehaviour
 
 	void Start()
 	{
-		dialogueWriter = new DialogueWriter(this, dialogueUI);
+		dialogueWriter = new DialogueWriter(this, dialogueUI, commandManager);
 
 		fileManager.OnLoadTextFiles += CacheDialogueFiles;
 		inputManager.OnAdvance += AdvanceDialogue;
