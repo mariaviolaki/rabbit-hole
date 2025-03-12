@@ -22,11 +22,11 @@ namespace Dialogue
 			int dialogueLength = dialogueEnd - dialogueStart - 1;
 			int commandsLength = rawLine.Length - commandsStart;
 
-			if (dialogueStart > -1 && speakerLength > 0 && dialogueLength > 0)
-			{
+			if (speakerLength > 0)
 				speaker = rawLine.Substring(0, speakerLength)?.Trim();
+
+			if (dialogueStart > -1 && dialogueLength > 0)
 				dialogue = rawLine.Substring(dialogueStart + 1, dialogueLength)?.Replace("\\\"", "\"").Trim();
-			}
 
 			if (commandsLength > 0 && commandsStart > -1)
 				commands = rawLine.Substring(commandsStart, commandsLength)?.Trim();

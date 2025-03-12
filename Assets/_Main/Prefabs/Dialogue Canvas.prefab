@@ -115,6 +115,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52d9b1661af1036418ee6cbe2a011ffd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
   nameContainer: {fileID: 8687208883670774282}
   nameText: {fileID: 7400169804884489948}
   dialogueText: {fileID: 8542240235741087688}

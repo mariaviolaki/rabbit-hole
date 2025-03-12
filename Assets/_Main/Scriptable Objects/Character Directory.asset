@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08c16fedf16347a4a9c4a43b615c59ca, type: 3}
+  m_Name: Character Directory
+  m_EditorClassIdentifier: 
+  gameCharacters:
+  - name: Void
+    alias: v
+    type: 1
+    nameColor: {r: 0.84495085, g: 0.7075472, b: 1, a: 1}
+    dialogueColor: {r: 0.8387992, g: 0.8352941, b: 1, a: 1}
+    nameFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    dialogueFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

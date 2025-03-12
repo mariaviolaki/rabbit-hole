@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-[CreateAssetMenu(fileName = "FileManager", menuName = "Scriptable Objects/File Manager")]
+[CreateAssetMenu(fileName = "File Manager", menuName = "Scriptable Objects/File Manager")]
 public class FileManagerSO : ScriptableObject
 {
 	public Action<List<TextAsset>> OnLoadTextFiles;

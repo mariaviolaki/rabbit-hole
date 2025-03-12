@@ -1,3 +1,4 @@
+using Characters;
 using Commands;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,20 +8,22 @@ namespace Dialogue
 {
 	public class DialogueWriter
 	{
-		DialogueSystem dialogueSystem;
-		DialogueUI dialogueUI;
-		CommandManager commandManager;
-		TextBuilder textBuilder;
+		readonly DialogueSystem dialogueSystem;
+		readonly DialogueUI dialogueUI;
+		readonly CommandManager commandManager;
+		readonly TextBuilder textBuilder;
+		readonly CharacterManager characterManager;
 
 		Coroutine readProcess;
 
 		public bool IsRunning { get; set; }
 
-		public DialogueWriter(DialogueSystem dialogueSystem, DialogueUI dialogueUI, CommandManager commandManager)
+		public DialogueWriter(DialogueSystem dialogueSystem, DialogueUI dialogueUI, CommandManager commandManager, CharacterManager characterManager)
 		{
 			this.dialogueSystem = dialogueSystem;
 			this.dialogueUI = dialogueUI;
 			this.commandManager = commandManager;
+			this.characterManager = characterManager;
 
 			textBuilder = new TextBuilder(dialogueUI.DialogueText);
 		}
@@ -83,7 +86,7 @@ namespace Dialogue
 
 				if (!isSpeakerSet)
 				{
-					SetSpeaker(line.Speaker.DisplayName);
+					SetSpeaker(line.Speaker);
 					isSpeakerSet = true;
 				}
 
@@ -120,12 +123,17 @@ namespace Dialogue
 			}
 		}
 
-		void SetSpeaker(string speakerName)
+		void SetSpeaker(DialogueSpeakerData speaker)
 		{
-			if (speakerName == null)
+			if (speaker == null)
+			{
 				dialogueUI.HideSpeaker();
+			}
 			else
-				dialogueUI.ShowSpeaker(speakerName);
+			{
+				Character character = characterManager.GetCharacter(speaker.Name);
+				dialogueUI.ShowSpeaker(character.Data);
+			}
 		}
 	}
 }

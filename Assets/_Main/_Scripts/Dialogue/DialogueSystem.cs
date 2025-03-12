@@ -1,3 +1,4 @@
+using Characters;
 using Commands;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,6 +10,7 @@ namespace Dialogue
 	public class DialogueSystem : MonoBehaviour
 	{
 		[SerializeField] CommandManager commandManager;
+		[SerializeField] CharacterManager characterManager;
 		[SerializeField] DialogueUI dialogueUI;
 		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] FileManagerSO fileManager;
@@ -26,7 +28,7 @@ namespace Dialogue
 
 		void Start()
 		{
-			dialogueWriter = new DialogueWriter(this, dialogueUI, commandManager);
+			dialogueWriter = new DialogueWriter(this, dialogueUI, commandManager, characterManager);
 
 			fileManager.OnLoadTextFiles += CacheDialogueFiles;
 			inputManager.OnAdvance += AdvanceDialogue;
