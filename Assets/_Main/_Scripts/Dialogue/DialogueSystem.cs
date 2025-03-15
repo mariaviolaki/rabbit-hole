@@ -2,6 +2,7 @@ using Characters;
 using Commands;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -16,6 +17,9 @@ namespace Dialogue
 		[SerializeField] CharacterManager characterManager;
 		[SerializeField] DialogueUI dialogueUI;
 		[SerializeField] AssetLabelReference dialogueLabel;
+
+		// TODO Delete after testing
+		[SerializeField] TMP_FontAsset testFont;
 
 		DialogueReader dialogueReader;
 
@@ -118,7 +122,19 @@ namespace Dialogue
 		IEnumerator RunTest()
 		{
 			yield return characterManager.GetCharacter("Void")?.Say("Testing,{a 0.5} testing...");
+
+			characterManager.GetCharacter("Void").Data.NameColor = Color.green;
+			characterManager.GetCharacter("Void").Data.DialogueColor = Color.yellow;
+			characterManager.GetCharacter("Void").Data.NameFont = testFont;
+			characterManager.GetCharacter("Void").Data.DialogueFont = testFont;
+
+			yield return characterManager.GetCharacter("Void")?.Say("Testing,{a 0.5} testing...");
+
+			characterManager.GetCharacter("Void").ResetData();
+
+			yield return characterManager.GetCharacter("Void")?.Say("Testing,{a 0.5} testing...");
 			yield return characterManager.GetCharacter("Un-Void")?.Say(new List<string> { "Is...", "...this...", "...working?" });
+			yield return characterManager.GetCharacter("Void")?.Say("Should be working...");
 			yield return characterManager.GetCharacter("")?.Say("Error Check 1");
 			yield return characterManager.GetCharacter(null)?.Say("Error Check 2");
 		}

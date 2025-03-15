@@ -15,8 +15,8 @@ MonoBehaviour:
   gameCharacters:
   - name: Void
     alias: v
-    type: 1
     nameColor: {r: 0.84495085, g: 0.7075472, b: 1, a: 1}
     dialogueColor: {r: 0.8387992, g: 0.8352941, b: 1, a: 1}
-    nameFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-    dialogueFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
+    dialogueFont: {fileID: 11400000, guid: c85ed5e6ef07ade4eba8182e447d5a87, type: 2}
+    type: 1

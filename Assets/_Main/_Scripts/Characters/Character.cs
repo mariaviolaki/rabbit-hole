@@ -14,6 +14,11 @@ namespace Characters
 			Data = Manager.Directory.GetCharacterData(name, Manager.GameOptions);
 		}
 
+		public void ResetData()
+		{
+			Data = Manager.Directory.GetCharacterData(Data.Name, Manager.GameOptions);
+		}
+
 		public Coroutine Say(string dialogueLine)
 		{
 			return Manager.Dialogue.Say(Data.Name, dialogueLine);
