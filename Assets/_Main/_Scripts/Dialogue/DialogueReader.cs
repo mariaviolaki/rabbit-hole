@@ -1,92 +1,102 @@
-using Characters;
-using Commands;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Dialogue
 {
-	public class DialogueWriter
+	public class DialogueReader
 	{
 		readonly DialogueSystem dialogueSystem;
-		readonly DialogueUI dialogueUI;
-		readonly CommandManager commandManager;
 		readonly TextBuilder textBuilder;
-		readonly CharacterManager characterManager;
 
 		Coroutine readProcess;
 
 		public bool IsRunning { get; set; }
 
-		public DialogueWriter(DialogueSystem dialogueSystem, DialogueUI dialogueUI, CommandManager commandManager, CharacterManager characterManager)
+		public DialogueReader(DialogueSystem dialogueSystem, DialogueUI dialogueUI)
 		{
 			this.dialogueSystem = dialogueSystem;
-			this.dialogueUI = dialogueUI;
-			this.commandManager = commandManager;
-			this.characterManager = characterManager;
-
 			textBuilder = new TextBuilder(dialogueUI.DialogueText);
 		}
 
-		public void StartWriting(List<string> lines)
+		public Coroutine StartReading(List<string> lines)
 		{
-			if (lines == null) return;
+			if (lines == null) return null;
 
+			PrepareDialogue();
+
+			readProcess = dialogueSystem.StartCoroutine(Read(lines));
+			return readProcess;
+		}
+
+		public Coroutine StartReading(string speakerName, List<string> lines)
+		{
+			if (lines == null) return null;
+
+			PrepareDialogue();
+
+			readProcess = dialogueSystem.StartCoroutine(Read(speakerName, lines));
+			return readProcess;
+		}
+
+		void PrepareDialogue()
+		{
+			// End any prior writing process
 			if (readProcess != null)
-			{
 				dialogueSystem.StopCoroutine(readProcess);
-			}
+
+			textBuilder.Speed = dialogueSystem.GameOptions.TextSpeed;
 
 			// Start paused and wait for player input
 			IsRunning = false;
-
-			readProcess = dialogueSystem.StartCoroutine(Read(lines));
 		}
 
-		public IEnumerator Read(List<string> lines)
+		// Read lines directly from dialogue files (each line includes: speaker, dialogue, commands)
+		IEnumerator Read(List<string> lines)
 		{
 			yield return new WaitUntil(() => IsRunning);
 
-			textBuilder.Speed = dialogueSystem.TextSpeed;
-
 			foreach (string line in lines)
 			{
-				Debug.Log($"Parsing: {line}");
-
 				if (string.IsNullOrEmpty(line)) continue;
 
 				DialogueLine dialogueLine = DialogueParser.Parse(line);
 
 				if (dialogueLine.Dialogue != null)
-					yield return DisplayDialogue(dialogueLine);
+					yield return DisplayDialogue(dialogueLine, false);
 
 				if (dialogueLine.Commands != null)
-					yield return RunCommands(dialogueLine);
+					yield return dialogueSystem.RunCommands(dialogueLine.Commands.CommandList);
 			}
 		}
 
-		IEnumerator RunCommands(DialogueLine line)
+		// Read a list of dialogue lines spoken by a certain character
+		IEnumerator Read(string speakerName, List<string> lines)
 		{
-			foreach (DialogueCommandData.Command command in line.Commands.CommandList)
+			yield return new WaitUntil(() => IsRunning);
+
+			dialogueSystem.SetSpeaker(speakerName);
+
+			foreach (string line in lines)
 			{
-				if (command.IsWaiting)
-					yield return commandManager.Execute(command.Name, command.Arguments);
-				else
-					commandManager.Execute(command.Name, command.Arguments);
+				if (string.IsNullOrEmpty(line)) continue;
+
+				DialogueLine dialogueLine = DialogueParser.Parse(line);
+
+				if (dialogueLine.Dialogue != null)
+					yield return DisplayDialogue(dialogueLine, true);
 			}
 		}
 
-		IEnumerator DisplayDialogue(DialogueLine line)
+		IEnumerator DisplayDialogue(DialogueLine line, bool isSpeakerSet)
 		{
-			bool isSpeakerSet = false;
-
 			foreach (DialogueTextData.Segment segment in line.Dialogue.Segments)
 			{
 				yield return WaitForNextDialogueSegment(segment);
 
 				if (!isSpeakerSet)
 				{
-					SetSpeaker(line.Speaker);
+					dialogueSystem.SetSpeaker(line.Speaker?.Name);
 					isSpeakerSet = true;
 				}
 
@@ -112,27 +122,14 @@ namespace Dialogue
 			while (true)
 			{
 				if (segment.IsAppended)
-					textBuilder.Append(segment.Text, dialogueSystem.TextMode);
+					textBuilder.Append(segment.Text, dialogueSystem.GameOptions.TextMode);
 				else
-					textBuilder.Write(segment.Text, dialogueSystem.TextMode);
+					textBuilder.Write(segment.Text, dialogueSystem.GameOptions.TextMode);
 
 				IsRunning = false;
 				yield return new WaitUntil(() => IsRunning || !textBuilder.IsBuilding);
 
 				if (!textBuilder.IsBuilding) break;
-			}
-		}
-
-		void SetSpeaker(DialogueSpeakerData speaker)
-		{
-			if (speaker == null)
-			{
-				dialogueUI.HideSpeaker();
-			}
-			else
-			{
-				Character character = characterManager.GetCharacter(speaker.Name);
-				dialogueUI.ShowSpeaker(character.Data);
 			}
 		}
 	}

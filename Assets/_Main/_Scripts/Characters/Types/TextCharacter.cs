@@ -4,8 +4,7 @@ namespace Characters
 {
 	public class TextCharacter : Character
 	{
-		public TextCharacter(string name, CharacterDirectorySO directory, GameOptionsSO options)
-			: base(name, directory, options)
+		public TextCharacter(string name, CharacterManager characterManager) : base(name, characterManager)
 		{
 			Debug.Log("Created Text Character");
 		}

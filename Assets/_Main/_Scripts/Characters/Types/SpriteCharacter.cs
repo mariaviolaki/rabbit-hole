@@ -4,8 +4,7 @@ namespace Characters
 {
 	public class SpriteCharacter : Character
 	{
-		public SpriteCharacter(string name, CharacterDirectorySO directory, GameOptionsSO options)
-			: base(name, directory, options)
+		public SpriteCharacter(string name, CharacterManager characterManager) : base(name, characterManager)
 		{
 			Debug.Log("Created Sprite Character");
 		}

@@ -1,3 +1,4 @@
+using Dialogue;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,12 +8,19 @@ namespace Characters
 	{
 		[SerializeField] GameOptionsSO gameOptions;
 		[SerializeField] CharacterDirectorySO characterDirectory;
+		[SerializeField] DialogueSystem dialogueSystem;
 		[SerializeField] RectTransform characterContainer;
 
 		Dictionary<string, Character> characters = new Dictionary<string, Character>();
 
+		public GameOptionsSO GameOptions { get { return gameOptions; } }
+		public CharacterDirectorySO Directory { get { return characterDirectory; } }
+		public DialogueSystem Dialogue { get { return dialogueSystem; } }
+
 		public Character GetCharacter(string name)
 		{
+			if (name == null) return null;
+
 			if (!characters.ContainsKey(name))
 				CreateCharacter(name);
 
@@ -23,14 +31,14 @@ namespace Characters
 		{
 			CharacterData data = characterDirectory.GetCharacterData(name, gameOptions);
 
-			switch (data.type)
+			switch (data.Type)
 			{
 				case CharacterType.Sprite:
-					characters[name] = new SpriteCharacter(name, characterDirectory, gameOptions);
+					characters[name] = new SpriteCharacter(name, this);
 					break;
 				case CharacterType.Text:
 				default:
-					characters[name] = new TextCharacter(name, characterDirectory, gameOptions);
+					characters[name] = new TextCharacter(name, this);
 					break;
 			}
 		}

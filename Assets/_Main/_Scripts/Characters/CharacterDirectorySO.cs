@@ -19,12 +19,9 @@ namespace Characters
 		public CharacterData GetCharacterData(string name, GameOptionsSO gameOptions)
 		{
 			if (characters.ContainsKey(name))
-				return characters[name];
+				return characters[name].Copy();
 
-			CharacterData defaultData = CharacterData.GetDefault(gameOptions);
-			defaultData.name = name;
-
-			return defaultData;
+			return CharacterData.GetDefault(name, gameOptions);
 		}
 
 		void OnEnable()
@@ -32,7 +29,7 @@ namespace Characters
 			// Convert the array to a dictionary for fast lookups
 			foreach (CharacterData character in gameCharacters)
 			{
-				characters.Add(character.name, character);
+				characters.Add(character.Name, character);
 			}
 		}
 	}

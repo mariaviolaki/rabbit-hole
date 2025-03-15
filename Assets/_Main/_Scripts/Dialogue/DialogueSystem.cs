@@ -1,34 +1,32 @@
 using Characters;
 using Commands;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
-using UnityEngine.SceneManagement;
 
 namespace Dialogue
 {
 	public class DialogueSystem : MonoBehaviour
 	{
+		[SerializeField] GameOptionsSO gameOptions;
+		[SerializeField] InputManagerSO inputManager;
+		[SerializeField] FileManagerSO fileManager;
 		[SerializeField] CommandManager commandManager;
 		[SerializeField] CharacterManager characterManager;
 		[SerializeField] DialogueUI dialogueUI;
-		[SerializeField] InputManagerSO inputManager;
-		[SerializeField] FileManagerSO fileManager;
 		[SerializeField] AssetLabelReference dialogueLabel;
-		[SerializeField][Range(1, 12)] float textSpeed;
-		[SerializeField] TextBuilder.TextMode textMode;
 
-		DialogueWriter dialogueWriter;
+		DialogueReader dialogueReader;
 
 		Dictionary<string, DialogueFile> dialogueFiles = new Dictionary<string, DialogueFile>();
 		string currentDialogueFile;
 
-		public float TextSpeed { get { return textSpeed; } }
-		public TextBuilder.TextMode TextMode { get { return textMode; } }
+		public GameOptionsSO GameOptions { get { return gameOptions; } }
 
 		void Start()
 		{
-			dialogueWriter = new DialogueWriter(this, dialogueUI, commandManager, characterManager);
+			dialogueReader = new DialogueReader(this, dialogueUI);
 
 			fileManager.OnLoadTextFiles += CacheDialogueFiles;
 			inputManager.OnAdvance += AdvanceDialogue;
@@ -46,7 +44,41 @@ namespace Dialogue
 			// TODO remove test functionality
 			else if (Input.GetKeyDown(KeyCode.T))
 			{
-				RunTest();
+				StartCoroutine(RunTest());
+			}
+		}
+
+		public Coroutine Say(string speakerName, string line)
+		{
+			return Say(speakerName, new List<string> { line });
+		}
+
+		public Coroutine Say(string speakerName, List<string> lines)
+		{
+			return dialogueReader.StartReading(speakerName, lines);
+		}
+
+		public void SetSpeaker(string speakerName)
+		{
+			if (string.IsNullOrEmpty(speakerName))
+			{
+				dialogueUI.HideSpeaker();
+			}
+			else
+			{
+				Character character = characterManager.GetCharacter(speakerName);
+				dialogueUI.ShowSpeaker(character.Data);
+			}
+		}
+
+		public IEnumerator RunCommands(List<DialogueCommandData.Command> commandList)
+		{
+			foreach (DialogueCommandData.Command command in commandList)
+			{
+				if (command.IsWaiting)
+					yield return commandManager.Execute(command.Name, command.Arguments);
+				else
+					commandManager.Execute(command.Name, command.Arguments);
 			}
 		}
 
@@ -57,19 +89,19 @@ namespace Dialogue
 			fileManager.LoadTextFiles(dialogueLabel);
 		}
 
-		void StartDialogue()
+		Coroutine StartDialogue()
 		{
-			if (currentDialogueFile == null) return;
+			if (currentDialogueFile == null) return null;
 
 			DialogueFile dialogueFile = dialogueFiles[currentDialogueFile];
-			dialogueWriter.StartWriting(dialogueFile.Lines);
+			return dialogueReader.StartReading(dialogueFile.Lines);
 		}
 
 		void AdvanceDialogue()
 		{
-			if (dialogueWriter.IsRunning) return;
+			if (dialogueReader.IsRunning) return;
 
-			dialogueWriter.IsRunning = true;
+			dialogueReader.IsRunning = true;
 		}
 
 		void CacheDialogueFiles(List<TextAsset> textAssets)
@@ -83,11 +115,12 @@ namespace Dialogue
 		}
 
 		// TODO remove test function
-		void RunTest()
+		IEnumerator RunTest()
 		{
-			int sceneIndex = SceneManager.GetActiveScene().buildIndex;
-			int nextSceneIndex = sceneIndex + 1 == SceneManager.sceneCountInBuildSettings ? 0 : sceneIndex + 1;
-			SceneManager.LoadScene(nextSceneIndex);
+			yield return characterManager.GetCharacter("Void")?.Say("Testing,{a 0.5} testing...");
+			yield return characterManager.GetCharacter("Un-Void")?.Say(new List<string> { "Is...", "...this...", "...working?" });
+			yield return characterManager.GetCharacter("")?.Say("Error Check 1");
+			yield return characterManager.GetCharacter(null)?.Say("Error Check 2");
 		}
 	}
 }

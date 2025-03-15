@@ -31,6 +31,10 @@ namespace Dialogue
 			if (commandsLength > 0 && commandsStart > -1)
 				commands = rawLine.Substring(commandsStart, commandsLength)?.Trim();
 
+			// If this dialogue line isn't correctly formed, assume it's raw dialogue
+			if (speaker == string.Empty && dialogue == string.Empty && commands == string.Empty)
+				dialogue = rawLine.Replace("\\\"", "\"").Trim();
+
 			return new DialogueLine(speaker, dialogue, commands);
 		}
 

@@ -1,12 +1,27 @@
+using System.Collections.Generic;
+using UnityEngine;
+
 namespace Characters
 {
 	public abstract class Character
 	{
+		public CharacterManager Manager { get; private set; }
 		public CharacterData Data { get; private set; }
 
-		public Character(string name, CharacterDirectorySO directory, GameOptionsSO options)
+		public Character(string name, CharacterManager characterManager)
 		{
-			Data = directory.GetCharacterData(name, options);
+			Manager = characterManager;
+			Data = Manager.Directory.GetCharacterData(name, Manager.GameOptions);
+		}
+
+		public Coroutine Say(string dialogueLine)
+		{
+			return Manager.Dialogue.Say(Data.Name, dialogueLine);
+		}
+
+		public Coroutine Say(List<string> dialogueLines)
+		{
+			return Manager.Dialogue.Say(Data.Name, dialogueLines);
 		}
 	}
 }
