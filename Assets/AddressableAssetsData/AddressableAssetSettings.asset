@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: d3c9d180fd290d04a98c72f655148502
   m_currentHash:
     serializedVersion: 2
-    Hash: b5a5389140df3670b96912c266c4125a
+    Hash: 00000000000000000000000000000000
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_BundleLocalCatalog: 0
@@ -86,12 +86,8 @@ MonoBehaviour:
     m_ProfileVersion: 1
   m_LabelTable:
     m_LabelNames:
-    - Dialogue Part 1
-    - Dialogue Part 2
-    - Dialogue Part 3
-    - Dialogue Part 4
-    - Dialogue Part 5
-    - Dialogue Part 6
+    - Character Prefab
+    - Dialogue File
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 3f672e8c8583c344b8ea9ea75ac4d7aa, type: 2}

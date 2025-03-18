@@ -8,7 +8,11 @@ namespace Characters
 		public CharacterManager Manager { get; private set; }
 		public CharacterData Data { get; private set; }
 
-		public Character(string name, CharacterManager characterManager)
+		public virtual bool IsChangingVisibility() { return false; }
+		public virtual Coroutine Show() { return null; }
+		public virtual Coroutine Hide() { return null; }
+
+		public Character(CharacterManager characterManager, string name)
 		{
 			Manager = characterManager;
 			Data = Manager.Directory.GetCharacterData(name, Manager.GameOptions);

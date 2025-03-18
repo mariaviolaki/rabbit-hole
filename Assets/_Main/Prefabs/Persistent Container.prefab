@@ -95,6 +95,10 @@ PrefabInstance:
       propertyPath: characterManager
       value: 
       objectReference: {fileID: 3773477882016517355}
+    - target: {fileID: 6154280304512614437, guid: 2582ee32841d1f543bfc59d570deda1e, type: 3}
+      propertyPath: dialogueFileName
+      value: Test 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7996810330589379808, guid: 2582ee32841d1f543bfc59d570deda1e, type: 3}
       propertyPath: m_Name
       value: Dialogue System
@@ -249,6 +253,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 529467468367329143, guid: 78ca417e2e7ec094b80276d10bb9e543, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 543314958410004676, guid: 78ca417e2e7ec094b80276d10bb9e543, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -325,6 +333,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3119639360513967583, guid: 78ca417e2e7ec094b80276d10bb9e543, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3485628841208562490, guid: 78ca417e2e7ec094b80276d10bb9e543, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3537872901994347493, guid: 78ca417e2e7ec094b80276d10bb9e543, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -347,6 +363,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3537872901994347493, guid: 78ca417e2e7ec094b80276d10bb9e543, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4902007056401702663, guid: 78ca417e2e7ec094b80276d10bb9e543, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5752884755742961671, guid: 78ca417e2e7ec094b80276d10bb9e543, type: 3}

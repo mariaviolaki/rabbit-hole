@@ -4,9 +4,9 @@ namespace Characters
 {
 	public class TextCharacter : Character
 	{
-		public TextCharacter(string name, CharacterManager characterManager) : base(name, characterManager)
+		public TextCharacter(CharacterManager characterManager, string name) : base(characterManager, name)
 		{
-			Debug.Log("Created Text Character");
+			Debug.Log($"Created Text Character: {name}");
 		}
 	}
 }

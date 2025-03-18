@@ -2,9 +2,9 @@ using Characters;
 using Commands;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 
 namespace Dialogue
 {
@@ -16,15 +16,13 @@ namespace Dialogue
 		[SerializeField] CommandManager commandManager;
 		[SerializeField] CharacterManager characterManager;
 		[SerializeField] DialogueUI dialogueUI;
-		[SerializeField] AssetLabelReference dialogueLabel;
+		[SerializeField] string dialogueFileName; // TODO get dynamically
 
 		// TODO Delete after testing
 		[SerializeField] TMP_FontAsset testFont;
 
 		DialogueReader dialogueReader;
-
-		Dictionary<string, DialogueFile> dialogueFiles = new Dictionary<string, DialogueFile>();
-		string currentDialogueFile;
+		DialogueFile dialogueFile;
 
 		public GameOptionsSO GameOptions { get { return gameOptions; } }
 
@@ -32,10 +30,7 @@ namespace Dialogue
 		{
 			dialogueReader = new DialogueReader(this, dialogueUI);
 
-			fileManager.OnLoadTextFiles += CacheDialogueFiles;
 			inputManager.OnAdvance += AdvanceDialogue;
-
-			LoadDialogueFiles();
 		}
 
 		void Update()
@@ -43,7 +38,7 @@ namespace Dialogue
 			// TODO start dialogue using other triggers
 			if (Input.GetKeyDown(KeyCode.Return))
 			{
-				StartDialogue();
+				StartDialogueFromFile();
 			}
 			// TODO remove test functionality
 			else if (Input.GetKeyDown(KeyCode.T))
@@ -86,18 +81,12 @@ namespace Dialogue
 			}
 		}
 
-		void LoadDialogueFiles()
+		async Task<Coroutine> StartDialogueFromFile()
 		{
-			if (dialogueLabel == null) return;
+			TextAsset dialogueAsset = await fileManager.LoadDialogueFile(dialogueFileName);
+			if (dialogueAsset == null) return null;
 
-			fileManager.LoadTextFiles(dialogueLabel);
-		}
-
-		Coroutine StartDialogue()
-		{
-			if (currentDialogueFile == null) return null;
-
-			DialogueFile dialogueFile = dialogueFiles[currentDialogueFile];
+			dialogueFile = new DialogueFile(dialogueAsset.name, dialogueAsset.text);
 			return dialogueReader.StartReading(dialogueFile.Lines);
 		}
 
@@ -108,35 +97,29 @@ namespace Dialogue
 			dialogueReader.IsRunning = true;
 		}
 
-		void CacheDialogueFiles(List<TextAsset> textAssets)
-		{
-			currentDialogueFile = textAssets[0].name;
-
-			foreach (TextAsset textAsset in textAssets)
-			{
-				dialogueFiles[textAsset.name] = new DialogueFile(textAsset.name, textAsset.text);
-			}
-		}
-
 		// TODO remove test function
 		IEnumerator RunTest()
 		{
-			yield return characterManager.GetCharacter("Void")?.Say("Testing,{a 0.5} testing...");
+			Task vTask = characterManager.CreateCharacter("Void");
 
-			characterManager.GetCharacter("Void").Data.NameColor = Color.green;
-			characterManager.GetCharacter("Void").Data.DialogueColor = Color.yellow;
-			characterManager.GetCharacter("Void").Data.NameFont = testFont;
-			characterManager.GetCharacter("Void").Data.DialogueFont = testFont;
+			while (!vTask.IsCompleted) yield return null;
 
-			yield return characterManager.GetCharacter("Void")?.Say("Testing,{a 0.5} testing...");
+			Character v = characterManager.GetCharacter("Void");
+			Character uv = characterManager.GetCharacter("Un-Void");
 
-			characterManager.GetCharacter("Void").ResetData();
+			yield return v.Say("Testing,{a 0.5} testing...");
+			yield return uv.Say("Testing,{a 0.5} testing...");
 
-			yield return characterManager.GetCharacter("Void")?.Say("Testing,{a 0.5} testing...");
-			yield return characterManager.GetCharacter("Un-Void")?.Say(new List<string> { "Is...", "...this...", "...working?" });
-			yield return characterManager.GetCharacter("Void")?.Say("Should be working...");
-			yield return characterManager.GetCharacter("")?.Say("Error Check 1");
-			yield return characterManager.GetCharacter(null)?.Say("Error Check 2");
+			yield return v.Show();
+			yield return v.Say("Testing,{a 0.5} testing...");
+
+			v.Data.NameColor = Color.green;
+			v.Data.DialogueColor = Color.yellow;
+			v.Data.NameFont = testFont;
+			v.Data.DialogueFont = testFont;
+
+			yield return v.Hide();
+			yield return v.Say("Testing,{a 0.5} testing...");
 		}
 	}
 }

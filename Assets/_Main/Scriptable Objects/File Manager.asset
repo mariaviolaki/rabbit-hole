@@ -12,3 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb211cb578ecf2f4ebafa535438063ae, type: 3}
   m_Name: File Manager
   m_EditorClassIdentifier: 
+  characterPrefabLabel:
+    m_LabelString: Character Prefab
+  dialogueFileLabel:
+    m_LabelString: Dialogue File

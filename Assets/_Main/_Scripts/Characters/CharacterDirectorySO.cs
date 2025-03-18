@@ -21,6 +21,11 @@ namespace Characters
 			if (characters.ContainsKey(name))
 				return characters[name].Copy();
 
+			return GetDefaultData(name, gameOptions);
+		}
+
+		public CharacterData GetDefaultData(string name, GameOptionsSO gameOptions)
+		{
 			return CharacterData.GetDefault(name, gameOptions);
 		}
 
