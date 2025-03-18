@@ -8,11 +8,11 @@ namespace Characters
 		RectTransform root;
 		Coroutine visibilityProcess;
 
-		public SpriteCharacter(CharacterManager characterManager, string name, GameObject rootGameObject)
-			: base(characterManager, name)
+		public SpriteCharacter(CharacterManager characterManager, CharacterData data, GameObject rootGameObject)
+			: base(characterManager, data)
 		{
 			InitRoot(rootGameObject);
-			Debug.Log($"Created Sprite Character: {name}");
+			Debug.Log($"Created Sprite Character: {data.Name}");
 		}
 
 		void InitRoot(GameObject rootGameObject)

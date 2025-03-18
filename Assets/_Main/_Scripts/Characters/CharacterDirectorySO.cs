@@ -16,10 +16,10 @@ namespace Characters
 			return characters.ContainsKey(name);
 		}
 
-		public CharacterData GetCharacterData(string name, GameOptionsSO gameOptions)
+		public CharacterData GetCharacterData(string name, string castName, GameOptionsSO gameOptions)
 		{
-			if (characters.ContainsKey(name))
-				return characters[name].Copy();
+			if (characters.ContainsKey(castName))
+				return CharacterData.Get(name, characters[castName]);
 
 			return GetDefaultData(name, gameOptions);
 		}

@@ -48,14 +48,12 @@ namespace Dialogue
 			textBuilder.Speed = dialogueSystem.GameOptions.TextSpeed;
 
 			// Start paused and wait for player input
-			IsRunning = false;
+			IsRunning = true;
 		}
 
 		// Read lines directly from dialogue files (each line includes: speaker, dialogue, commands)
 		IEnumerator Read(List<string> lines)
 		{
-			yield return new WaitUntil(() => IsRunning);
-
 			foreach (string line in lines)
 			{
 				if (string.IsNullOrEmpty(line)) continue;
@@ -68,13 +66,14 @@ namespace Dialogue
 				if (dialogueLine.Commands != null)
 					yield return dialogueSystem.RunCommands(dialogueLine.Commands.CommandList);
 			}
+
+			IsRunning = false;
+			yield return new WaitUntil(() => IsRunning);
 		}
 
 		// Read a list of dialogue lines spoken by a certain character
 		IEnumerator Read(string speakerName, List<string> lines)
 		{
-			yield return new WaitUntil(() => IsRunning);
-
 			dialogueSystem.SetSpeaker(speakerName);
 
 			foreach (string line in lines)
@@ -86,6 +85,9 @@ namespace Dialogue
 				if (dialogueLine.Dialogue != null)
 					yield return DisplayDialogue(dialogueLine, true);
 			}
+
+			IsRunning = false;
+			yield return new WaitUntil(() => IsRunning);
 		}
 
 		IEnumerator DisplayDialogue(DialogueLine line, bool isSpeakerSet)

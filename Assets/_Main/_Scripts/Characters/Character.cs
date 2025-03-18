@@ -12,15 +12,15 @@ namespace Characters
 		public virtual Coroutine Show() { return null; }
 		public virtual Coroutine Hide() { return null; }
 
-		public Character(CharacterManager characterManager, string name)
+		public Character(CharacterManager characterManager, CharacterData data)
 		{
 			Manager = characterManager;
-			Data = Manager.Directory.GetCharacterData(name, Manager.GameOptions);
+			Data = data;
 		}
 
 		public void ResetData()
 		{
-			Data = Manager.Directory.GetCharacterData(Data.Name, Manager.GameOptions);
+			Data = Manager.Directory.GetCharacterData(Data.Name, Data.CastName, Manager.GameOptions);
 		}
 
 		public Coroutine Say(string dialogueLine)
