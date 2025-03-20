@@ -101,43 +101,23 @@ namespace Dialogue
 		IEnumerator RunTest()
 		{
 			Task vTask = characterManager.CreateCharacter("Void");
-			Task v2Task = characterManager.CreateCharacter("Mirror Void", "Void");
 
-			while (!vTask.IsCompleted || !v2Task.IsCompleted) yield return null;
+			while (!vTask.IsCompleted) yield return null;
 
 			Character v = characterManager.GetCharacter("Void");
-			Character v2 = characterManager.GetCharacter("Mirror Void");
-			Character uv = characterManager.GetCharacter("Un-Void");
 
-			v.Show();
-			yield return v.Say("Testing,{a 0.5} testing... {a}Again.");
-
-			v2.Show();
-			yield return v2.Say("Testing,{a 0.5} testing...");
-
-			uv.Show();
-			yield return uv.Say("Testing,{a 0.5} testing...");
-
-			v.Data.NameColor = Color.green;
-			v.Data.DialogueColor = Color.yellow;
-
-			v2.Data.NameColor = Color.blue;
-			v2.Data.DialogueColor = Color.cyan;
-
-			yield return v.Hide();
-			yield return v.Say("Testing,{a 0.5} testing...");
-
-			yield return v2.Hide();
-			yield return v2.Say("Testing,{a 0.5} testing...");
-
-			v.ResetData();
-			v2.ResetData();
-
+			v.SetPosition(new Vector2(0, 0));
 			v.Show();
 			yield return v.Say("Testing,{a 0.5} testing...");
 
-			v2.Show();
-			yield return v2.Say("Testing,{a 0.5} testing...");
+			v.MoveToPosition(new Vector2(1, 0), 10);	
+			yield return v.Say("Testing,{a 0.5} testing...");
+
+			v.MoveToPosition(new Vector2(1, 1), 10);
+			yield return v.Say("Testing,{a 0.5} testing...");
+
+			v.MoveToPosition(new Vector2(0, 0), 10);
+			yield return v.Say("Testing,{a 0.5} testing...");
 		}
 	}
 }

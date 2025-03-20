@@ -18,6 +18,7 @@ namespace Characters
 		public GameOptionsSO GameOptions { get { return gameOptions; } }
 		public CharacterDirectorySO Directory { get { return characterDirectory; } }
 		public DialogueSystem Dialogue { get { return dialogueSystem; } }
+		public RectTransform Container { get { return characterContainer; } }
 
 		public Task CreateCharacter(string name) => CreateCharacter(name, name);
 		public async Task CreateCharacter(string name, string castName)

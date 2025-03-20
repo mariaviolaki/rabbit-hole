@@ -11,6 +11,8 @@ namespace Characters
 		public virtual bool IsChangingVisibility() { return false; }
 		public virtual Coroutine Show() { return null; }
 		public virtual Coroutine Hide() { return null; }
+		public virtual Coroutine MoveToPosition(Vector2 position, float speed) { return null; }
+		public virtual void SetPosition(Vector2 position) { }
 
 		public Character(CharacterManager characterManager, CharacterData data)
 		{
