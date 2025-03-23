@@ -1,29 +1,77 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.U2D;
+using UnityEngine.UI;
 
 namespace Characters
 {
 	public class SpriteCharacter : Character
 	{
+		const string LayerContainerName = "Layers";
 		const float MoveSpeedMultiplier = 100000f;
 
 		RectTransform root;
+		CanvasGroup canvasGroup;
+		Animator animator;
+		SpriteAtlas spriteAtlas;
+		Dictionary<SpriteLayerType, CharacterSpriteLayer> spriteLayers;
+
 		Coroutine visibilityProcess;
 		Coroutine moveProcess;
 
-		public SpriteCharacter(CharacterManager characterManager, CharacterData data, GameObject rootGameObject)
-			: base(characterManager, data)
+		protected override async Task Init()
 		{
-			InitRoot(rootGameObject);
+			// Load this character's prefab into the scene
+			GameObject prefab = await Manager.FileManager.LoadCharacterPrefab(Data.CastName);
+			GameObject rootGameObject = UnityEngine.Object.Instantiate(prefab, Manager.Container);
 
-			Debug.Log($"Created Sprite Character: {data.Name}");
+			root = rootGameObject.GetComponent<RectTransform>();
+			canvasGroup = root.GetComponent<CanvasGroup>();
+			animator = root.GetComponentInChildren<Animator>();
+			spriteLayers = new Dictionary<SpriteLayerType, CharacterSpriteLayer>();
+
+			root.name = Data.Name;
+			canvasGroup.alpha = 0f;
+
+			spriteAtlas = await Manager.FileManager.LoadCharacterAtlas(Data.CastName);
+
+			InitSpriteLayers();
+
+			Debug.Log($"Created Sprite Character: {Data.Name}");
 		}
 
-		void InitRoot(GameObject rootGameObject)
+		void InitSpriteLayers()
 		{
-			root = rootGameObject.GetComponent<RectTransform>();
-			CanvasGroup canvasGroup = root.GetComponent<CanvasGroup>();
-			canvasGroup.alpha = 0f;
+			Transform layerParentContainer = animator.transform.Find(LayerContainerName);
+
+			foreach (Transform layerParent in layerParentContainer)
+			{
+				Image image = layerParent.GetComponentInChildren<Image>();
+				if (image == null) continue;
+
+				string layerName = layerParent.name;
+				if (Enum.TryParse(layerName, true, out SpriteLayerType layer))
+					spriteLayers[layer] = new CharacterSpriteLayer(layer, image, Manager);
+			}
+		}
+
+		public void SetSprite(SpriteLayerType layerType, string spriteName)
+		{
+			Sprite sprite = GetSprite(layerType, spriteName);
+			if (sprite == null) return;
+
+			spriteLayers[layerType].SetSprite(sprite);
+		}
+
+		public Coroutine TransitionSprite(SpriteLayerType layerType, string spriteName, float transitionSpeed = 0)
+		{
+			Sprite sprite = GetSprite(layerType, spriteName);
+			if (sprite == null) return null;
+
+			return spriteLayers[layerType].TransitionSprite(sprite, transitionSpeed);
 		}
 
 		public override void SetPosition(Vector2 normalizedPos)
@@ -33,7 +81,7 @@ namespace Characters
 
 		public override Coroutine MoveToPosition(Vector2 normalizedPos, float speed)
 		{
-			StopProcess(ref moveProcess);
+			Manager.StopProcess(ref moveProcess);
 
 			moveProcess = Manager.StartCoroutine(MoveCharacter(normalizedPos, speed));
 			return moveProcess;
@@ -41,7 +89,7 @@ namespace Characters
 
 		public override Coroutine Show()
 		{
-			StopProcess(ref visibilityProcess);
+			Manager.StopProcess(ref visibilityProcess);
 
 			visibilityProcess = Manager.StartCoroutine(ChangeVisibility(true));
 			return visibilityProcess;
@@ -49,7 +97,7 @@ namespace Characters
 
 		public override Coroutine Hide()
 		{
-			StopProcess(ref visibilityProcess);
+			Manager.StopProcess(ref visibilityProcess);
 
 			visibilityProcess = Manager.StartCoroutine(ChangeVisibility(false));
 			return visibilityProcess;
@@ -59,8 +107,6 @@ namespace Characters
 		{
 			float targetAlpha = isShowing ? 1f : 0f;
 			float visibilityChangeSpeed = isShowing ? Manager.GameOptions.CharacterShowSpeed : Manager.GameOptions.CharacterHideSpeed;
-
-			CanvasGroup canvasGroup = root.GetComponent<CanvasGroup>();
 
 			while (canvasGroup.alpha != targetAlpha)
 			{
@@ -92,6 +138,24 @@ namespace Characters
 			moveProcess = null;
 		}
 
+		Sprite GetSprite(SpriteLayerType layerType, string spriteName)
+		{
+			if (!spriteLayers.ContainsKey(layerType))
+			{
+				Debug.LogWarning($"'{layerType}' is not a valid sprite layer for {Data.CastName}");
+				return null;
+			}
+
+			Sprite sprite = spriteAtlas.GetSprite(spriteName);
+			if (sprite == null)
+			{
+				Debug.LogWarning($"'{spriteName}' was not found in {Data.CastName}'s sprites.");
+				return null;
+			}
+
+			return sprite;
+		}
+
 		Vector2 GetTargetPosition(Vector2 normalizedPos)
 		{
 			Vector2 parentSize = Manager.Container.rect.size;
@@ -105,14 +169,6 @@ namespace Characters
 			float clampedY = Mathf.Clamp(targetPos.y, minPos.y, maxPos.y);
 
 			return new Vector2(clampedX, clampedY);
-		}
-
-		void StopProcess(ref Coroutine process)
-		{
-			if (process == null) return;
-
-			Manager.StopCoroutine(process);
-			process = null;
 		}
 	}
 }

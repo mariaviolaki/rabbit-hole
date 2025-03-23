@@ -1,12 +1,13 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Characters
 {
 	public abstract class Character
 	{
-		public CharacterManager Manager { get; private set; }
-		public CharacterData Data { get; private set; }
+		public CharacterManager Manager { get; protected set; }
+		public CharacterData Data { get; protected set; }
 
 		public virtual bool IsChangingVisibility() { return false; }
 		public virtual Coroutine Show() { return null; }
@@ -14,10 +15,28 @@ namespace Characters
 		public virtual Coroutine MoveToPosition(Vector2 position, float speed) { return null; }
 		public virtual void SetPosition(Vector2 position) { }
 
-		public Character(CharacterManager characterManager, CharacterData data)
+		protected Character() { }
+		protected abstract Task Init();
+
+		public static async Task<T> Create<T>(CharacterManager characterManager, CharacterData data) where T : Character, new()
 		{
-			Manager = characterManager;
-			Data = data;
+			T character = new T();
+			character.Manager = characterManager;
+			character.Data = data;
+
+			// Perform any asyncronous operations needed for initialization
+			await character.Init();
+
+			return character;
+		}
+
+		public static TextCharacter CreateDefault(CharacterManager characterManager, CharacterData data)
+		{
+			TextCharacter textCharacter = new TextCharacter();
+			textCharacter.Manager = characterManager;
+			textCharacter.Data = data;
+
+			return textCharacter;
 		}
 
 		public void ResetData()

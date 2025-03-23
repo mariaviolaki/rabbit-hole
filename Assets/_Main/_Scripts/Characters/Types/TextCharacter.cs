@@ -1,13 +1,14 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Characters
 {
 	public class TextCharacter : Character
 	{
-		public TextCharacter(CharacterManager characterManager, CharacterData data)
-			: base(characterManager, data)
+		protected override Task Init()
 		{
-			Debug.Log($"Created Text Character: {data.Name}");
+			Debug.Log($"Created Text Character: {Data.Name}");
+			return Task.CompletedTask;
 		}
 	}
 }

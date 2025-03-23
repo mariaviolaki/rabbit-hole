@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: File Manager
   m_EditorClassIdentifier: 
   characterPrefabLabel:
-    m_LabelString: Character Prefab
+    m_LabelString: Prefabs/Characters
+  characterAtlasLabel:
+    m_LabelString: Sprite Atlas/Characters
   dialogueFileLabel:
-    m_LabelString: Dialogue File
+    m_LabelString: Dialogue

@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Void
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings:
+    - serializedVersion: 3
+      m_BuildTarget: DefaultTexturePlatform
+      m_MaxTextureSize: 4096
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: -1
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 0
+      m_IgnorePlatformSupport: 0
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: 084496dbf1c4bfd41bbdaac6bfdccb7d, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - c10eec9026ab1df4d83173903c06fc0b: 21300000
+    - 3d3f3273397d99a45be1484a664bbcc7: 21300000
+    - 3cc3d0e308b26114a86c60dcdc3034d3: 21300000
+    - e2e4dfb62ff5d3747b32976883d73b8e: 21300000
+    - 9c77d4c81987aec4c9c8f9dde09824f7: 21300000
+    - 5b8ff3eadec46d645aad9d3a417dbff2: 21300000
+    - 798d86dce7efc2b49962d46a71458dff: 21300000
+    - ba3d63beaa75a5042985e5a069e383a2: 21300000
+    - 05c04e4f90ff08944be9a1d50a0ddbfe: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: c10eec9026ab1df4d83173903c06fc0b, type: 3}
+  - {fileID: 21300000, guid: 3d3f3273397d99a45be1484a664bbcc7, type: 3}
+  - {fileID: 21300000, guid: 3cc3d0e308b26114a86c60dcdc3034d3, type: 3}
+  - {fileID: 21300000, guid: e2e4dfb62ff5d3747b32976883d73b8e, type: 3}
+  - {fileID: 21300000, guid: 9c77d4c81987aec4c9c8f9dde09824f7, type: 3}
+  - {fileID: 21300000, guid: 5b8ff3eadec46d645aad9d3a417dbff2, type: 3}
+  - {fileID: 21300000, guid: 798d86dce7efc2b49962d46a71458dff, type: 3}
+  - {fileID: 21300000, guid: ba3d63beaa75a5042985e5a069e383a2, type: 3}
+  - {fileID: 21300000, guid: 05c04e4f90ff08944be9a1d50a0ddbfe, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Void Face Evil
+  - Void Face Crazy
+  - Void Face Smug
+  - Void Face Neutral
+  - Void Face Annoyed
+  - Void Body Formal
+  - Void Face Flustered
+  - Void Body Yukata
+  - Void Body Casual
+  m_RenderDataMap: {}
+  m_Tag: Void
+  m_IsVariant: 0

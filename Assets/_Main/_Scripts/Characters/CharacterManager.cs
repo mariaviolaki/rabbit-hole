@@ -17,6 +17,7 @@ namespace Characters
 
 		public GameOptionsSO GameOptions { get { return gameOptions; } }
 		public CharacterDirectorySO Directory { get { return characterDirectory; } }
+		public FileManagerSO FileManager { get { return fileManager; } }
 		public DialogueSystem Dialogue { get { return dialogueSystem; } }
 		public RectTransform Container { get { return characterContainer; } }
 
@@ -24,17 +25,15 @@ namespace Characters
 		public async Task CreateCharacter(string name, string castName)
 		{
 			CharacterData data = characterDirectory.GetCharacterData(name, castName, gameOptions);
-			GameObject characterPrefab = data.Type == CharacterType.Text ? null : await fileManager.LoadCharacterPrefab(castName);
-			GameObject characterRoot = characterPrefab == null ? null : Instantiate(characterPrefab, characterContainer);
 
 			switch (data.Type)
 			{
 				case CharacterType.Sprite:
-					characters[name] = new SpriteCharacter(this, data, characterRoot);
+					characters[name] = await Character.Create<SpriteCharacter>(this, data);
 					break;
 				case CharacterType.Text:
 				default:
-					characters[name] = new TextCharacter(this, data);
+					characters[name] = await Character.Create<TextCharacter>(this, data);
 					break;
 			}
 		}
@@ -49,10 +48,18 @@ namespace Characters
 			return characters[name];
 		}
 
+		public void StopProcess(ref Coroutine process)
+		{
+			if (process == null) return;
+
+			StopCoroutine(process);
+			process = null;
+		}
+
 		void CreateDefaultCharacter(string name)
 		{
 			CharacterData data = characterDirectory.GetDefaultData(name, gameOptions);
-			characters[name] = new TextCharacter(this, data);
+			characters[name] = Character.CreateDefault(this, data);
 		}
 	}
 }

@@ -88,33 +88,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4607062197165118039, guid: 3f9f146e472f4d44b80e6efb8f30afcf, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: 1e5d6f1cf1388ed42ae82efb2080210e, type: 3}
-    - target: {fileID: 4607062197165118039, guid: 3f9f146e472f4d44b80e6efb8f30afcf, type: 3}
-      propertyPath: m_PreserveAspect
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848544023427202837, guid: 3f9f146e472f4d44b80e6efb8f30afcf, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 241.0278
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848544023427202837, guid: 3f9f146e472f4d44b80e6efb8f30afcf, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 217.4701
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848544023427202837, guid: 3f9f146e472f4d44b80e6efb8f30afcf, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 25
-      objectReference: {fileID: 0}
-    - target: {fileID: 4848544023427202837, guid: 3f9f146e472f4d44b80e6efb8f30afcf, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -81
-      objectReference: {fileID: 0}
     - target: {fileID: 5834099423250223821, guid: 3f9f146e472f4d44b80e6efb8f30afcf, type: 3}
       propertyPath: m_Name
-      value: Eccentric Guy Variant
+      value: Eccentric Guy
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

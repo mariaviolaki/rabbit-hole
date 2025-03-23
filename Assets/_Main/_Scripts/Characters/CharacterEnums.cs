@@ -4,4 +4,9 @@ namespace Characters
 	{
 		Text, Sprite
 	}
+
+	public enum SpriteLayerType
+	{
+		None, Body, Face
+	}
 }

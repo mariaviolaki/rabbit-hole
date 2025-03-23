@@ -14,6 +14,7 @@ public class GameOptionsSO : ScriptableObject
 	[Header("Characters")]
 	[SerializeField] float characterShowSpeed;
 	[SerializeField] float characterHideSpeed;
+	[SerializeField] float spriteTransitionSpeed;
 
 	public Color DefaultTextColor { get { return defaultTextColor; } }
 	public TMP_FontAsset DefaultFont { get { return defaultFont; } }
@@ -21,4 +22,5 @@ public class GameOptionsSO : ScriptableObject
 	public float TextSpeed { get { return textSpeed; } }
 	public float CharacterShowSpeed { get { return characterShowSpeed; } }
 	public float CharacterHideSpeed { get { return characterHideSpeed; } }
+	public float SpriteTransitionSpeed { get { return spriteTransitionSpeed; } }
 }

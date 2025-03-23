@@ -101,23 +101,35 @@ namespace Dialogue
 		IEnumerator RunTest()
 		{
 			Task vTask = characterManager.CreateCharacter("Void");
+			Task zTask = characterManager.CreateCharacter("Zero");
+			Task egTask = characterManager.CreateCharacter("Eccentric Guy");
+			Task v2Task = characterManager.CreateCharacter("Mirror Void", "Void");
 
-			while (!vTask.IsCompleted) yield return null;
+			yield return new WaitUntil(() => Task.WhenAll(vTask, zTask, egTask, v2Task).IsCompleted);
 
-			Character v = characterManager.GetCharacter("Void");
+			SpriteCharacter v = characterManager.GetCharacter("Void") as SpriteCharacter;
+			SpriteCharacter z = characterManager.GetCharacter("Zero") as SpriteCharacter;
+			SpriteCharacter eg = characterManager.GetCharacter("Eccentric Guy") as SpriteCharacter;
+			SpriteCharacter v2 = characterManager.GetCharacter("Mirror Void") as SpriteCharacter;
+
+			v.SetSprite(SpriteLayerType.Body, "Void Body Formal");
+			v.SetSprite(SpriteLayerType.Body, "Void Body Casua");
+			v.SetSprite(SpriteLayerType.Face, "Void Face Annoyed");
+			v.SetSprite(SpriteLayerType.None, "Void Face Neutral");
 
 			v.SetPosition(new Vector2(0, 0));
 			v.Show();
 			yield return v.Say("Testing,{a 0.5} testing...");
 
-			v.MoveToPosition(new Vector2(1, 0), 10);	
+			yield return v.TransitionSprite(SpriteLayerType.Face, "Void Face Smug");
+			yield return v.TransitionSprite(SpriteLayerType.Face, "Void Face Smug");
+			yield return new WaitForSeconds(1.5f);
+
+			v.MoveToPosition(new Vector2(0.5f, 0), 10);	
 			yield return v.Say("Testing,{a 0.5} testing...");
 
-			v.MoveToPosition(new Vector2(1, 1), 10);
-			yield return v.Say("Testing,{a 0.5} testing...");
-
-			v.MoveToPosition(new Vector2(0, 0), 10);
-			yield return v.Say("Testing,{a 0.5} testing...");
+			v.TransitionSprite(SpriteLayerType.Body, "Void Body Yukata", 1);
+			v.TransitionSprite(SpriteLayerType.Face, "Void Face Neutral", 1);
 		}
 	}
 }
