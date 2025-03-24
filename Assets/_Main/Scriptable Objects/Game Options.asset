@@ -19,3 +19,4 @@ MonoBehaviour:
   characterShowSpeed: 10
   characterHideSpeed: 10
   spriteTransitionSpeed: 10
+  colorTransitionSpeed: 10

@@ -6,15 +6,18 @@ namespace Characters
 {
 	public class CharacterSpriteLayer
 	{
-		const float FadeSpeedMultiplier = 0.5f;
+		const float SpriteTransitionMultiplier = 0.5f;
+		const float ColorTransitionMultiplier = 0.5f;
 
 		CharacterManager characterManager;
 		Image image;
 		CanvasGroup oldCanvasGroup;
 
-		Coroutine fadeProcess;
+		Coroutine spriteCoroutine;
+		Coroutine colorCoroutine;
 
 		public SpriteLayerType LayerType { get; private set; }
+		public bool IsChangingColor { get { return colorCoroutine != null; } }
 
 		public CharacterSpriteLayer(SpriteLayerType layerType, Image image, CharacterManager characterManager)
 		{
@@ -23,30 +26,61 @@ namespace Characters
 			LayerType = layerType;
 		}
 
-		public void SetSprite(Sprite sprite)
+		public Coroutine SetColor(Color color, float speed)
 		{
-			image.sprite = sprite;
+			if (image.color == color) return null;
+
+			if (colorCoroutine != null)
+				characterManager.StopProcess(ref colorCoroutine);
+
+			speed = speed <= 0 ? characterManager.GameOptions.ColorTransitionSpeed : speed;
+			spriteCoroutine = characterManager.StartCoroutine(TransitionColor(color, speed));
+			return spriteCoroutine;
 		}
 
-		public Coroutine TransitionSprite(Sprite sprite, float speed)
+		public Coroutine SetSprite(Sprite sprite, float speed)
 		{
 			if (image.sprite.name == sprite.name) return null;
-			else if (fadeProcess != null) return fadeProcess;
 
+			characterManager.StopProcess(ref spriteCoroutine);
 			ReplaceOldImage(sprite);
 
 			speed = speed <= 0 ? characterManager.GameOptions.SpriteTransitionSpeed : speed;
-			fadeProcess = characterManager.StartCoroutine(FadeSprites(speed));
-			return fadeProcess;
+			spriteCoroutine = characterManager.StartCoroutine(TransitionSprite(speed));
+			return spriteCoroutine;
 		}
 
-		IEnumerator FadeSprites(float speed)
+		IEnumerator TransitionColor(Color color, float speed)
+		{
+			Color startColor = image.color;
+			float progress = 0f;
+			float colorDistance = Vector4.Distance(startColor, color);
+
+			while (progress < 1f)
+			{
+				// Use the same speed for short and long distances
+				progress += (speed * ColorTransitionMultiplier * Time.deltaTime) / colorDistance;
+				progress = Mathf.Clamp01(progress);
+
+				// Ease in & out
+				float smoothProgress = Mathf.SmoothStep(0, 1, progress);
+				image.color = Color.Lerp(startColor, color, smoothProgress);
+
+				yield return null;
+			}
+
+			// Ensure exact final color
+			image.color = color;
+			colorCoroutine = null;
+		}
+
+		IEnumerator TransitionSprite(float speed)
 		{
 			CanvasGroup newCanvasGroup = image.GetComponent<CanvasGroup>();
 
 			while (newCanvasGroup.alpha < 1 || (oldCanvasGroup != null && oldCanvasGroup.alpha > 0))
 			{
-				float fadeSpeed = speed * FadeSpeedMultiplier * Time.deltaTime;
+				float fadeSpeed = speed * SpriteTransitionMultiplier * Time.deltaTime;
 
 				newCanvasGroup.alpha = Mathf.MoveTowards(newCanvasGroup.alpha, 1, fadeSpeed);
 
@@ -60,7 +94,7 @@ namespace Characters
 				yield return null;
 			}
 
-			fadeProcess = null;
+			spriteCoroutine = null;
 		}
 
 		void ReplaceOldImage(Sprite newSprite)

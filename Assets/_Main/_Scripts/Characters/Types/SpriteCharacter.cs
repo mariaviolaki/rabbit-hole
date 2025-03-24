@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.U2D;
@@ -8,7 +9,7 @@ using UnityEngine.UI;
 
 namespace Characters
 {
-	public class SpriteCharacter : Character
+	public class SpriteCharacter : GraphicsCharacter
 	{
 		const string LayerContainerName = "Layers";
 		const float MoveSpeedMultiplier = 100000f;
@@ -19,8 +20,9 @@ namespace Characters
 		SpriteAtlas spriteAtlas;
 		Dictionary<SpriteLayerType, CharacterSpriteLayer> spriteLayers;
 
-		Coroutine visibilityProcess;
-		Coroutine moveProcess;
+		Coroutine colorCoroutine;
+		Coroutine visibilityCoroutine;
+		Coroutine moveCoroutine;
 
 		protected override async Task Init()
 		{
@@ -58,49 +60,63 @@ namespace Characters
 			}
 		}
 
-		public void SetSprite(SpriteLayerType layerType, string spriteName)
-		{
-			Sprite sprite = GetSprite(layerType, spriteName);
-			if (sprite == null) return;
-
-			spriteLayers[layerType].SetSprite(sprite);
-		}
-
-		public Coroutine TransitionSprite(SpriteLayerType layerType, string spriteName, float transitionSpeed = 0)
-		{
-			Sprite sprite = GetSprite(layerType, spriteName);
-			if (sprite == null) return null;
-
-			return spriteLayers[layerType].TransitionSprite(sprite, transitionSpeed);
-		}
-
 		public override void SetPosition(Vector2 normalizedPos)
 		{
 			root.position = GetTargetPosition(normalizedPos);
 		}
 
+		public Coroutine SetSprite(SpriteLayerType layerType, string spriteName, float transitionSpeed = 0)
+		{
+			Sprite sprite = GetSprite(layerType, spriteName);
+			if (sprite == null) return null;
+
+			return spriteLayers[layerType].SetSprite(sprite, transitionSpeed);
+		}
+
+		public override Coroutine SetColor(Color color, float transitionSpeed = 0)
+		{
+			base.SetColor(color);
+
+			Manager.StopProcess(ref colorCoroutine);
+
+			colorCoroutine = Manager.StartCoroutine(ChangeColor(color, transitionSpeed));
+			return colorCoroutine;
+		}
+
 		public override Coroutine MoveToPosition(Vector2 normalizedPos, float speed)
 		{
-			Manager.StopProcess(ref moveProcess);
+			Manager.StopProcess(ref moveCoroutine);
 
-			moveProcess = Manager.StartCoroutine(MoveCharacter(normalizedPos, speed));
-			return moveProcess;
+			moveCoroutine = Manager.StartCoroutine(MoveCharacter(normalizedPos, speed));
+			return moveCoroutine;
 		}
 
 		public override Coroutine Show()
 		{
-			Manager.StopProcess(ref visibilityProcess);
+			Manager.StopProcess(ref visibilityCoroutine);
 
-			visibilityProcess = Manager.StartCoroutine(ChangeVisibility(true));
-			return visibilityProcess;
+			visibilityCoroutine = Manager.StartCoroutine(ChangeVisibility(true));
+			return visibilityCoroutine;
 		}
 
 		public override Coroutine Hide()
 		{
-			Manager.StopProcess(ref visibilityProcess);
+			Manager.StopProcess(ref visibilityCoroutine);
 
-			visibilityProcess = Manager.StartCoroutine(ChangeVisibility(false));
-			return visibilityProcess;
+			visibilityCoroutine = Manager.StartCoroutine(ChangeVisibility(false));
+			return visibilityCoroutine;
+		}
+
+		IEnumerator ChangeColor(Color color, float transitionSpeed)
+		{
+			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
+			{
+				layer.SetColor(color, transitionSpeed);
+			}
+
+			while (spriteLayers.Values.Any(layer => layer.IsChangingColor)) yield return null;
+
+			colorCoroutine = null;
 		}
 
 		IEnumerator ChangeVisibility(bool isShowing)
@@ -114,7 +130,7 @@ namespace Characters
 				yield return null;
 			}
 
-			visibilityProcess = null;
+			visibilityCoroutine = null;
 		}
 
 		IEnumerator MoveCharacter(Vector2 normalizedPos, float speed)
@@ -135,7 +151,7 @@ namespace Characters
 			}
 
 			root.position = endPos;
-			moveProcess = null;
+			moveCoroutine = null;
 		}
 
 		Sprite GetSprite(SpriteLayerType layerType, string spriteName)
