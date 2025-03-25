@@ -117,20 +117,17 @@ namespace Dialogue
 
 			v.SetPosition(new Vector2(0, 0));
 			v.Show();
-			eg.Show();
 			yield return v.Say("Testing,{a 0.5} testing...");
 
-			yield return v.SetColor(Color.cyan);
-			yield return v.Say("Testing,{a 0.5} testing...");
-
-			yield return v.SetColor(Color.blue, 1);
-			yield return v.Say("Testing,{a 0.5} testing...");
-
-			yield return v.SetColor(Color.white, 100);
-			yield return v.Say("Testing,{a 0.5} testing...");
-
-			yield return v.SetColor(Color.gray);
-			yield return v.Say("Testing,{a 0.5} testing...");
+			yield return v.MoveToPosition(new Vector2(0.15f, 0), 10);
+			yield return new WaitForSeconds(1);
+			yield return v.MoveToPosition(new Vector2(0.15f, 0), 10);
+			yield return new WaitForSeconds(1);
+			yield return v.MoveToPosition(new Vector2(0.5f, 0), 10);
+			yield return new WaitForSeconds(1);
+			yield return v.MoveToPosition(new Vector2(1, 0), 10);
+			yield return new WaitForSeconds(1);
+			yield return v.MoveToPosition(new Vector2(0, 0), 10);
 		}
 	}
 }

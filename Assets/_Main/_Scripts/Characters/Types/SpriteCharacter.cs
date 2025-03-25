@@ -12,7 +12,7 @@ namespace Characters
 	public class SpriteCharacter : GraphicsCharacter
 	{
 		const string LayerContainerName = "Layers";
-		const float MoveSpeedMultiplier = 100000f;
+		const float MoveSpeedMultiplier = 100f;
 
 		RectTransform root;
 		CanvasGroup canvasGroup;
@@ -137,15 +137,17 @@ namespace Characters
 		{
 			Vector2 startPos = root.position;
 			Vector2 endPos = GetTargetPosition(normalizedPos);
-			float sqrDistance = (endPos - startPos).sqrMagnitude;
+			float distance = Vector2.Distance(startPos, endPos);
 
-			// Move at a constant speed towards the target location
 			float distancePercent = 0f;
 			while (distancePercent < 1f)
 			{
-				distancePercent += (speed * MoveSpeedMultiplier * Time.deltaTime) / sqrDistance;
+				// Move at the same speed regardless of distance
+				distancePercent += (speed * MoveSpeedMultiplier * Time.deltaTime) / distance;
 				distancePercent = Mathf.Clamp01(distancePercent);
-				root.position = Vector2.Lerp(startPos, endPos, distancePercent);
+				// Move smoothly towards the start and end
+				float smoothDistance = Mathf.SmoothStep(0f, 1f, distancePercent);
+				root.position = Vector2.Lerp(startPos, endPos, smoothDistance);
 
 				yield return null;
 			}
