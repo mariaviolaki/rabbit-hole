@@ -21,6 +21,7 @@ namespace Characters
 		Dictionary<SpriteLayerType, CharacterSpriteLayer> spriteLayers;
 
 		Coroutine colorCoroutine;
+		Coroutine brightnessCoroutine;
 		Coroutine visibilityCoroutine;
 		Coroutine moveCoroutine;
 
@@ -65,21 +66,37 @@ namespace Characters
 			root.position = GetTargetPosition(normalizedPos);
 		}
 
-		public Coroutine SetSprite(SpriteLayerType layerType, string spriteName, float transitionSpeed = 0)
+		public Coroutine SetSprite(SpriteLayerType layerType, string spriteName, float speed = 0)
 		{
 			Sprite sprite = GetSprite(layerType, spriteName);
 			if (sprite == null) return null;
 
-			return spriteLayers[layerType].SetSprite(sprite, transitionSpeed);
+			return spriteLayers[layerType].SetSprite(sprite, speed);
 		}
 
-		public override Coroutine SetColor(Color color, float transitionSpeed = 0)
+		public override Coroutine Lighten(float speed = 0)
+		{
+			Manager.StopProcess(ref brightnessCoroutine);
+			IsHighlighted = true;
+			brightnessCoroutine = Manager.StartCoroutine(ChangeBrightness(true, speed));
+			return brightnessCoroutine;
+		}
+
+		public override Coroutine Darken(float speed = 0)
+		{
+			Manager.StopProcess(ref brightnessCoroutine);
+			IsHighlighted = false;
+			brightnessCoroutine = Manager.StartCoroutine(ChangeBrightness(false, speed));
+			return brightnessCoroutine;
+		}
+
+		public override Coroutine SetColor(Color color, float speed = 0)
 		{
 			base.SetColor(color);
 
 			Manager.StopProcess(ref colorCoroutine);
 
-			colorCoroutine = Manager.StartCoroutine(ChangeColor(color, transitionSpeed));
+			colorCoroutine = Manager.StartCoroutine(ChangeColor(DisplayColor, speed));
 			return colorCoroutine;
 		}
 
@@ -105,6 +122,20 @@ namespace Characters
 
 			visibilityCoroutine = Manager.StartCoroutine(ChangeVisibility(false));
 			return visibilityCoroutine;
+		}
+
+		IEnumerator ChangeBrightness(bool isLightColor, float speed)
+		{
+			Color targetColor = isLightColor ? LightColor : DarkColor;
+
+			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
+			{
+				layer.SetColor(targetColor, speed);
+			}
+
+			while (spriteLayers.Values.Any(layer => layer.IsChangingColor)) yield return null;
+
+			brightnessCoroutine = null;
 		}
 
 		IEnumerator ChangeColor(Color color, float transitionSpeed)

@@ -30,8 +30,7 @@ namespace Characters
 		{
 			if (image.color == color) return null;
 
-			if (colorCoroutine != null)
-				characterManager.StopProcess(ref colorCoroutine);
+			characterManager.StopProcess(ref colorCoroutine);
 
 			speed = speed <= 0 ? characterManager.GameOptions.ColorTransitionSpeed : speed;
 			spriteCoroutine = characterManager.StartCoroutine(TransitionColor(color, speed));
