@@ -24,9 +24,12 @@ namespace Characters
 		Coroutine brightnessCoroutine;
 		Coroutine visibilityCoroutine;
 		Coroutine moveCoroutine;
+		Coroutine directionCoroutine;
 
 		protected override async Task Init()
 		{
+			await base.Init();
+
 			// Load this character's prefab into the scene
 			GameObject prefab = await Manager.FileManager.LoadCharacterPrefab(Data.CastName);
 			GameObject rootGameObject = UnityEngine.Object.Instantiate(prefab, Manager.Container);
@@ -74,10 +77,32 @@ namespace Characters
 			return spriteLayers[layerType].SetSprite(sprite, speed);
 		}
 
+		public override Coroutine FaceLeft(float speed = 0)
+		{
+			if (!IsFacingRight) return null;
+
+			return Flip(speed);
+		}
+
+		public override Coroutine FaceRight(float speed = 0)
+		{
+			if (IsFacingRight) return null;
+
+			return Flip(speed);
+		}
+
+		public override Coroutine Flip(float speed = 0)
+		{
+			Manager.StopProcess(ref directionCoroutine);
+
+			directionCoroutine = Manager.StartCoroutine(FlipDirection(speed));
+			return directionCoroutine;
+		}
+
 		public override Coroutine Lighten(float speed = 0)
 		{
 			Manager.StopProcess(ref brightnessCoroutine);
-			IsHighlighted = true;
+			
 			brightnessCoroutine = Manager.StartCoroutine(ChangeBrightness(true, speed));
 			return brightnessCoroutine;
 		}
@@ -85,7 +110,7 @@ namespace Characters
 		public override Coroutine Darken(float speed = 0)
 		{
 			Manager.StopProcess(ref brightnessCoroutine);
-			IsHighlighted = false;
+
 			brightnessCoroutine = Manager.StartCoroutine(ChangeBrightness(false, speed));
 			return brightnessCoroutine;
 		}
@@ -124,6 +149,23 @@ namespace Characters
 			return visibilityCoroutine;
 		}
 
+		IEnumerator FlipDirection(float speed)
+		{
+			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
+			{
+				if (IsFacingRight)
+					layer.FaceLeft(speed);
+				else
+					layer.FaceRight(speed);
+			}
+
+			yield return null;
+			while (spriteLayers.Values.Any(layer => layer.IsChangingDirection)) yield return null;
+
+			IsFacingRight = !IsFacingRight;
+			directionCoroutine = null;
+		}
+
 		IEnumerator ChangeBrightness(bool isLightColor, float speed)
 		{
 			Color targetColor = isLightColor ? LightColor : DarkColor;
@@ -133,8 +175,10 @@ namespace Characters
 				layer.SetColor(targetColor, speed);
 			}
 
+			yield return null;
 			while (spriteLayers.Values.Any(layer => layer.IsChangingColor)) yield return null;
 
+			IsHighlighted = isLightColor;
 			brightnessCoroutine = null;
 		}
 
@@ -145,6 +189,7 @@ namespace Characters
 				layer.SetColor(color, transitionSpeed);
 			}
 
+			yield return null;
 			while (spriteLayers.Values.Any(layer => layer.IsChangingColor)) yield return null;
 
 			colorCoroutine = null;

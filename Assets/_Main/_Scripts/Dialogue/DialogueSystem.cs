@@ -119,15 +119,17 @@ namespace Dialogue
 			v.Show();
 			yield return v.Say("Testing,{a 0.5} testing...");
 
-			yield return v.Lighten();
+			v.SetSprite(SpriteLayerType.Body, "Void Body Yukata");
+			v.SetSprite(SpriteLayerType.Face, "Void Face Evil");
 			yield return new WaitForSeconds(2);
-			yield return v.Darken();
-			yield return new WaitForSeconds(2);
-			yield return v.SetColor(Color.blue);
-			yield return new WaitForSeconds(2);
-			yield return v.Lighten();
-			yield return new WaitForSeconds(2);
-			yield return v.SetColor(Color.white);
+
+			v.Flip();
+			yield return v.Say("Testing,{a 0.5} testing...");
+			v.FaceLeft();
+			yield return v.Say("Testing,{a 0.5} testing...");
+			v.FaceRight(1);
+			yield return v.Say("Testing,{a 0.5} testing...");
+			v.FaceLeft(1000);
 		}
 	}
 }

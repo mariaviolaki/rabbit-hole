@@ -21,3 +21,4 @@ MonoBehaviour:
   spriteTransitionSpeed: 10
   colorTransitionSpeed: 10
   darkenBrightness: 0.5
+  spritesFacingRight: 1

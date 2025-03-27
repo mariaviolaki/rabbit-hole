@@ -17,6 +17,7 @@ public class GameOptionsSO : ScriptableObject
 	[SerializeField] float spriteTransitionSpeed;
 	[SerializeField] float colorTransitionSpeed;
 	[SerializeField][Range(0, 1)] float darkenBrightness;
+	[SerializeField] bool spritesFacingRight;
 
 	public Color DefaultTextColor { get { return defaultTextColor; } }
 	public TMP_FontAsset DefaultFont { get { return defaultFont; } }
@@ -27,4 +28,5 @@ public class GameOptionsSO : ScriptableObject
 	public float SpriteTransitionSpeed { get { return spriteTransitionSpeed; } }
 	public float ColorTransitionSpeed { get { return colorTransitionSpeed; } }
 	public float DarkenBrightness { get { return darkenBrightness; } }
+	public bool AreSpritesFacingRight { get { return spritesFacingRight; } }
 }

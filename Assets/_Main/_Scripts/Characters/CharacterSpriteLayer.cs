@@ -9,21 +9,27 @@ namespace Characters
 		const float SpriteTransitionMultiplier = 0.5f;
 		const float ColorTransitionMultiplier = 0.5f;
 
+		bool isFacingRight;
+
 		CharacterManager characterManager;
 		Image image;
 		CanvasGroup oldCanvasGroup;
 
 		Coroutine spriteCoroutine;
 		Coroutine colorCoroutine;
+		Coroutine directionCoroutine;
 
 		public SpriteLayerType LayerType { get; private set; }
 		public bool IsChangingColor { get { return colorCoroutine != null; } }
+		public bool IsChangingDirection { get { return directionCoroutine != null; } }
 
 		public CharacterSpriteLayer(SpriteLayerType layerType, Image image, CharacterManager characterManager)
 		{
 			this.characterManager = characterManager;
 			this.image = image;
 			LayerType = layerType;
+
+			isFacingRight = characterManager.GameOptions.AreSpritesFacingRight;
 		}
 
 		public Coroutine SetColor(Color color, float speed)
@@ -33,7 +39,7 @@ namespace Characters
 			characterManager.StopProcess(ref colorCoroutine);
 
 			speed = speed <= 0 ? characterManager.GameOptions.ColorTransitionSpeed : speed;
-			spriteCoroutine = characterManager.StartCoroutine(TransitionColor(color, speed));
+			spriteCoroutine = characterManager.StartCoroutine(ChangeColor(color, speed));
 			return spriteCoroutine;
 		}
 
@@ -45,11 +51,33 @@ namespace Characters
 			ReplaceOldImage(sprite);
 
 			speed = speed <= 0 ? characterManager.GameOptions.SpriteTransitionSpeed : speed;
-			spriteCoroutine = characterManager.StartCoroutine(TransitionSprite(speed));
+			spriteCoroutine = characterManager.StartCoroutine(ChangeSprite(speed));
 			return spriteCoroutine;
 		}
 
-		IEnumerator TransitionColor(Color color, float speed)
+		public Coroutine FaceLeft(float speed)
+		{
+			if (!isFacingRight) return null;
+
+			characterManager.StopProcess(ref directionCoroutine);
+
+			speed = speed <= 0 ? characterManager.GameOptions.SpriteTransitionSpeed : speed;
+			directionCoroutine = characterManager.StartCoroutine(ChangeDirection(speed));
+			return directionCoroutine;
+		}
+
+		public Coroutine FaceRight(float speed)
+		{
+			if (isFacingRight) return null;
+
+			characterManager.StopProcess(ref directionCoroutine);
+
+			speed = speed <= 0 ? characterManager.GameOptions.SpriteTransitionSpeed : speed;
+			directionCoroutine = characterManager.StartCoroutine(ChangeDirection(speed));
+			return directionCoroutine;
+		}
+
+		IEnumerator ChangeColor(Color color, float speed)
 		{
 			Color startColor = image.color;
 			float progress = 0f;
@@ -73,7 +101,27 @@ namespace Characters
 			colorCoroutine = null;
 		}
 
-		IEnumerator TransitionSprite(float speed)
+		IEnumerator ChangeDirection(float speed)
+		{
+			float xScale = isFacingRight ? -1 : 1;
+
+			// Make a copy of the current image and flip the new one
+			ReplaceOldImage(image.sprite);
+			image.transform.localScale = new Vector3(xScale, 1, 1);
+
+			yield return FadeInNewImage(speed);
+
+			isFacingRight = !isFacingRight;
+			directionCoroutine = null;
+		}
+
+		IEnumerator ChangeSprite(float speed)
+		{
+			yield return FadeInNewImage(speed);
+			spriteCoroutine = null;
+		}
+
+		IEnumerator FadeInNewImage(float speed)
 		{
 			CanvasGroup newCanvasGroup = image.GetComponent<CanvasGroup>();
 
@@ -92,8 +140,6 @@ namespace Characters
 
 				yield return null;
 			}
-
-			spriteCoroutine = null;
 		}
 
 		void ReplaceOldImage(Sprite newSprite)
