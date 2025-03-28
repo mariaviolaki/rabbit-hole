@@ -8,6 +8,8 @@ namespace Characters
 	{
 		public CharacterManager Manager { get; protected set; }
 		public CharacterData Data { get; protected set; }
+		public RectTransform Root { get; protected set; }
+		public bool IsVisible { get; protected set; } = false;
 
 		public virtual bool IsChangingVisibility() { return false; }
 		public virtual Coroutine Show() { return null; }

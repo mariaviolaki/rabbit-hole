@@ -14,7 +14,6 @@ namespace Characters
 		const string LayerContainerName = "Layers";
 		const float MoveSpeedMultiplier = 100f;
 
-		RectTransform root;
 		CanvasGroup canvasGroup;
 		Animator animator;
 		SpriteAtlas spriteAtlas;
@@ -34,12 +33,12 @@ namespace Characters
 			GameObject prefab = await Manager.FileManager.LoadCharacterPrefab(Data.CastName);
 			GameObject rootGameObject = UnityEngine.Object.Instantiate(prefab, Manager.Container);
 
-			root = rootGameObject.GetComponent<RectTransform>();
-			canvasGroup = root.GetComponent<CanvasGroup>();
-			animator = root.GetComponentInChildren<Animator>();
+			Root = rootGameObject.GetComponent<RectTransform>();
+			canvasGroup = Root.GetComponent<CanvasGroup>();
+			animator = Root.GetComponentInChildren<Animator>();
 			spriteLayers = new Dictionary<SpriteLayerType, CharacterSpriteLayer>();
 
-			root.name = Data.Name;
+			Root.name = Data.Name;
 			canvasGroup.alpha = 0f;
 
 			spriteAtlas = await Manager.FileManager.LoadCharacterAtlas(Data.CastName);
@@ -66,7 +65,7 @@ namespace Characters
 
 		public override void SetPosition(Vector2 normalizedPos)
 		{
-			root.position = GetTargetPosition(normalizedPos);
+			Root.position = GetTargetPosition(normalizedPos);
 		}
 
 		public Coroutine SetSprite(SpriteLayerType layerType, string spriteName, float speed = 0)
@@ -195,10 +194,10 @@ namespace Characters
 			colorCoroutine = null;
 		}
 
-		IEnumerator ChangeVisibility(bool isShowing)
+		IEnumerator ChangeVisibility(bool isVisible)
 		{
-			float targetAlpha = isShowing ? 1f : 0f;
-			float visibilityChangeSpeed = isShowing ? Manager.GameOptions.CharacterShowSpeed : Manager.GameOptions.CharacterHideSpeed;
+			float targetAlpha = isVisible ? 1f : 0f;
+			float visibilityChangeSpeed = isVisible ? Manager.GameOptions.CharacterShowSpeed : Manager.GameOptions.CharacterHideSpeed;
 
 			while (canvasGroup.alpha != targetAlpha)
 			{
@@ -206,12 +205,13 @@ namespace Characters
 				yield return null;
 			}
 
+			IsVisible = isVisible;
 			visibilityCoroutine = null;
 		}
 
 		IEnumerator MoveCharacter(Vector2 normalizedPos, float speed)
 		{
-			Vector2 startPos = root.position;
+			Vector2 startPos = Root.position;
 			Vector2 endPos = GetTargetPosition(normalizedPos);
 			float distance = Vector2.Distance(startPos, endPos);
 
@@ -223,12 +223,12 @@ namespace Characters
 				distancePercent = Mathf.Clamp01(distancePercent);
 				// Move smoothly towards the start and end
 				float smoothDistance = Mathf.SmoothStep(0f, 1f, distancePercent);
-				root.position = Vector2.Lerp(startPos, endPos, smoothDistance);
+				Root.position = Vector2.Lerp(startPos, endPos, smoothDistance);
 
 				yield return null;
 			}
 
-			root.position = endPos;
+			Root.position = endPos;
 			moveCoroutine = null;
 		}
 
@@ -254,7 +254,7 @@ namespace Characters
 		{
 			Vector2 parentSize = Manager.Container.rect.size;
 
-			Vector2 imageOffset = (root.pivot * root.rect.size);
+			Vector2 imageOffset = (Root.pivot * Root.rect.size);
 			Vector2 minPos = Vector2.zero + imageOffset;
 			Vector2 maxPos = parentSize - imageOffset;
 

@@ -104,32 +104,49 @@ namespace Dialogue
 			Task zTask = characterManager.CreateCharacter("Zero");
 			Task egTask = characterManager.CreateCharacter("Eccentric Guy");
 			Task v2Task = characterManager.CreateCharacter("Mirror Void", "Void");
+			Task z2Task = characterManager.CreateCharacter("Mirror Zero", "Zero");
+			Task eg2Task = characterManager.CreateCharacter("Mirror Eccentric Guy", "Eccentric Guy");
+			Task r1Task = characterManager.CreateCharacter("Random Guy 1");
 
-			yield return new WaitUntil(() => Task.WhenAll(vTask, zTask, egTask, v2Task).IsCompleted);
+			yield return new WaitUntil(() => Task.WhenAll(vTask, zTask, egTask, v2Task, r1Task, z2Task, eg2Task).IsCompleted);
 
 			SpriteCharacter v = characterManager.GetCharacter("Void") as SpriteCharacter;
 			SpriteCharacter z = characterManager.GetCharacter("Zero") as SpriteCharacter;
 			SpriteCharacter eg = characterManager.GetCharacter("Eccentric Guy") as SpriteCharacter;
 			SpriteCharacter v2 = characterManager.GetCharacter("Mirror Void") as SpriteCharacter;
-
-			v.SetSprite(SpriteLayerType.Body, "Void Body Casual");
-			v.SetSprite(SpriteLayerType.Face, "Void Face Neutral");
-
-			v.SetPosition(new Vector2(0, 0));
-			v.Show();
-			yield return v.Say("Testing,{a 0.5} testing...");
+			SpriteCharacter z2 = characterManager.GetCharacter("Mirror Zero") as SpriteCharacter;
+			SpriteCharacter eg2 = characterManager.GetCharacter("Mirror Eccentric Guy") as SpriteCharacter;
+			TextCharacter r1 = characterManager.GetCharacter("Random Guy 1") as TextCharacter;
+			TextCharacter r2 = characterManager.GetCharacter("Random Guy 2") as TextCharacter;
 
 			v.SetSprite(SpriteLayerType.Body, "Void Body Yukata");
 			v.SetSprite(SpriteLayerType.Face, "Void Face Evil");
-			yield return new WaitForSeconds(2);
+			z.SetSprite(SpriteLayerType.Body, "Zero Body Comfy");
 
-			v.Flip();
-			yield return v.Say("Testing,{a 0.5} testing...");
-			v.FaceLeft();
-			yield return v.Say("Testing,{a 0.5} testing...");
-			v.FaceRight(1);
-			yield return v.Say("Testing,{a 0.5} testing...");
-			v.FaceLeft(1000);
+			v.SetPosition(new Vector2(0.5f, 0));
+			v.Show();
+			v2.SetPosition(new Vector2(0.6f, 0));
+			v2.Show();
+			z.SetPosition(new Vector2(0.4f, 0));
+			z.Show();
+			eg.SetPosition(new Vector2(0.55f, 0));
+			eg.Show();
+
+			yield return v.Say("Testing...");
+			z2.SetPriority(0);
+			yield return v.Say("Testing...");
+			v.SetPriority(0);
+			yield return v.Say("Testing...");
+			v2.SetPriority(0);
+			yield return v.Say("Testing...");
+			z.SetPriority(1);
+			yield return v.Say("Testing...");
+			v.SetPriority(100);
+			yield return v.Say("Testing...");
+			v.SetPriority(2);
+			yield return v.Say("Testing...{a 0.5} Testing...");
+
+			characterManager.SetPriority(new string[] { null, "Void", "Zero", "Random Guy 1", "Eccentric Guy" });
 		}
 	}
 }

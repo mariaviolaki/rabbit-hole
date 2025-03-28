@@ -37,5 +37,12 @@ namespace Characters
 			LightColor = color;
 			return null;
 		}
+
+		public void SetPriority(int index)
+		{
+			if (!IsVisible) return;
+
+			Manager.SetPriority(Data.Name, index);
+		}
 	}
 }
