@@ -6,10 +6,14 @@ namespace Characters
 {
 	public abstract class Character
 	{
-		public CharacterManager Manager { get; protected set; }
-		public CharacterData Data { get; protected set; }
-		public RectTransform Root { get; protected set; }
-		public bool IsVisible { get; protected set; } = false;
+		protected RectTransform root;
+		protected CharacterData data;
+		protected CharacterManager manager;
+		protected bool isVisible = false;
+
+		public RectTransform Root { get { return root; } }
+		public CharacterData Data { get { return data; } }
+		public bool IsVisible { get { return isVisible; } }
 
 		public virtual bool IsChangingVisibility() { return false; }
 		public virtual Coroutine Show() { return null; }
@@ -23,8 +27,8 @@ namespace Characters
 		public static async Task<T> Create<T>(CharacterManager characterManager, CharacterData data) where T : Character, new()
 		{
 			T character = new T();
-			character.Manager = characterManager;
-			character.Data = data;
+			character.manager = characterManager;
+			character.data = data;
 
 			// Perform any asyncronous operations needed for initialization
 			await character.Init();
@@ -35,25 +39,25 @@ namespace Characters
 		public static TextCharacter CreateDefault(CharacterManager characterManager, CharacterData data)
 		{
 			TextCharacter textCharacter = new TextCharacter();
-			textCharacter.Manager = characterManager;
-			textCharacter.Data = data;
+			textCharacter.manager = characterManager;
+			textCharacter.data = data;
 
 			return textCharacter;
 		}
 
 		public void ResetData()
 		{
-			Data = Manager.Directory.GetCharacterData(Data.Name, Data.CastName, Manager.GameOptions);
+			data = manager.Directory.GetCharacterData(Data.Name, Data.CastName, manager.GameOptions);
 		}
 
 		public Coroutine Say(string dialogueLine)
 		{
-			return Manager.Dialogue.Say(Data.Name, dialogueLine);
+			return manager.Dialogue.Say(Data.Name, dialogueLine);
 		}
 
 		public Coroutine Say(List<string> dialogueLines)
 		{
-			return Manager.Dialogue.Say(Data.Name, dialogueLines);
+			return manager.Dialogue.Say(Data.Name, dialogueLines);
 		}
 	}
 }

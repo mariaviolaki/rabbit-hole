@@ -111,42 +111,36 @@ namespace Dialogue
 			yield return new WaitUntil(() => Task.WhenAll(vTask, zTask, egTask, v2Task, r1Task, z2Task, eg2Task).IsCompleted);
 
 			SpriteCharacter v = characterManager.GetCharacter("Void") as SpriteCharacter;
-			SpriteCharacter z = characterManager.GetCharacter("Zero") as SpriteCharacter;
-			SpriteCharacter eg = characterManager.GetCharacter("Eccentric Guy") as SpriteCharacter;
-			SpriteCharacter v2 = characterManager.GetCharacter("Mirror Void") as SpriteCharacter;
-			SpriteCharacter z2 = characterManager.GetCharacter("Mirror Zero") as SpriteCharacter;
-			SpriteCharacter eg2 = characterManager.GetCharacter("Mirror Eccentric Guy") as SpriteCharacter;
-			TextCharacter r1 = characterManager.GetCharacter("Random Guy 1") as TextCharacter;
-			TextCharacter r2 = characterManager.GetCharacter("Random Guy 2") as TextCharacter;
-
-			v.SetSprite(SpriteLayerType.Body, "Void Body Yukata");
-			v.SetSprite(SpriteLayerType.Face, "Void Face Evil");
-			z.SetSprite(SpriteLayerType.Body, "Zero Body Comfy");
-
+			yield return v.SetSprite(SpriteLayerType.Body, "Void Body Yukata");
+			yield return v.SetSprite(SpriteLayerType.Face, "Void Face Evil");
 			v.SetPosition(new Vector2(0.5f, 0));
+			yield return v.FaceLeft(100);
 			v.Show();
-			v2.SetPosition(new Vector2(0.6f, 0));
-			v2.Show();
-			z.SetPosition(new Vector2(0.4f, 0));
-			z.Show();
-			eg.SetPosition(new Vector2(0.55f, 0));
-			eg.Show();
 
 			yield return v.Say("Testing...");
-			z2.SetPriority(0);
+			v.Animate("HopOnce");
 			yield return v.Say("Testing...");
-			v.SetPriority(0);
+			yield return v.SetSprite(SpriteLayerType.Face, "Void Face Flustered");
+			v.Flip();
+			v.Animate("HopOnce");
 			yield return v.Say("Testing...");
-			v2.SetPriority(0);
+			v.SetSprite(SpriteLayerType.Face, "Void Face Evil");
+			v.Animate("Hop", true);
 			yield return v.Say("Testing...");
-			z.SetPriority(1);
+			v.Animate("Hop", false);
 			yield return v.Say("Testing...");
-			v.SetPriority(100);
+			v.Animate("Shiver", true);
 			yield return v.Say("Testing...");
-			v.SetPriority(2);
-			yield return v.Say("Testing...{a 0.5} Testing...");
-
-			characterManager.SetPriority(new string[] { null, "Void", "Zero", "Random Guy 1", "Eccentric Guy" });
+			v.Animate("Shiver", false);
+			yield return v.Say("Testing...");
+			v.Darken();
+			yield return v.Say("Testing...");
+			v.Lighten();
+			v.Animate("Enlarge");
+			yield return v.Say("Testing...");
+			v.Darken();
+			v.Animate("Shrink");
+			yield return v.Say("Testing...");
 		}
 	}
 }

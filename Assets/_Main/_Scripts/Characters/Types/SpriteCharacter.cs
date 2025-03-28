@@ -15,7 +15,6 @@ namespace Characters
 		const float MoveSpeedMultiplier = 100f;
 
 		CanvasGroup canvasGroup;
-		Animator animator;
 		SpriteAtlas spriteAtlas;
 		Dictionary<SpriteLayerType, CharacterSpriteLayer> spriteLayers;
 
@@ -28,24 +27,18 @@ namespace Characters
 		protected override async Task Init()
 		{
 			await base.Init();
-
-			// Load this character's prefab into the scene
-			GameObject prefab = await Manager.FileManager.LoadCharacterPrefab(Data.CastName);
-			GameObject rootGameObject = UnityEngine.Object.Instantiate(prefab, Manager.Container);
-
-			Root = rootGameObject.GetComponent<RectTransform>();
-			canvasGroup = Root.GetComponent<CanvasGroup>();
-			animator = Root.GetComponentInChildren<Animator>();
+			
+			canvasGroup = root.GetComponent<CanvasGroup>();
 			spriteLayers = new Dictionary<SpriteLayerType, CharacterSpriteLayer>();
 
-			Root.name = Data.Name;
+			root.name = data.Name;
 			canvasGroup.alpha = 0f;
 
-			spriteAtlas = await Manager.FileManager.LoadCharacterAtlas(Data.CastName);
+			spriteAtlas = await manager.FileManager.LoadCharacterAtlas(data.CastName);
 
 			InitSpriteLayers();
 
-			Debug.Log($"Created Sprite Character: {Data.Name}");
+			Debug.Log($"Created Sprite Character: {data.Name}");
 		}
 
 		void InitSpriteLayers()
@@ -59,13 +52,13 @@ namespace Characters
 
 				string layerName = layerParent.name;
 				if (Enum.TryParse(layerName, true, out SpriteLayerType layer))
-					spriteLayers[layer] = new CharacterSpriteLayer(layer, image, Manager);
+					spriteLayers[layer] = new CharacterSpriteLayer(layer, image, manager);
 			}
 		}
 
 		public override void SetPosition(Vector2 normalizedPos)
 		{
-			Root.position = GetTargetPosition(normalizedPos);
+			root.position = GetTargetPosition(normalizedPos);
 		}
 
 		public Coroutine SetSprite(SpriteLayerType layerType, string spriteName, float speed = 0)
@@ -78,39 +71,39 @@ namespace Characters
 
 		public override Coroutine FaceLeft(float speed = 0)
 		{
-			if (!IsFacingRight) return null;
+			if (!isFacingRight) return null;
 
 			return Flip(speed);
 		}
 
 		public override Coroutine FaceRight(float speed = 0)
 		{
-			if (IsFacingRight) return null;
+			if (isFacingRight) return null;
 
 			return Flip(speed);
 		}
 
 		public override Coroutine Flip(float speed = 0)
 		{
-			Manager.StopProcess(ref directionCoroutine);
+			manager.StopProcess(ref directionCoroutine);
 
-			directionCoroutine = Manager.StartCoroutine(FlipDirection(speed));
+			directionCoroutine = manager.StartCoroutine(FlipDirection(speed));
 			return directionCoroutine;
 		}
 
 		public override Coroutine Lighten(float speed = 0)
 		{
-			Manager.StopProcess(ref brightnessCoroutine);
+			manager.StopProcess(ref brightnessCoroutine);
 			
-			brightnessCoroutine = Manager.StartCoroutine(ChangeBrightness(true, speed));
+			brightnessCoroutine = manager.StartCoroutine(ChangeBrightness(true, speed));
 			return brightnessCoroutine;
 		}
 
 		public override Coroutine Darken(float speed = 0)
 		{
-			Manager.StopProcess(ref brightnessCoroutine);
+			manager.StopProcess(ref brightnessCoroutine);
 
-			brightnessCoroutine = Manager.StartCoroutine(ChangeBrightness(false, speed));
+			brightnessCoroutine = manager.StartCoroutine(ChangeBrightness(false, speed));
 			return brightnessCoroutine;
 		}
 
@@ -118,33 +111,33 @@ namespace Characters
 		{
 			base.SetColor(color);
 
-			Manager.StopProcess(ref colorCoroutine);
+			manager.StopProcess(ref colorCoroutine);
 
-			colorCoroutine = Manager.StartCoroutine(ChangeColor(DisplayColor, speed));
+			colorCoroutine = manager.StartCoroutine(ChangeColor(DisplayColor, speed));
 			return colorCoroutine;
 		}
 
 		public override Coroutine MoveToPosition(Vector2 normalizedPos, float speed)
 		{
-			Manager.StopProcess(ref moveCoroutine);
+			manager.StopProcess(ref moveCoroutine);
 
-			moveCoroutine = Manager.StartCoroutine(MoveCharacter(normalizedPos, speed));
+			moveCoroutine = manager.StartCoroutine(MoveCharacter(normalizedPos, speed));
 			return moveCoroutine;
 		}
 
 		public override Coroutine Show()
 		{
-			Manager.StopProcess(ref visibilityCoroutine);
+			manager.StopProcess(ref visibilityCoroutine);
 
-			visibilityCoroutine = Manager.StartCoroutine(ChangeVisibility(true));
+			visibilityCoroutine = manager.StartCoroutine(ChangeVisibility(true));
 			return visibilityCoroutine;
 		}
 
 		public override Coroutine Hide()
 		{
-			Manager.StopProcess(ref visibilityCoroutine);
+			manager.StopProcess(ref visibilityCoroutine);
 
-			visibilityCoroutine = Manager.StartCoroutine(ChangeVisibility(false));
+			visibilityCoroutine = manager.StartCoroutine(ChangeVisibility(false));
 			return visibilityCoroutine;
 		}
 
@@ -152,7 +145,7 @@ namespace Characters
 		{
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
-				if (IsFacingRight)
+				if (isFacingRight)
 					layer.FaceLeft(speed);
 				else
 					layer.FaceRight(speed);
@@ -161,7 +154,7 @@ namespace Characters
 			yield return null;
 			while (spriteLayers.Values.Any(layer => layer.IsChangingDirection)) yield return null;
 
-			IsFacingRight = !IsFacingRight;
+			isFacingRight = !isFacingRight;
 			directionCoroutine = null;
 		}
 
@@ -177,7 +170,7 @@ namespace Characters
 			yield return null;
 			while (spriteLayers.Values.Any(layer => layer.IsChangingColor)) yield return null;
 
-			IsHighlighted = isLightColor;
+			isHighlighted = isLightColor;
 			brightnessCoroutine = null;
 		}
 
@@ -197,7 +190,7 @@ namespace Characters
 		IEnumerator ChangeVisibility(bool isVisible)
 		{
 			float targetAlpha = isVisible ? 1f : 0f;
-			float visibilityChangeSpeed = isVisible ? Manager.GameOptions.CharacterShowSpeed : Manager.GameOptions.CharacterHideSpeed;
+			float visibilityChangeSpeed = isVisible ? manager.GameOptions.CharacterShowSpeed : manager.GameOptions.CharacterHideSpeed;
 
 			while (canvasGroup.alpha != targetAlpha)
 			{
@@ -205,13 +198,13 @@ namespace Characters
 				yield return null;
 			}
 
-			IsVisible = isVisible;
+			this.isVisible = isVisible;
 			visibilityCoroutine = null;
 		}
 
 		IEnumerator MoveCharacter(Vector2 normalizedPos, float speed)
 		{
-			Vector2 startPos = Root.position;
+			Vector2 startPos = root.position;
 			Vector2 endPos = GetTargetPosition(normalizedPos);
 			float distance = Vector2.Distance(startPos, endPos);
 
@@ -223,12 +216,12 @@ namespace Characters
 				distancePercent = Mathf.Clamp01(distancePercent);
 				// Move smoothly towards the start and end
 				float smoothDistance = Mathf.SmoothStep(0f, 1f, distancePercent);
-				Root.position = Vector2.Lerp(startPos, endPos, smoothDistance);
+				root.position = Vector2.Lerp(startPos, endPos, smoothDistance);
 
 				yield return null;
 			}
 
-			Root.position = endPos;
+			root.position = endPos;
 			moveCoroutine = null;
 		}
 
@@ -236,14 +229,14 @@ namespace Characters
 		{
 			if (!spriteLayers.ContainsKey(layerType))
 			{
-				Debug.LogWarning($"'{layerType}' is not a valid sprite layer for {Data.CastName}");
+				Debug.LogWarning($"'{layerType}' is not a valid sprite layer for {data.CastName}");
 				return null;
 			}
 
 			Sprite sprite = spriteAtlas.GetSprite(spriteName);
 			if (sprite == null)
 			{
-				Debug.LogWarning($"'{spriteName}' was not found in {Data.CastName}'s sprites.");
+				Debug.LogWarning($"'{spriteName}' was not found in {data.CastName}'s sprites.");
 				return null;
 			}
 
@@ -252,9 +245,9 @@ namespace Characters
 
 		Vector2 GetTargetPosition(Vector2 normalizedPos)
 		{
-			Vector2 parentSize = Manager.Container.rect.size;
+			Vector2 parentSize = manager.Container.rect.size;
 
-			Vector2 imageOffset = (Root.pivot * Root.rect.size);
+			Vector2 imageOffset = (root.pivot * root.rect.size);
 			Vector2 minPos = Vector2.zero + imageOffset;
 			Vector2 maxPos = parentSize - imageOffset;
 

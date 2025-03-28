@@ -5,25 +5,32 @@ namespace Characters
 {
 	public abstract class GraphicsCharacter : Character
 	{
-		protected bool IsFacingRight { get; set; }
-		protected bool IsHighlighted { get; set; } = true;
-		protected Color DisplayColor { get { return IsHighlighted ? LightColor : DarkColor; } }
+		protected Animator animator;
+		protected bool isFacingRight;
+		protected bool isHighlighted = true;
+
+		protected Color DisplayColor { get { return isHighlighted ? LightColor : DarkColor; } }
 		protected Color LightColor { get; private set; } = Color.white;
 		protected Color DarkColor
 		{
 			get
 			{
-				return new Color(LightColor.r * Manager.GameOptions.DarkenBrightness,
-					LightColor.g * Manager.GameOptions.DarkenBrightness,
-					LightColor.b * Manager.GameOptions.DarkenBrightness,
+				return new Color(LightColor.r * manager.GameOptions.DarkenBrightness,
+					LightColor.g * manager.GameOptions.DarkenBrightness,
+					LightColor.b * manager.GameOptions.DarkenBrightness,
 					LightColor.a);
 			}
 		}
 
-		protected override Task Init()
+		protected async override Task Init()
 		{
-			IsFacingRight = Manager.GameOptions.AreSpritesFacingRight;
-			return Task.CompletedTask;
+			// Load this character's prefab into the scene
+			GameObject prefab = await manager.FileManager.LoadCharacterPrefab(data.CastName);
+			GameObject rootGameObject = Object.Instantiate(prefab, manager.Container);
+
+			root = rootGameObject.GetComponent<RectTransform>();
+			animator = root.GetComponentInChildren<Animator>();
+			isFacingRight = manager.GameOptions.AreSpritesFacingRight;
 		}
 
 		public abstract Coroutine Flip(float speed = 0);
@@ -40,9 +47,19 @@ namespace Characters
 
 		public void SetPriority(int index)
 		{
-			if (!IsVisible) return;
+			if (!isVisible) return;
 
-			Manager.SetPriority(Data.Name, index);
+			manager.SetPriority(data.Name, index);
+		}
+
+		public void Animate(string animationName)
+		{
+			animator.SetTrigger(animationName);
+		}
+
+		public void Animate(string animationName, bool isPlaying)
+		{
+			animator.SetBool(animationName, isPlaying);
 		}
 	}
 }
