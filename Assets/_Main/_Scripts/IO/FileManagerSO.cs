@@ -10,10 +10,12 @@ using UnityEngine.U2D;
 public class FileManagerSO : ScriptableObject
 {
 	[SerializeField] AssetLabelReference characterPrefabLabel;
+	[SerializeField] AssetLabelReference model3DPrefabLabel;
 	[SerializeField] AssetLabelReference characterAtlasLabel;
 	[SerializeField] AssetLabelReference dialogueFileLabel;
 
 	readonly Dictionary<string, string> characterPrefabKeys = new Dictionary<string, string>();
+	readonly Dictionary<string, string> model3DPrefabKeys = new Dictionary<string, string>();
 	readonly Dictionary<string, string> characterAtlasKeys = new Dictionary<string, string>();
 	readonly Dictionary<string, string> dialogueFileKeys = new Dictionary<string, string>();
 
@@ -21,6 +23,7 @@ public class FileManagerSO : ScriptableObject
 	{
 		// Load the addressables's metadata to easily search and load them later
 		CacheLabeledAssetsIntoDictionary(characterPrefabLabel, characterPrefabKeys);
+		CacheLabeledAssetsIntoDictionary(model3DPrefabLabel, model3DPrefabKeys);
 		CacheLabeledAssetsIntoDictionary(characterAtlasLabel, characterAtlasKeys);
 		CacheLabeledAssetsIntoDictionary(dialogueFileLabel, dialogueFileKeys);
 	}
@@ -28,6 +31,11 @@ public class FileManagerSO : ScriptableObject
 	public async Task<GameObject> LoadCharacterPrefab(string characterName)
 	{
 		return await LoadAsset<GameObject>(characterName, characterPrefabKeys);
+	}
+
+	public async Task<GameObject> LoadModel3DPrefab(string characterName)
+	{
+		return await LoadAsset<GameObject>(characterName, model3DPrefabKeys);
 	}
 
 	public async Task<SpriteAtlas> LoadCharacterAtlas(string characterName)

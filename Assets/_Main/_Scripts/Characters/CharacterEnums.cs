@@ -2,7 +2,7 @@ namespace Characters
 {
 	public enum CharacterType
 	{
-		Text, Sprite
+		Text, Sprite, Model3D
 	}
 
 	public enum SpriteLayerType

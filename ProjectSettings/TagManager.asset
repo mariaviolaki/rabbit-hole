@@ -44,9 +44,6 @@ TagManager:
   - name: Background
     uniqueID: 4169910399
     locked: 0
-  - name: 3D Characters
-    uniqueID: 4149048579
-    locked: 0
   - name: Sprites
     uniqueID: 1862357997
     locked: 0

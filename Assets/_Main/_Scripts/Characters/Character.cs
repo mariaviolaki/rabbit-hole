@@ -15,12 +15,6 @@ namespace Characters
 		public CharacterData Data { get { return data; } }
 		public bool IsVisible { get { return isVisible; } }
 
-		public virtual bool IsChangingVisibility() { return false; }
-		public virtual Coroutine Show() { return null; }
-		public virtual Coroutine Hide() { return null; }
-		public virtual Coroutine MoveToPosition(Vector2 position, float speed) { return null; }
-		public virtual void SetPosition(Vector2 position) { }
-
 		protected Character() { }
 		protected abstract Task Init();
 

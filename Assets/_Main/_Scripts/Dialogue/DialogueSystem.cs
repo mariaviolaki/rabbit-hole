@@ -101,46 +101,35 @@ namespace Dialogue
 		IEnumerator RunTest()
 		{
 			Task vTask = characterManager.CreateCharacter("Void");
-			Task zTask = characterManager.CreateCharacter("Zero");
-			Task egTask = characterManager.CreateCharacter("Eccentric Guy");
-			Task v2Task = characterManager.CreateCharacter("Mirror Void", "Void");
-			Task z2Task = characterManager.CreateCharacter("Mirror Zero", "Zero");
-			Task eg2Task = characterManager.CreateCharacter("Mirror Eccentric Guy", "Eccentric Guy");
-			Task r1Task = characterManager.CreateCharacter("Random Guy 1");
+			Task mTask = characterManager.CreateCharacter("Marsh");
+			Task m2Task = characterManager.CreateCharacter("Marsh 2", "Marsh");
+			Task m3Task = characterManager.CreateCharacter("Marsh 3", "Marsh");
 
-			yield return new WaitUntil(() => Task.WhenAll(vTask, zTask, egTask, v2Task, r1Task, z2Task, eg2Task).IsCompleted);
+			yield return new WaitUntil(() => Task.WhenAll(vTask, mTask, m2Task, m3Task).IsCompleted);
 
 			SpriteCharacter v = characterManager.GetCharacter("Void") as SpriteCharacter;
-			yield return v.SetSprite(SpriteLayerType.Body, "Void Body Yukata");
-			yield return v.SetSprite(SpriteLayerType.Face, "Void Face Evil");
-			v.SetPosition(new Vector2(0.5f, 0));
-			yield return v.FaceLeft(100);
+			v.SetPosition(new Vector2(1f, 0.5f));
 			v.Show();
 
-			yield return v.Say("Testing...");
-			v.Animate("HopOnce");
-			yield return v.Say("Testing...");
-			yield return v.SetSprite(SpriteLayerType.Face, "Void Face Flustered");
-			v.Flip();
-			v.Animate("HopOnce");
-			yield return v.Say("Testing...");
-			v.SetSprite(SpriteLayerType.Face, "Void Face Evil");
-			v.Animate("Hop", true);
-			yield return v.Say("Testing...");
-			v.Animate("Hop", false);
-			yield return v.Say("Testing...");
-			v.Animate("Shiver", true);
-			yield return v.Say("Testing...");
-			v.Animate("Shiver", false);
-			yield return v.Say("Testing...");
-			v.Darken();
-			yield return v.Say("Testing...");
-			v.Lighten();
-			v.Animate("Enlarge");
-			yield return v.Say("Testing...");
-			v.Darken();
-			v.Animate("Shrink");
-			yield return v.Say("Testing...");
+			Model3DCharacter m = characterManager.GetCharacter("Marsh") as Model3DCharacter;
+			m.SetPosition(new Vector2(0f, 0.5f));
+			m.Show();
+
+			Model3DCharacter m2 = characterManager.GetCharacter("Marsh 2") as Model3DCharacter;
+			m2.SetPosition(new Vector2(0.2f, 0.5f));
+			m2.Show();
+
+			Model3DCharacter m3 = characterManager.GetCharacter("Marsh 3") as Model3DCharacter;
+			m3.SetPosition(new Vector2(0.4f, 0.5f));
+			m3.Show();
+
+			yield return new WaitForSeconds(1f);
+
+			m.SetMotion("Kiss");
+			m2.SetMotion("Pointing");
+			m3.SetMotion("Angry");
+
+			yield return m.Say("Testing...");
 		}
 	}
 }

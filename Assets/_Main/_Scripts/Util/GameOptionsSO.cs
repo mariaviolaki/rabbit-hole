@@ -12,6 +12,7 @@ public class GameOptionsSO : ScriptableObject
 	[SerializeField][Range(1, 12)] float textSpeed;
 
 	[Header("Characters")]
+	[SerializeField] RenderTexture renderTexture3D;
 	[SerializeField] float characterShowSpeed;
 	[SerializeField] float characterHideSpeed;
 	[SerializeField] float spriteTransitionSpeed;
@@ -23,6 +24,8 @@ public class GameOptionsSO : ScriptableObject
 	public TMP_FontAsset DefaultFont { get { return defaultFont; } }
 	public TextBuilder.TextMode TextMode { get { return textMode; } }
 	public float TextSpeed { get { return textSpeed; } }
+
+	public RenderTexture RenderTexture3D { get { return renderTexture3D; } }
 	public float CharacterShowSpeed { get { return characterShowSpeed; } }
 	public float CharacterHideSpeed { get { return characterHideSpeed; } }
 	public float SpriteTransitionSpeed { get { return spriteTransitionSpeed; } }

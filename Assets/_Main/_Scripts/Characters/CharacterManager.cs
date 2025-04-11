@@ -12,6 +12,7 @@ namespace Characters
 		[SerializeField] CharacterDirectorySO characterDirectory;
 		[SerializeField] DialogueSystem dialogueSystem;
 		[SerializeField] RectTransform characterContainer;
+		[SerializeField] Transform model3DContainer;
 
 		Dictionary<string, Character> characters = new Dictionary<string, Character>();
 
@@ -20,6 +21,7 @@ namespace Characters
 		public FileManagerSO FileManager { get { return fileManager; } }
 		public DialogueSystem Dialogue { get { return dialogueSystem; } }
 		public RectTransform Container { get { return characterContainer; } }
+		public Transform Model3DContainer { get { return model3DContainer; } }
 
 		public Task CreateCharacter(string name) => CreateCharacter(name, name);
 		public async Task CreateCharacter(string name, string castName)
@@ -28,6 +30,9 @@ namespace Characters
 
 			switch (data.Type)
 			{
+				case CharacterType.Model3D:
+					characters[name] = await Character.Create<Model3DCharacter>(this, data);
+					break;
 				case CharacterType.Sprite:
 					characters[name] = await Character.Create<SpriteCharacter>(this, data);
 					break;
@@ -46,6 +51,19 @@ namespace Characters
 				CreateDefaultCharacter(name);
 
 			return characters[name];
+		}
+
+		public int GetCharacterCount(CharacterType characterType)
+		{
+			int count = 0;
+
+			foreach (Character character in characters.Values)
+			{
+				if (character.Data.Type == characterType)
+					count++;
+			}
+
+			return count;
 		}
 
 		public void StopProcess(ref Coroutine process)

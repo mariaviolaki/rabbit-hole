@@ -16,6 +16,7 @@ MonoBehaviour:
   defaultFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   textMode: 3
   textSpeed: 5
+  renderTexture3D: {fileID: 8400000, guid: 96a4deac77fa91d4bbfb95a714050f1c, type: 2}
   characterShowSpeed: 10
   characterHideSpeed: 10
   spriteTransitionSpeed: 10
