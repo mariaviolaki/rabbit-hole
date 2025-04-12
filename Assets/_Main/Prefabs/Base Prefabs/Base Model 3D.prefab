@@ -200,10 +200,67 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: cd4e445eab687594b983f9bc520dc3bb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7097067595535889869}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 635547659545568360, guid: cd4e445eab687594b983f9bc520dc3bb, type: 3}
+      insertIndex: 1
+      addedObject: {fileID: 3641401506075961977}
   m_SourcePrefab: {fileID: 100100000, guid: cd4e445eab687594b983f9bc520dc3bb, type: 3}
 --- !u!4 &4789620480895001040 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: cd4e445eab687594b983f9bc520dc3bb, type: 3}
   m_PrefabInstance: {fileID: 5040265815762650683}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5558414134864290387 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 635547659545568360, guid: cd4e445eab687594b983f9bc520dc3bb, type: 3}
+  m_PrefabInstance: {fileID: 5040265815762650683}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3641401506075961977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5558414134864290387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42bc4a0cd83cfda458b8e57ad85d1805, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  expressionData:
+  - name: Angry
+    subExpressions:
+    - name: Fcl_ALL_Angry
+      weight: 100
+    - name: Fcl_ALL_Sorrow
+      weight: 40
+  - name: Happy
+    subExpressions:
+    - name: Fcl_ALL_Fun
+      weight: 60
+    - name: Fcl_ALL_Joy
+      weight: 20
+  - name: Sad
+    subExpressions:
+    - name: Fcl_ALL_Sorrow
+      weight: 100
+  - name: Surprised
+    subExpressions:
+    - name: Fcl_ALL_Angry
+      weight: 20
+    - name: Fcl_ALL_Surprised
+      weight: 40
+  - name: Crazy
+    subExpressions:
+    - name: Fcl_ALL_Fun
+      weight: 100
+    - name: Fcl_ALL_Surprised
+      weight: 50
+  - name: Evil
+    subExpressions:
+    - name: Fcl_ALL_Neutral
+      weight: 100
+    - name: Fcl_ALL_Angry
+      weight: 100
+    - name: Fcl_ALL_Fun
+      weight: 100

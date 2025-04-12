@@ -102,10 +102,8 @@ namespace Dialogue
 		{
 			Task vTask = characterManager.CreateCharacter("Void");
 			Task mTask = characterManager.CreateCharacter("Marsh");
-			Task m2Task = characterManager.CreateCharacter("Marsh 2", "Marsh");
-			Task m3Task = characterManager.CreateCharacter("Marsh 3", "Marsh");
 
-			yield return new WaitUntil(() => Task.WhenAll(vTask, mTask, m2Task, m3Task).IsCompleted);
+			yield return new WaitUntil(() => Task.WhenAll(vTask, mTask).IsCompleted);
 
 			SpriteCharacter v = characterManager.GetCharacter("Void") as SpriteCharacter;
 			v.SetPosition(new Vector2(1f, 0.5f));
@@ -115,20 +113,18 @@ namespace Dialogue
 			m.SetPosition(new Vector2(0f, 0.5f));
 			m.Show();
 
-			Model3DCharacter m2 = characterManager.GetCharacter("Marsh 2") as Model3DCharacter;
-			m2.SetPosition(new Vector2(0.2f, 0.5f));
-			m2.Show();
-
-			Model3DCharacter m3 = characterManager.GetCharacter("Marsh 3") as Model3DCharacter;
-			m3.SetPosition(new Vector2(0.4f, 0.5f));
-			m3.Show();
-
-			yield return new WaitForSeconds(1f);
-
-			m.SetMotion("Kiss");
-			m2.SetMotion("Pointing");
-			m3.SetMotion("Angry");
-
+			yield return m.Say("Testing...");
+			yield return m.SetExpression("Angry");
+			yield return m.Say("Testing...");
+			yield return m.SetExpression("Crazy", 5);
+			yield return m.Say("Testing...");
+			yield return m.SetExpression("Angry", 20);
+			yield return m.Say("Testing...");
+			yield return m.SetExpression(null);
+			yield return m.Say("Testing...");
+			yield return m.SetExpression("Happy");
+			yield return m.Say("Testing...");
+			yield return m.SetExpression("Evil");
 			yield return m.Say("Testing...");
 		}
 	}

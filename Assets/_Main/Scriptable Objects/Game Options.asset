@@ -21,5 +21,6 @@ MonoBehaviour:
   characterHideSpeed: 10
   spriteTransitionSpeed: 10
   colorTransitionSpeed: 10
+  modelExpressionSpeed: 10
   darkenBrightness: 0.5
   spritesFacingRight: 1

@@ -17,6 +17,7 @@ public class GameOptionsSO : ScriptableObject
 	[SerializeField] float characterHideSpeed;
 	[SerializeField] float spriteTransitionSpeed;
 	[SerializeField] float colorTransitionSpeed;
+	[SerializeField] float modelExpressionSpeed;
 	[SerializeField][Range(0, 1)] float darkenBrightness;
 	[SerializeField] bool spritesFacingRight;
 
@@ -30,6 +31,7 @@ public class GameOptionsSO : ScriptableObject
 	public float CharacterHideSpeed { get { return characterHideSpeed; } }
 	public float SpriteTransitionSpeed { get { return spriteTransitionSpeed; } }
 	public float ColorTransitionSpeed { get { return colorTransitionSpeed; } }
+	public float ModelExpressionSpeed { get { return modelExpressionSpeed; } }
 	public float DarkenBrightness { get { return darkenBrightness; } }
 	public bool AreSpritesFacingRight { get { return spritesFacingRight; } }
 }
