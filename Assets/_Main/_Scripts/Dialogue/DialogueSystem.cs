@@ -3,7 +3,6 @@ using Commands;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TMPro;
 using UnityEngine;
 
 namespace Dialogue
@@ -17,9 +16,6 @@ namespace Dialogue
 		[SerializeField] CharacterManager characterManager;
 		[SerializeField] DialogueUI dialogueUI;
 		[SerializeField] string dialogueFileName; // TODO get dynamically
-
-		// TODO Delete after testing
-		[SerializeField] TMP_FontAsset testFont;
 
 		DialogueReader dialogueReader;
 		DialogueFile dialogueFile;
@@ -106,26 +102,51 @@ namespace Dialogue
 			yield return new WaitUntil(() => Task.WhenAll(vTask, mTask).IsCompleted);
 
 			SpriteCharacter v = characterManager.GetCharacter("Void") as SpriteCharacter;
-			v.SetPosition(new Vector2(1f, 0.5f));
+			v.SetPositionInstant(new Vector2(1f, 0.5f));
 			v.Show();
 
 			Model3DCharacter m = characterManager.GetCharacter("Marsh") as Model3DCharacter;
-			m.SetPosition(new Vector2(0f, 0.5f));
+			m.SetPositionInstant(new Vector2(0f, 0.5f));
 			m.Show();
 
 			yield return m.Say("Testing...");
-			yield return m.SetExpression("Angry");
+			v.SetPosition(new Vector2(0f, 0.5f));
+			m.SetPosition(new Vector2(1f, 0.5f));
 			yield return m.Say("Testing...");
-			yield return m.SetExpression("Crazy", 5);
+			v.SetColor(Color.blue);
+			m.SetColor(Color.blue);
 			yield return m.Say("Testing...");
-			yield return m.SetExpression("Angry", 20);
+			v.Flip();
+			m.Flip();
 			yield return m.Say("Testing...");
-			yield return m.SetExpression(null);
+			v.FaceLeft();
+			m.FaceLeft();
 			yield return m.Say("Testing...");
-			yield return m.SetExpression("Happy");
+			v.FaceRight();
+			m.FaceRight();
 			yield return m.Say("Testing...");
+			v.Highlight();
+			m.Highlight();
+			yield return m.Say("Testing...");
+			v.Unhighlight();
+			m.Unhighlight();
+			yield return m.Say("Testing...");
+			v.Hide();
+			m.Hide();
+			yield return m.Say("Testing...");
+			v.Show();
+			m.Show();
+			yield return m.Say("Testing...");
+			v.SetColor(Color.white);
+			m.SetColor(Color.white);
+			yield return m.Say("Testing...");
+			v.SetSprite(SpriteLayerType.Body, "Void Body Yukata");
+			v.SetSprite(SpriteLayerType.Face, "Void Face Evil");
 			yield return m.SetExpression("Evil");
+			m.SetMotion("Kiss");
 			yield return m.Say("Testing...");
+			v.Highlight();
+			m.Highlight();
 		}
 	}
 }

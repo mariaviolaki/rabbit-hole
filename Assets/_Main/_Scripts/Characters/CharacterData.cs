@@ -45,10 +45,10 @@ namespace Characters
 			defaultData.Name = name;
 			defaultData.Alias = name;
 			defaultData.Type = CharacterType.Text;
-			defaultData.NameColor = gameOptions.DefaultTextColor;
-			defaultData.DialogueColor = gameOptions.DefaultTextColor;
-			defaultData.NameFont = gameOptions.DefaultFont;
-			defaultData.DialogueFont = gameOptions.DefaultFont;
+			defaultData.NameColor = gameOptions.Dialogue.DefaultTextColor;
+			defaultData.DialogueColor = gameOptions.Dialogue.DefaultTextColor;
+			defaultData.NameFont = gameOptions.Dialogue.DefaultFont;
+			defaultData.DialogueFont = gameOptions.Dialogue.DefaultFont;
 
 			return defaultData;
 		}

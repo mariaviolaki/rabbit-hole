@@ -8,7 +8,7 @@ namespace Characters
 	public class Model3DCharacter : GraphicsCharacter
 	{
 		const int ModelHeightOffset = 15;
-		const float ModelExpressionTransitionMultiplier = 5f;
+		const float expressionTransitionMultiplier = 5f;
 
 		Transform modelRoot;
 		Camera modelCamera;
@@ -28,48 +28,22 @@ namespace Characters
 			// Load this character's model into the scene
 			GameObject modelPrefab = await manager.FileManager.LoadModel3DPrefab(data.CastName);
 			GameObject modelRootGameObject = Object.Instantiate(modelPrefab, manager.Model3DContainer);
-			RenderTexture renderTexture = new RenderTexture(manager.GameOptions.RenderTexture3D);
+			RenderTexture renderTexture = new RenderTexture(manager.GameOptions.Model3D.RenderTexture3D);
 			int model3DCount = manager.GetCharacterCount(CharacterType.Model3D);
 
 			modelRoot = modelRootGameObject.GetComponent<Transform>();
 			modelCamera = modelRoot.GetComponentInChildren<Camera>();
-			modelContainer = modelRoot.GetChild(0);
+			modelContainer = modelCamera.transform.GetChild(0);
 			modelAnimator = modelContainer.GetComponentInChildren<Animator>();
 			skinnedMeshRenderer = modelAnimator.GetComponentInChildren<SkinnedMeshRenderer>();
 			expressionDirectory = skinnedMeshRenderer.GetComponent<Model3DExpressionDirectory>();
 			rawImage = animator.GetComponentInChildren<RawImage>();
 
 			modelRoot.localPosition = new Vector3(0, model3DCount * ModelHeightOffset, 0);
+			modelContainer.localEulerAngles = new Vector3(0, manager.GameOptions.Model3D.DefaultAngle, 0);
 			rawImage.texture = renderTexture;
 			modelCamera.targetTexture = renderTexture;
 			modelRoot.name = data.Name;
-
-			Debug.Log($"Created 3D Character: {Data.Name}");
-		}
-
-		public override Coroutine Darken(float speed = 0)
-		{
-			return null;
-		}
-
-		public override Coroutine FaceLeft(float speed = 0)
-		{
-			return null;
-		}
-
-		public override Coroutine FaceRight(float speed = 0)
-		{
-			return null;
-		}
-
-		public override Coroutine Flip(float speed = 0)
-		{
-			return null;
-		}
-
-		public override Coroutine Lighten(float speed = 0)
-		{
-			return null;
 		}
 
 		public void SetMotion(string motionName)
@@ -89,14 +63,73 @@ namespace Characters
 
 			manager.StopProcess(ref expressionCoroutine);
 
-			speed = speed <= 0 ? manager.GameOptions.ModelExpressionSpeed : speed;
+			speed = speed <= 0 ? manager.GameOptions.Model3D.ExpressionTransitionSpeed : speed;
 			expressionCoroutine = manager.StartCoroutine(TransitionExpression(expressionName, speed));
 			return expressionCoroutine;
 		}
 
+		public override void FlipInstant()
+		{
+			modelContainer.localEulerAngles = new Vector3(0, -modelContainer.localEulerAngles.y, 0);
+			isFacingRight = !isFacingRight;
+		}
+		protected override IEnumerator FlipDirection(float speed)
+		{
+			yield return FadeImage(canvasGroup, false, speed);
+
+			modelContainer.localEulerAngles = new Vector3(0, -modelContainer.localEulerAngles.y, 0);
+
+			yield return FadeImage(canvasGroup, true, speed);
+
+			isFacingRight = !isFacingRight;
+			directionCoroutine = null;
+		}
+
+		public override void ChangeBrightnessInstant(bool isHighlighted)
+		{
+			rawImage.color = isHighlighted ? LightColor : DarkColor;
+			this.isHighlighted = isHighlighted;
+		}
+		protected override IEnumerator ChangeBrightness(bool isHighlighted, float speed)
+		{
+			yield return SetImageBrightness(rawImage, isHighlighted, speed);
+
+			brightnessCoroutine = null;
+		}
+
+		public override void ChangeColorInstant(Color color)
+		{
+			rawImage.color = color;
+			LightColor = color;
+		}
+		protected override IEnumerator ChangeColor(Color color, float speed)
+		{
+			yield return ColorImage(rawImage, color, speed);
+
+			colorCoroutine = null;
+		}
+
+		protected override IEnumerator FadeImage(CanvasGroup canvasGroup, bool isFadeIn, float speed)
+		{
+			yield return base.FadeImage(canvasGroup, isFadeIn, speed);
+			isVisible = isFadeIn;
+		}
+
+		protected override IEnumerator ColorImage(Graphic image, Color color, float speed)
+		{
+			yield return base.ColorImage(image, color, speed);
+			LightColor = color;
+		}
+
+		protected override IEnumerator SetImageBrightness(Graphic image, bool isHighlighted, float speed)
+		{
+			yield return base.SetImageBrightness(image, isHighlighted, speed);
+			this.isHighlighted = isHighlighted;
+		}
+
 		IEnumerator TransitionExpression(string expressionName, float speed)
 		{
-			float transitionDuration = (1 / speed) * ModelExpressionTransitionMultiplier;
+			float transitionDuration = (1 / speed) * expressionTransitionMultiplier;
 
 			// Fade off the old expression
 			if (currentExpression != null)

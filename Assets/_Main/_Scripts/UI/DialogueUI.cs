@@ -27,13 +27,13 @@ public class DialogueUI : MonoBehaviour
 	void UpdateNameText(CharacterData characterData)
 	{
 		nameText.text = characterData == null ? "" : characterData.Name;
-		nameText.color = characterData == null ? gameOptions.DefaultTextColor : characterData.NameColor;
-		nameText.font = characterData == null ? gameOptions.DefaultFont : characterData.NameFont;
+		nameText.color = characterData == null ? gameOptions.Dialogue.DefaultTextColor : characterData.NameColor;
+		nameText.font = characterData == null ? gameOptions.Dialogue.DefaultFont : characterData.NameFont;
 	}
 
 	void UpdateDialogueText(CharacterData characterData)
 	{
-		dialogueText.color = characterData == null ? gameOptions.DefaultTextColor : characterData.DialogueColor;
-		dialogueText.font = characterData == null ? gameOptions.DefaultFont : characterData.DialogueFont;
+		dialogueText.color = characterData == null ? gameOptions.Dialogue.DefaultTextColor : characterData.DialogueColor;
+		dialogueText.font = characterData == null ? gameOptions.Dialogue.DefaultFont : characterData.DialogueFont;
 	}
 }

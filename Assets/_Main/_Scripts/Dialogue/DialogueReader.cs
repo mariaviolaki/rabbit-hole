@@ -45,7 +45,7 @@ namespace Dialogue
 			if (readProcess != null)
 				dialogueSystem.StopCoroutine(readProcess);
 
-			textBuilder.Speed = dialogueSystem.GameOptions.TextSpeed;
+			textBuilder.Speed = dialogueSystem.GameOptions.Dialogue.TextSpeed;
 
 			// Start paused and wait for player input
 			IsRunning = true;
@@ -124,9 +124,9 @@ namespace Dialogue
 			while (true)
 			{
 				if (segment.IsAppended)
-					textBuilder.Append(segment.Text, dialogueSystem.GameOptions.TextMode);
+					textBuilder.Append(segment.Text, dialogueSystem.GameOptions.Dialogue.TextMode);
 				else
-					textBuilder.Write(segment.Text, dialogueSystem.GameOptions.TextMode);
+					textBuilder.Write(segment.Text, dialogueSystem.GameOptions.Dialogue.TextMode);
 
 				IsRunning = false;
 				yield return new WaitUntil(() => IsRunning || !textBuilder.IsBuilding);

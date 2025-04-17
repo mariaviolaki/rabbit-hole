@@ -1,15 +1,21 @@
 using System.Collections;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Characters
 {
 	public abstract class GraphicsCharacter : Character
 	{
-		protected const float MoveSpeedMultiplier = 100f;
+		const float MoveSpeedMultiplier = 100f;
+		const float FadeSpeedMultiplier = 5f;
+		const float ColorSpeedMultiplier = 5f;
 
 		Coroutine moveCoroutine;
+		protected Coroutine directionCoroutine;
 		protected Coroutine visibilityCoroutine;
+		protected Coroutine colorCoroutine;
+		protected Coroutine brightnessCoroutine;
 
 		protected CanvasGroup canvasGroup;
 		protected Animator animator;
@@ -17,17 +23,15 @@ namespace Characters
 		protected bool isHighlighted = true;
 
 		protected Color DisplayColor { get { return isHighlighted ? LightColor : DarkColor; } }
-		protected Color LightColor { get; private set; } = Color.white;
-		protected Color DarkColor
-		{
-			get
-			{
-				return new Color(LightColor.r * manager.GameOptions.DarkenBrightness,
-					LightColor.g * manager.GameOptions.DarkenBrightness,
-					LightColor.b * manager.GameOptions.DarkenBrightness,
-					LightColor.a);
-			}
-		}
+		protected Color LightColor { get; set; } = Color.white;
+		protected Color DarkColor { get { return GetDarkColor(LightColor); } }
+
+		public abstract void FlipInstant();
+		public abstract void ChangeBrightnessInstant(bool isHighlighted);
+		public abstract void ChangeColorInstant(Color color);
+		protected abstract IEnumerator FlipDirection(float speed);
+		protected abstract IEnumerator ChangeBrightness(bool isHighlighted, float speed);
+		protected abstract IEnumerator ChangeColor(Color color, float speed);
 
 		protected async override Task Init()
 		{
@@ -41,19 +45,7 @@ namespace Characters
 
 			root.name = data.Name;
 			canvasGroup.alpha = 0f;
-			isFacingRight = manager.GameOptions.AreSpritesFacingRight;
-		}
-
-		public abstract Coroutine Flip(float speed = 0);
-		public abstract Coroutine FaceLeft(float speed = 0);
-		public abstract Coroutine FaceRight(float speed = 0);
-		public abstract Coroutine Lighten(float speed = 0);
-		public abstract Coroutine Darken(float speed = 0);
-
-		public virtual Coroutine SetColor(Color color, float speed = 0)
-		{
-			LightColor = color;
-			return null;
+			isFacingRight = manager.GameOptions.Characters.AreSpritesFacingRight;
 		}
 
 		public void SetPriority(int index)
@@ -61,6 +53,90 @@ namespace Characters
 			if (!isVisible) return;
 
 			manager.SetPriority(data.Name, index);
+		}
+
+		public void ShowInstant() => ChangeVisibilityInstant(true);
+		public Coroutine Show(float speed = 0)
+		{
+			manager.StopProcess(ref visibilityCoroutine);
+
+			visibilityCoroutine = manager.StartCoroutine(ChangeVisibility(true, speed));
+			return visibilityCoroutine;
+		}
+
+		public void HideInstant() => ChangeVisibilityInstant(false);
+		public Coroutine Hide(float speed = 0)
+		{
+			manager.StopProcess(ref visibilityCoroutine);
+
+			visibilityCoroutine = manager.StartCoroutine(ChangeVisibility(false, speed));
+			return visibilityCoroutine;
+		}
+
+		public void SetPositionInstant(Vector2 normalizedPos) => root.anchoredPosition = GetTargetPosition(normalizedPos);
+		public Coroutine SetPosition(Vector2 normalizedPos, float speed = 0)
+		{
+			manager.StopProcess(ref moveCoroutine);
+
+			moveCoroutine = manager.StartCoroutine(MoveCharacter(normalizedPos, speed));
+			return moveCoroutine;
+		}
+
+		public void FaceLeftInstant()
+		{
+			if (!isFacingRight) return;
+			FlipInstant();
+		}
+		public Coroutine FaceLeft(float speed = 0)
+		{
+			if (!isFacingRight) return null;
+			return Flip(speed);
+		}
+
+		public void FaceRightInstant()
+		{
+			if (isFacingRight) return;
+			FlipInstant();
+		}
+		public Coroutine FaceRight(float speed = 0)
+		{
+			if (isFacingRight) return null;
+			return Flip(speed);
+		}
+
+		public Coroutine Flip(float speed = 0)
+		{
+			manager.StopProcess(ref directionCoroutine);
+
+			directionCoroutine = manager.StartCoroutine(FlipDirection(speed));
+			return directionCoroutine;
+		}
+
+		public void HighlightInstant() => ChangeBrightnessInstant(true);
+		public Coroutine Highlight(float speed = 0)
+		{
+			manager.StopProcess(ref brightnessCoroutine);
+
+			brightnessCoroutine = manager.StartCoroutine(ChangeBrightness(true, speed));
+			return brightnessCoroutine;
+		}
+
+		public void UnhighlightInstant() => ChangeBrightnessInstant(false);
+		public Coroutine Unhighlight(float speed = 0)
+		{
+			manager.StopProcess(ref brightnessCoroutine);
+
+			brightnessCoroutine = manager.StartCoroutine(ChangeBrightness(false, speed));
+			return brightnessCoroutine;
+		}
+
+		public void SetColorInstant(Color color) => ChangeColorInstant(color);
+		public Coroutine SetColor(Color color, float speed = 0)
+		{
+			manager.StopProcess(ref colorCoroutine);
+
+			colorCoroutine = manager.StartCoroutine(ChangeColor(color, speed));
+			return colorCoroutine;
 		}
 
 		public void Animate(string animationName)
@@ -73,45 +149,76 @@ namespace Characters
 			animator.SetBool(animationName, isPlaying);
 		}
 
-		public void SetPosition(Vector2 normalizedPos)
+		protected virtual IEnumerator FadeImage(CanvasGroup canvasGroup, bool isFadeIn, float speed)
 		{
-			root.anchoredPosition = GetTargetPosition(normalizedPos);
-		}
+			float startAlpha = canvasGroup.alpha;
+			float targetAlpha = isFadeIn ? 1f : 0f;
+			speed = speed <= 0f ? manager.GameOptions.Characters.FadeTransitionSpeed : speed;
 
-		public Coroutine Show()
-		{
-			manager.StopProcess(ref visibilityCoroutine);
-
-			visibilityCoroutine = manager.StartCoroutine(ChangeVisibility(true));
-			return visibilityCoroutine;
-		}
-
-		public Coroutine Hide()
-		{
-			manager.StopProcess(ref visibilityCoroutine);
-
-			visibilityCoroutine = manager.StartCoroutine(ChangeVisibility(false));
-			return visibilityCoroutine;
-		}
-
-		public Coroutine MoveToPosition(Vector2 normalizedPos, float speed)
-		{
-			manager.StopProcess(ref moveCoroutine);
-
-			moveCoroutine = manager.StartCoroutine(MoveCharacter(normalizedPos, speed));
-			return moveCoroutine;
-		}
-
-		IEnumerator ChangeVisibility(bool isVisible)
-		{
-			float targetAlpha = isVisible ? 1f : 0f;
-			float visibilityChangeSpeed = isVisible ? manager.GameOptions.CharacterShowSpeed : manager.GameOptions.CharacterHideSpeed;
-
-			while (canvasGroup.alpha != targetAlpha)
+			float timeElapsed = 0;
+			float duration = (1f / speed) * FadeSpeedMultiplier * Mathf.Abs(targetAlpha - startAlpha);
+			while (timeElapsed < duration)
 			{
-				canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, targetAlpha, visibilityChangeSpeed * Time.deltaTime);
+				timeElapsed += Time.deltaTime;
+				float smoothPercentage = Mathf.SmoothStep(0, 1, Mathf.Clamp01(timeElapsed / duration));
+
+				canvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, smoothPercentage);
 				yield return null;
 			}
+
+			canvasGroup.alpha = targetAlpha;
+		}
+
+		protected virtual IEnumerator SetImageBrightness(Graphic image, bool isHighlighted, float speed)
+		{
+			Color startColor = image.color;
+			Color targetColor = isHighlighted ? LightColor : DarkColor;
+
+			speed = speed <= 0 ? manager.GameOptions.Characters.BrightnessTransitionSpeed : speed;
+			float duration = (1 / speed) * ColorSpeedMultiplier * Vector4.Distance(startColor, targetColor);
+
+			float timeElapsed = 0;
+			while (timeElapsed < duration)
+			{
+				timeElapsed += Time.deltaTime;
+				float smoothPercentage = Mathf.SmoothStep(0, 1, Mathf.Clamp01(timeElapsed / duration));
+
+				image.color = Color.Lerp(startColor, targetColor, smoothPercentage);
+				yield return null;
+			}
+
+			image.color = targetColor;
+		}
+
+		protected virtual IEnumerator ColorImage(Graphic image, Color color, float speed)
+		{
+			Color startColor = image.color;
+			Color targetColor = isHighlighted ? color : GetDarkColor(color);
+
+			speed = speed <= 0 ? manager.GameOptions.Characters.ColorTransitionSpeed : speed;
+			float duration = (1 / speed) * ColorSpeedMultiplier * Vector4.Distance(startColor, targetColor);
+
+			float timeElapsed = 0;
+			while (timeElapsed < duration)
+			{
+				timeElapsed += Time.deltaTime;
+				float smoothPercentage = Mathf.SmoothStep(0, 1, Mathf.Clamp01(timeElapsed / duration));
+
+				image.color = Color.Lerp(startColor, targetColor, smoothPercentage);
+				yield return null;
+			}
+
+			image.color = targetColor;
+		}
+
+		void ChangeVisibilityInstant(bool isVisible)
+		{
+			canvasGroup.alpha = isVisible ? 1f : 0f;
+			this.isVisible = isVisible;
+		}
+		IEnumerator ChangeVisibility(bool isVisible, float speed)
+		{
+			yield return FadeImage(canvasGroup, isVisible, speed);
 
 			this.isVisible = isVisible;
 			visibilityCoroutine = null;
@@ -119,9 +226,10 @@ namespace Characters
 
 		IEnumerator MoveCharacter(Vector2 normalizedPos, float speed)
 		{
-			Vector2 startPos = root.position;
+			Vector2 startPos = root.anchoredPosition;
 			Vector2 endPos = GetTargetPosition(normalizedPos);
 			float distance = Vector2.Distance(startPos, endPos);
+			speed = speed <= 0 ? manager.GameOptions.Characters.MoveSpeed : speed;
 
 			float distancePercent = 0f;
 			while (distancePercent < 1f)
@@ -131,12 +239,12 @@ namespace Characters
 				distancePercent = Mathf.Clamp01(distancePercent);
 				// Move smoothly towards the start and end
 				float smoothDistance = Mathf.SmoothStep(0f, 1f, distancePercent);
-				root.position = Vector2.Lerp(startPos, endPos, smoothDistance);
+				root.anchoredPosition = Vector2.Lerp(startPos, endPos, smoothDistance);
 
 				yield return null;
 			}
 
-			root.position = endPos;
+			root.anchoredPosition = endPos;
 			moveCoroutine = null;
 		}
 
@@ -163,6 +271,16 @@ namespace Characters
 
 			// Return position relative to anchor center
 			return clampedTargetPos - anchorOffset;
+		}
+
+		Color GetDarkColor(Color lightColor)
+		{
+			return new Color(
+				lightColor.r * manager.GameOptions.Characters.DarkenBrightness,
+				lightColor.g * manager.GameOptions.Characters.DarkenBrightness,
+				lightColor.b * manager.GameOptions.Characters.DarkenBrightness,
+				lightColor.a
+			);
 		}
 	}
 }
