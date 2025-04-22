@@ -82,7 +82,7 @@ namespace Dialogue
 			for (int i = startIndex; i < commandString.Length; i++)
 			{
 				char character = commandString[i];
-				if (char.IsWhiteSpace(character) && !isInQuotes) continue;
+				if (isFullStringInQuotes && char.IsWhiteSpace(character)) continue;
 
 				if (character == '\\' && i + 1 != commandString.Length && commandString[i + 1] == '"')
 				{
@@ -93,6 +93,12 @@ namespace Dialogue
 				{
 					isInQuotes = !isInQuotes;
 					isFullStringInQuotes = !isInQuotes;
+
+					// Clear the argument builder before adding what is inside quotes
+					// Text inside quotes is saved untrimmed
+					if (isInQuotes)
+						argumentBuilder.Clear();
+
 					continue;
 				}
 

@@ -44,6 +44,21 @@ namespace Characters
 			data = manager.Directory.GetCharacterData(Data.Name, Data.CastName, manager.GameOptions);
 		}
 
+		public void SetShortName(string shortName)
+		{
+			if (string.IsNullOrEmpty(shortName)) return;
+			else if (!manager.SetCharacterShortName(data.ShortName, shortName)) return;
+
+			data.ShortName = shortName;
+		}
+
+		public void SetDisplayName(string displayName)
+		{
+			if (string.IsNullOrEmpty(displayName)) return;
+
+			data.DisplayName = displayName;
+		}
+
 		public Coroutine Say(string dialogueLine)
 		{
 			return manager.Dialogue.Say(Data.Name, dialogueLine);

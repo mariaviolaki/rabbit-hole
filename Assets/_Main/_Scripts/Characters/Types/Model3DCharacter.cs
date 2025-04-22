@@ -18,7 +18,7 @@ namespace Characters
 		SkinnedMeshRenderer skinnedMeshRenderer;
 		Model3DExpressionDirectory expressionDirectory;
 
-		string currentExpression;
+		string currentExpression = string.Empty;
 		Coroutine expressionCoroutine;
 
 		protected override async Task Init()
@@ -51,15 +51,16 @@ namespace Characters
 			modelAnimator.SetTrigger(motionName);
 		}
 
-		public Coroutine SetExpression(string expressionName, float speed = -1)
+		public void SetExpressionInstant(string expressionName)
 		{
-			if (expressionName == currentExpression) return null;
+			if (!IsValidExpression(expressionName)) return;
 
-			if (expressionName != null && !expressionDirectory.Expressions.ContainsKey(expressionName))
-			{
-				Debug.LogError($"No expression '{expressionName}' found for 3D Model: '{data.CastName}'");
-				return null;
-			}
+			ChangeExpression(expressionName);
+		}
+
+		public Coroutine SetExpression(string expressionName, float speed = 0)
+		{
+			if (!IsValidExpression(expressionName)) return null;
 
 			manager.StopProcess(ref expressionCoroutine);
 
@@ -127,21 +128,39 @@ namespace Characters
 			this.isHighlighted = isHighlighted;
 		}
 
+		void ChangeExpression(string expressionName)
+		{
+			// Clear the old expression
+			if (currentExpression != string.Empty)
+				ChangeSubExpressions(currentExpression);
+
+			// If a new expression was specified, change into this - and cache the new expression
+			if (expressionName == string.Empty)
+			{
+				currentExpression = string.Empty;
+			}
+			else
+			{
+				ChangeSubExpressions(expressionName);
+				currentExpression = expressionName;
+			}
+		}
+
 		IEnumerator TransitionExpression(string expressionName, float speed)
 		{
 			float transitionDuration = (1 / speed) * expressionTransitionMultiplier;
 
 			// Fade off the old expression
-			if (currentExpression != null)
+			if (currentExpression != string.Empty)
 			{
 				float fadeOffDuration = expressionName == null ? transitionDuration : (transitionDuration / 2);
 				yield return TransitionSubExpressions(currentExpression, fadeOffDuration);
 			}
 
 			// If a new expression was specified, transition into this - and cache the new expression
-			if (expressionName == null)
+			if (expressionName == string.Empty)
 			{
-				currentExpression = null;
+				currentExpression = string.Empty;
 			}
 			else
 			{
@@ -150,6 +169,19 @@ namespace Characters
 			}
 
 			expressionCoroutine = null;
+		}
+
+		void ChangeSubExpressions(string expressionName)
+		{
+			bool isNewExpression = expressionName != currentExpression;
+			SubExpression[] currentSubExpressions = expressionDirectory.Expressions[expressionName];
+
+			// Immediately set all the sub-expressions listed for the main expression
+			foreach (SubExpression subExpression in currentSubExpressions)
+			{
+				float expressionWeight = isNewExpression ? subExpression.Weight : 0f;
+				skinnedMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
+			}
 		}
 
 		IEnumerator TransitionSubExpressions(string expressionName, float transitionDuration)
@@ -175,6 +207,18 @@ namespace Characters
 
 				yield return null;
 			}
+		}
+
+		bool IsValidExpression(string expressionName)
+		{
+			if (expressionName == currentExpression) return false;
+			if (expressionName != string.Empty && !expressionDirectory.Expressions.ContainsKey(expressionName))
+			{
+				Debug.LogError($"No expression '{expressionName}' found for 3D Model: '{data.CastName}'");
+				return false;
+			}
+
+			return true;
 		}
 	}
 }

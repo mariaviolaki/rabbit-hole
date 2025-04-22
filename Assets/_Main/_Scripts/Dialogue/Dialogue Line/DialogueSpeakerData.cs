@@ -1,13 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using UnityEngine;
+using Characters;
 
 namespace Dialogue
 {
 	public class DialogueSpeakerData
 	{
-		public enum Layer { None, Face, Body };
-
 		const string CastDelimiter = " as ";
 		const string PosDelimiter = " at ";
 		const string LayerStartDelimiter = " [";
@@ -20,15 +19,16 @@ namespace Dialogue
 		readonly string DataDelimiterPattern = @$"{CastDelimiter}|{PosDelimiter}|{RegexLayerDelimiter}";
 
 		string name;
-		string castName;
-		Vector2 pos;
-		Dictionary<Layer, string> layers;
+		string displayName;
+		float xPos = float.NaN;
+		float yPos = float.NaN;
+		Dictionary<SpriteLayerType, string> layers;
 
 		public string Name { get { return name; } }
-		public string CastName { get { return castName; } }
-		public Vector2 Pos { get { return pos; } }
-		public Dictionary<Layer, string> Layers { get { return layers; } }
-		public string DisplayName { get { return CastName == string.Empty ? Name : CastName; } }
+		public string DisplayName { get { return displayName; } }
+		public float XPos { get { return xPos; } }
+		public float YPos { get { return yPos; } }
+		public Dictionary<SpriteLayerType, string> Layers { get { return layers; } }
 
 		public DialogueSpeakerData(string rawSpeaker)
 		{
@@ -41,9 +41,8 @@ namespace Dialogue
 			MatchCollection delimiterMatches = delimiterRegex.Matches(rawSpeaker);
 
 			name = "";
-			castName = "";
-			pos = new Vector2();
-			layers = new Dictionary<Layer, string>();
+			displayName = "";
+			layers = new Dictionary<SpriteLayerType, string>();
 
 			// There should always be a speaker name - the rest are optional
 			if (delimiterMatches.Count == 0)
@@ -72,39 +71,48 @@ namespace Dialogue
 
 			if (match.Value == CastDelimiter)
 			{
-				castName = value;
+				displayName = value;
 			}
 			else if (match.Value == PosDelimiter)
 			{
 				string[] posAxes = value.Split(PosAxisDelimiter, System.StringSplitOptions.RemoveEmptyEntries);
 
 				// TryParse automatically trims before parsing
-				float.TryParse(posAxes[0], out pos.x);
+				float.TryParse(posAxes[0], out xPos);
 				if (posAxes.Length > 1)
-					float.TryParse(posAxes[1], out pos.y);
+					float.TryParse(posAxes[1], out yPos);
 			}
 			else if (match.Value == LayerStartDelimiter)
 			{
-				// Remove the end bracket enclosing the value
-				value = value.Split(LayerEndDelimiter, System.StringSplitOptions.RemoveEmptyEntries)[0];
+				layers = new Dictionary<SpriteLayerType, string>();
 
-				string[] layerStrings = value.Split(LayerTypeDelimiter, System.StringSplitOptions.RemoveEmptyEntries);
+				// Remove the end bracket enclosing the value
+				value = value.Split(LayerEndDelimiter)[0];
+
+				string[] layerStrings = value.Split(LayerTypeDelimiter);
 				foreach (string layerString in layerStrings)
 				{
-					string[] layerData = layerString.Split(LayerValueDelimiter, System.StringSplitOptions.RemoveEmptyEntries);
-					layers[GetLayerFromText(layerData[0].Trim())] = layerData[1].Trim();
+					if (layerString.Contains(LayerValueDelimiter))
+					{
+						// Sprite characters use multiple layers
+						string[] layerData = layerString.Split(LayerValueDelimiter, System.StringSplitOptions.RemoveEmptyEntries);
+						layers[GetLayerFromText(layerData[0].Trim())] = layerData[1].Trim();
+					}
+					else
+					{
+						// Model3D characters have no layers
+						layers[SpriteLayerType.None] = layerString.Trim();
+					}
 				}
 			}
 		}
 
-		Layer GetLayerFromText(string layerText)
+		SpriteLayerType GetLayerFromText(string layerText)
 		{
-			switch (layerText)
-			{
-				case "face": return Layer.Face;
-				case "body": return Layer.Body;
-				default: return Layer.None;
-			}
+			if (Enum.TryParse(typeof(SpriteLayerType), layerText, ignoreCase: true, out object layer))
+				return (SpriteLayerType)layer;
+
+			return SpriteLayerType.None;
 		}
 	}
 }

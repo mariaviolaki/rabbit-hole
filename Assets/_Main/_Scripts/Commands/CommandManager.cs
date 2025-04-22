@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
+using Characters;
 using UnityEngine;
 
 namespace Commands
@@ -10,6 +11,8 @@ namespace Commands
 	{
 		// The grouping of all dialogue commands available to be run
 		CommandDirectory commandDirectory;
+		CharacterManager characterManager;
+
 		// Used for certain commands which are not instantly executed - only one can be executed at a time
 		Coroutine commandProcess;
 
@@ -57,7 +60,8 @@ namespace Commands
 
 		void InitDirectory()
 		{
-			commandDirectory = new CommandDirectory();
+			characterManager = FindObjectOfType<CharacterManager>();
+			commandDirectory = new CommandDirectory(characterManager);
 
 			Assembly projectAssembly = Assembly.GetExecutingAssembly();
 			Type[] commandTypes = projectAssembly.GetTypes().Where(t => t.IsSubclassOf(typeof(DialogueCommand))).ToArray();

@@ -1,21 +1,27 @@
 using System.Collections;
 using System.Collections.Generic;
+using Characters;
 using UnityEngine;
 
 namespace Dialogue
 {
 	public class DialogueReader
 	{
+		const string CommentLineDelimiter = "//";
 		readonly DialogueSystem dialogueSystem;
 		readonly TextBuilder textBuilder;
+		readonly CharacterManager characterManager;
 
 		Coroutine readProcess;
 
 		public bool IsRunning { get; set; }
 
-		public DialogueReader(DialogueSystem dialogueSystem, DialogueUI dialogueUI)
+		bool IsValidDialogueLine(string line) => !string.IsNullOrEmpty(line) && !line.StartsWith(CommentLineDelimiter);
+
+		public DialogueReader(DialogueSystem dialogueSystem, CharacterManager characterManager, DialogueUI dialogueUI)
 		{
 			this.dialogueSystem = dialogueSystem;
+			this.characterManager = characterManager;
 			textBuilder = new TextBuilder(dialogueUI.DialogueText);
 		}
 
@@ -56,12 +62,15 @@ namespace Dialogue
 		{
 			foreach (string line in lines)
 			{
-				if (string.IsNullOrEmpty(line)) continue;
+				if (!IsValidDialogueLine(line)) continue;
 
 				DialogueLine dialogueLine = DialogueParser.Parse(line);
 
 				if (dialogueLine.Dialogue != null)
-					yield return DisplayDialogue(dialogueLine, false);
+				{
+					dialogueSystem.SetSpeaker(dialogueLine.Speaker);
+					yield return DisplayDialogue(dialogueLine);
+				}
 
 				if (dialogueLine.Commands != null)
 					yield return dialogueSystem.RunCommands(dialogueLine.Commands.CommandList);
@@ -74,35 +83,29 @@ namespace Dialogue
 		// Read a list of dialogue lines spoken by a certain character
 		IEnumerator Read(string speakerName, List<string> lines)
 		{
-			dialogueSystem.SetSpeaker(speakerName);
+			Character character = characterManager.GetCharacter(speakerName);
+			dialogueSystem.SetSpeakerName(character.Data);
 
 			foreach (string line in lines)
 			{
-				if (string.IsNullOrEmpty(line)) continue;
+				if (!IsValidDialogueLine(line)) continue;
 
 				DialogueLine dialogueLine = DialogueParser.Parse(line);
 
 				if (dialogueLine.Dialogue != null)
-					yield return DisplayDialogue(dialogueLine, true);
+					yield return DisplayDialogue(dialogueLine);
 			}
 
 			IsRunning = false;
 			yield return new WaitUntil(() => IsRunning);
 		}
 
-		IEnumerator DisplayDialogue(DialogueLine line, bool isSpeakerSet)
+		IEnumerator DisplayDialogue(DialogueLine line)
 		{
 			foreach (DialogueTextData.Segment segment in line.Dialogue.Segments)
 			{
-				yield return WaitForNextDialogueSegment(segment);
-
-				if (!isSpeakerSet)
-				{
-					dialogueSystem.SetSpeaker(line.Speaker?.Name);
-					isSpeakerSet = true;
-				}
-
 				yield return DisplayDialogueSegment(segment);
+				yield return WaitForNextDialogueSegment(segment);
 			}
 		}
 

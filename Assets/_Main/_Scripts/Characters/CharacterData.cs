@@ -7,7 +7,8 @@ namespace Characters
 	public class CharacterData
 	{
 		[SerializeField] string name;
-		[SerializeField] string alias;
+		[SerializeField] string shortName;
+		[SerializeField] string displayName;
 		[SerializeField] Color nameColor;
 		[SerializeField] Color dialogueColor;
 		[SerializeField] TMP_FontAsset nameFont;
@@ -16,19 +17,21 @@ namespace Characters
 
 		public string CastName { get; set; } // to use another character's data
 		public string Name { get { return name; } set { name = value; } }
-		public string Alias { get { return alias; } set { alias = value; } }
+		public string ShortName { get { return shortName; } set { shortName = value; } }
+		public string DisplayName { get { return displayName; } set { displayName = value; } }
 		public Color NameColor { get { return nameColor; } set { nameColor = value; } }
 		public Color DialogueColor { get { return dialogueColor; } set { dialogueColor = value; } }
 		public TMP_FontAsset NameFont { get { return nameFont; } set { nameFont = value; } }
 		public TMP_FontAsset DialogueFont { get { return dialogueFont; } set { dialogueFont = value; } }
 		public CharacterType Type { get { return type; } private set { type = value; } }
 
-		public static CharacterData Get(string name, CharacterData originalData)
+		public static CharacterData Get(string name, CharacterData originalData, bool isOriginalCharacter)
 		{
 			CharacterData copiedData = new CharacterData();
 			copiedData.CastName = originalData.name;
 			copiedData.Name = name;
-			copiedData.Alias = name;
+			copiedData.ShortName = isOriginalCharacter ? originalData.shortName : name;
+			copiedData.DisplayName = isOriginalCharacter ? originalData.displayName : name;
 			copiedData.Type = originalData.Type;
 			copiedData.NameColor = originalData.nameColor;
 			copiedData.DialogueColor = originalData.dialogueColor;
@@ -43,7 +46,8 @@ namespace Characters
 			CharacterData defaultData = new CharacterData();
 			defaultData.CastName = name;
 			defaultData.Name = name;
-			defaultData.Alias = name;
+			defaultData.ShortName = name;
+			defaultData.DisplayName = name;
 			defaultData.Type = CharacterType.Text;
 			defaultData.NameColor = gameOptions.Dialogue.DefaultTextColor;
 			defaultData.DialogueColor = gameOptions.Dialogue.DefaultTextColor;

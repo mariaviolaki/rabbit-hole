@@ -19,7 +19,7 @@ namespace Characters
 		public CharacterData GetCharacterData(string name, string castName, GameOptionsSO gameOptions)
 		{
 			if (characters.ContainsKey(castName))
-				return CharacterData.Get(name, characters[castName]);
+				return CharacterData.Get(name, characters[castName], name == castName);
 
 			return GetDefaultData(name, gameOptions);
 		}

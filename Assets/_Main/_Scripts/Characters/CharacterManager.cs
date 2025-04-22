@@ -26,31 +26,38 @@ namespace Characters
 		public Task CreateCharacter(string name) => CreateCharacter(name, name);
 		public async Task CreateCharacter(string name, string castName)
 		{
+			castName = castName ?? name;
 			CharacterData data = characterDirectory.GetCharacterData(name, castName, gameOptions);
+
+			if (characters.ContainsKey(data.ShortName))
+			{
+				Debug.LogWarning($"Unable to create character '{name}' because they already exist.");
+				return;
+			}
 
 			switch (data.Type)
 			{
 				case CharacterType.Model3D:
-					characters[name] = await Character.Create<Model3DCharacter>(this, data);
+					characters[data.ShortName] = await Character.Create<Model3DCharacter>(this, data);
 					break;
 				case CharacterType.Sprite:
-					characters[name] = await Character.Create<SpriteCharacter>(this, data);
+					characters[data.ShortName] = await Character.Create<SpriteCharacter>(this, data);
 					break;
 				case CharacterType.Text:
 				default:
-					characters[name] = await Character.Create<TextCharacter>(this, data);
+					characters[data.ShortName] = await Character.Create<TextCharacter>(this, data);
 					break;
 			}
 		}
 
-		public Character GetCharacter(string name)
+		public Character GetCharacter(string shortName)
 		{
-			if (name == null) return null;
+			if (string.IsNullOrEmpty(shortName)) return null;
 
-			if (!characters.ContainsKey(name))
-				CreateDefaultCharacter(name);
+			if (!characters.ContainsKey(shortName))
+				CreateDefaultCharacter(shortName);
 
-			return characters[name];
+			return characters[shortName];
 		}
 
 		public int GetCharacterCount(CharacterType characterType)
@@ -107,6 +114,19 @@ namespace Characters
 				// Position all the given characters on top in the order they were given
 				characters[name].Root.SetSiblingIndex(characterContainer.childCount);
 			}
+		}
+
+		public bool SetCharacterShortName(string oldShortName, string newShortName)
+		{
+			if (characters.ContainsKey(newShortName))
+			{
+				Debug.LogWarning($"Unable to set character short name '{newShortName}' because it already exists.");
+				return false;
+			}
+
+			characters[newShortName] = characters[oldShortName];
+			characters.Remove(oldShortName);
+			return true;
 		}
 
 		int SortInvisibleCharacters()

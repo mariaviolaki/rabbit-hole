@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Characters;
 using UnityEngine;
 
 namespace Commands
@@ -8,6 +9,14 @@ namespace Commands
 	{
 		// Command Manager will search our scripts and dynamically populate this with every class inheriting from DialogueCommand
 		Dictionary<string, Delegate> directory = new Dictionary<string, Delegate>();
+		CharacterManager characterManager;
+
+		public CommandDirectory(CharacterManager characterManager)
+		{
+			this.characterManager = characterManager;
+		}
+
+		public CharacterManager GetCharacterManager() => characterManager;
 
 		public bool HasCommand(string commandName) => directory.ContainsKey(commandName);
 

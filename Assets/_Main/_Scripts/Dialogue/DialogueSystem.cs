@@ -24,7 +24,7 @@ namespace Dialogue
 
 		void Start()
 		{
-			dialogueReader = new DialogueReader(this, dialogueUI);
+			dialogueReader = new DialogueReader(this, characterManager, dialogueUI);
 
 			inputManager.OnAdvance += AdvanceDialogue;
 		}
@@ -35,11 +35,6 @@ namespace Dialogue
 			if (Input.GetKeyDown(KeyCode.Return))
 			{
 				StartDialogueFromFile();
-			}
-			// TODO remove test functionality
-			else if (Input.GetKeyDown(KeyCode.T))
-			{
-				StartCoroutine(RunTest());
 			}
 		}
 
@@ -53,27 +48,70 @@ namespace Dialogue
 			return dialogueReader.StartReading(speakerName, lines);
 		}
 
-		public void SetSpeaker(string speakerName)
+		public void SetSpeaker(DialogueSpeakerData speakerData)
 		{
-			if (string.IsNullOrEmpty(speakerName))
+			if (speakerData == null || string.IsNullOrEmpty(speakerData.Name))
 			{
 				dialogueUI.HideSpeaker();
+				return;
 			}
-			else
-			{
-				Character character = characterManager.GetCharacter(speakerName);
-				dialogueUI.ShowSpeaker(character.Data);
-			}
+
+			Character character = characterManager.GetCharacter(speakerData.Name);
+			
+			ChangeSpeakerDisplayName(character, speakerData.DisplayName);
+			ChangeSpeakerPosition(character, speakerData.XPos, speakerData.YPos);
+			ChangeSpeakerGraphics(character, speakerData.Layers);
+			SetSpeakerName(character.Data);
 		}
 
 		public IEnumerator RunCommands(List<DialogueCommandData.Command> commandList)
 		{
 			foreach (DialogueCommandData.Command command in commandList)
 			{
-				if (command.IsWaiting)
+				if (command.IsWaiting || command.Name == "Wait")
 					yield return commandManager.Execute(command.Name, command.Arguments);
 				else
 					commandManager.Execute(command.Name, command.Arguments);
+			}
+		}
+
+		public void SetSpeakerName(CharacterData characterData)
+		{
+			dialogueUI.ShowSpeaker(characterData);
+		}
+
+		void ChangeSpeakerDisplayName(Character character, string displayName)
+		{
+			if (string.IsNullOrEmpty(displayName)) return;
+
+			character.SetDisplayName(displayName);
+		}
+
+		void ChangeSpeakerPosition(Character character, float xPos, float yPos)
+		{
+			if (character is not GraphicsCharacter) return;
+
+			if (!float.IsNaN(xPos) && !float.IsNaN(yPos))
+				((GraphicsCharacter)character).SetPosition(new Vector2(xPos, yPos));
+			else if (!float.IsNaN(xPos))
+				((GraphicsCharacter)character).SetPositionX(xPos);
+			else if (!float.IsNaN(yPos))
+				((GraphicsCharacter)character).SetPositionY(yPos);
+		}
+
+		void ChangeSpeakerGraphics(Character character, Dictionary<SpriteLayerType, string> graphics)
+		{
+			if (graphics == null) return;
+
+			if (character is SpriteCharacter)
+			{
+				foreach (var layer in graphics)
+					((SpriteCharacter)character).SetSprite(layer.Key, layer.Value);
+			}
+			else if (character is Model3DCharacter)
+			{
+				foreach (string expressionName in graphics.Values)
+					((Model3DCharacter)character).SetExpression(expressionName);
 			}
 		}
 
@@ -91,62 +129,6 @@ namespace Dialogue
 			if (dialogueReader.IsRunning) return;
 
 			dialogueReader.IsRunning = true;
-		}
-
-		// TODO remove test function
-		IEnumerator RunTest()
-		{
-			Task vTask = characterManager.CreateCharacter("Void");
-			Task mTask = characterManager.CreateCharacter("Marsh");
-
-			yield return new WaitUntil(() => Task.WhenAll(vTask, mTask).IsCompleted);
-
-			SpriteCharacter v = characterManager.GetCharacter("Void") as SpriteCharacter;
-			v.SetPositionInstant(new Vector2(1f, 0.5f));
-			v.Show();
-
-			Model3DCharacter m = characterManager.GetCharacter("Marsh") as Model3DCharacter;
-			m.SetPositionInstant(new Vector2(0f, 0.5f));
-			m.Show();
-
-			yield return m.Say("Testing...");
-			v.SetPosition(new Vector2(0f, 0.5f));
-			m.SetPosition(new Vector2(1f, 0.5f));
-			yield return m.Say("Testing...");
-			v.SetColor(Color.blue);
-			m.SetColor(Color.blue);
-			yield return m.Say("Testing...");
-			v.Flip();
-			m.Flip();
-			yield return m.Say("Testing...");
-			v.FaceLeft();
-			m.FaceLeft();
-			yield return m.Say("Testing...");
-			v.FaceRight();
-			m.FaceRight();
-			yield return m.Say("Testing...");
-			v.Highlight();
-			m.Highlight();
-			yield return m.Say("Testing...");
-			v.Unhighlight();
-			m.Unhighlight();
-			yield return m.Say("Testing...");
-			v.Hide();
-			m.Hide();
-			yield return m.Say("Testing...");
-			v.Show();
-			m.Show();
-			yield return m.Say("Testing...");
-			v.SetColor(Color.white);
-			m.SetColor(Color.white);
-			yield return m.Say("Testing...");
-			v.SetSprite(SpriteLayerType.Body, "Void Body Yukata");
-			v.SetSprite(SpriteLayerType.Face, "Void Face Evil");
-			yield return m.SetExpression("Evil");
-			m.SetMotion("Kiss");
-			yield return m.Say("Testing...");
-			v.Highlight();
-			m.Highlight();
 		}
 	}
 }

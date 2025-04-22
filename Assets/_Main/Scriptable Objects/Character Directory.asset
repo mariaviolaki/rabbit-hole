@@ -14,28 +14,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameCharacters:
   - name: Void
-    alias: v
+    shortName: v
+    displayName: OG Blond Boy
     nameColor: {r: 1, g: 0.8501212, b: 0.7058824, a: 1}
     dialogueColor: {r: 1, g: 0.99927163, b: 0.8352941, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
     dialogueFont: {fileID: 11400000, guid: c85ed5e6ef07ade4eba8182e447d5a87, type: 2}
     type: 1
   - name: Zero
-    alias: z
+    shortName: z
+    displayName: OG Pink Boy
     nameColor: {r: 0.91241854, g: 0.7905661, b: 1, a: 1}
     dialogueColor: {r: 1, g: 0.8745098, b: 0.9757089, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
     dialogueFont: {fileID: 11400000, guid: c85ed5e6ef07ade4eba8182e447d5a87, type: 2}
     type: 1
   - name: Eccentric Guy
-    alias: eg
+    shortName: eg
+    displayName: Eccentric Guy
     nameColor: {r: 0.5318974, g: 0.8415094, b: 0.6268451, a: 1}
     dialogueColor: {r: 0.8352941, g: 1, b: 0.8730959, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
     dialogueFont: {fileID: 11400000, guid: c85ed5e6ef07ade4eba8182e447d5a87, type: 2}
     type: 1
   - name: Marsh
-    alias: m
+    shortName: m
+    displayName: Marsh
     nameColor: {r: 0.9547169, g: 0.69712347, b: 0.9058067, a: 1}
     dialogueColor: {r: 0.9824421, g: 0.9264151, b: 1, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}

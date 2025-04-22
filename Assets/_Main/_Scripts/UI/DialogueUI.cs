@@ -26,7 +26,7 @@ public class DialogueUI : MonoBehaviour
 
 	void UpdateNameText(CharacterData characterData)
 	{
-		nameText.text = characterData == null ? "" : characterData.Name;
+		nameText.text = characterData == null ? "" : characterData.DisplayName;
 		nameText.color = characterData == null ? gameOptions.Dialogue.DefaultTextColor : characterData.NameColor;
 		nameText.font = characterData == null ? gameOptions.Dialogue.DefaultFont : characterData.NameFont;
 	}

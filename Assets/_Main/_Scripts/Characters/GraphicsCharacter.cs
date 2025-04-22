@@ -52,7 +52,7 @@ namespace Characters
 		{
 			if (!isVisible) return;
 
-			manager.SetPriority(data.Name, index);
+			manager.SetPriority(data.ShortName, index);
 		}
 
 		public void ShowInstant() => ChangeVisibilityInstant(true);
@@ -63,7 +63,7 @@ namespace Characters
 			visibilityCoroutine = manager.StartCoroutine(ChangeVisibility(true, speed));
 			return visibilityCoroutine;
 		}
-
+		
 		public void HideInstant() => ChangeVisibilityInstant(false);
 		public Coroutine Hide(float speed = 0)
 		{
@@ -73,7 +73,11 @@ namespace Characters
 			return visibilityCoroutine;
 		}
 
+		public void SetPositionXInstant(float x) => SetPositionInstant(new Vector2(x, root.anchoredPosition.y));
+		public void SetPositionYInstant(float y) => SetPositionInstant(new Vector2(root.anchoredPosition.x, y));
 		public void SetPositionInstant(Vector2 normalizedPos) => root.anchoredPosition = GetTargetPosition(normalizedPos);
+		public Coroutine SetPositionX(float x, float speed = 0) => SetPosition(new Vector2(x, root.anchoredPosition.y), speed);
+		public Coroutine SetPositionY(float y, float speed = 0) => SetPosition(new Vector2(root.anchoredPosition.x, y), speed);
 		public Coroutine SetPosition(Vector2 normalizedPos, float speed = 0)
 		{
 			manager.StopProcess(ref moveCoroutine);
@@ -139,12 +143,12 @@ namespace Characters
 			return colorCoroutine;
 		}
 
-		public void Animate(string animationName)
+		public void SetAnimation(string animationName)
 		{
 			animator.SetTrigger(animationName);
 		}
 
-		public void Animate(string animationName, bool isPlaying)
+		public void SetAnimation(string animationName, bool isPlaying)
 		{
 			animator.SetBool(animationName, isPlaying);
 		}
