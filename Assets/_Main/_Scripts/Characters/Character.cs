@@ -44,12 +44,11 @@ namespace Characters
 			data = manager.Directory.GetCharacterData(Data.Name, Data.CastName, manager.GameOptions);
 		}
 
-		public void SetShortName(string shortName)
+		public void SetName(string name)
 		{
-			if (string.IsNullOrEmpty(shortName)) return;
-			else if (!manager.SetCharacterShortName(data.ShortName, shortName)) return;
+			if (string.IsNullOrEmpty(name)) return;
 
-			data.ShortName = shortName;
+			data.Name = name;
 		}
 
 		public void SetDisplayName(string displayName)

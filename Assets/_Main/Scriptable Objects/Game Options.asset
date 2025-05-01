@@ -18,6 +18,7 @@ MonoBehaviour:
     textMode: 3
     textSpeed: 5
   characters:
+    skipTransitionSpeed: 100
     moveSpeed: 10
     fadeTransitionSpeed: 10
     brightnessTransitionSpeed: 10

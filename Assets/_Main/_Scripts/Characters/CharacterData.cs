@@ -25,13 +25,13 @@ namespace Characters
 		public TMP_FontAsset DialogueFont { get { return dialogueFont; } set { dialogueFont = value; } }
 		public CharacterType Type { get { return type; } private set { type = value; } }
 
-		public static CharacterData Get(string name, CharacterData originalData, bool isOriginalCharacter)
+		public static CharacterData Get(string shortName, CharacterData originalData, bool isOriginalCharacter)
 		{
 			CharacterData copiedData = new CharacterData();
 			copiedData.CastName = originalData.name;
-			copiedData.Name = name;
-			copiedData.ShortName = isOriginalCharacter ? originalData.shortName : name;
-			copiedData.DisplayName = isOriginalCharacter ? originalData.displayName : name;
+			copiedData.Name = originalData.name;
+			copiedData.ShortName = shortName;
+			copiedData.DisplayName = originalData.displayName;
 			copiedData.Type = originalData.Type;
 			copiedData.NameColor = originalData.nameColor;
 			copiedData.DialogueColor = originalData.dialogueColor;
@@ -41,13 +41,13 @@ namespace Characters
 			return copiedData;
 		}
 
-		public static CharacterData GetDefault(string name, GameOptionsSO gameOptions)
+		public static CharacterData GetDefault(string shortName, GameOptionsSO gameOptions)
 		{
 			CharacterData defaultData = new CharacterData();
-			defaultData.CastName = name;
-			defaultData.Name = name;
-			defaultData.ShortName = name;
-			defaultData.DisplayName = name;
+			defaultData.CastName = shortName;
+			defaultData.Name = shortName;
+			defaultData.ShortName = shortName;
+			defaultData.DisplayName = shortName;
 			defaultData.Type = CharacterType.Text;
 			defaultData.NameColor = gameOptions.Dialogue.DefaultTextColor;
 			defaultData.DialogueColor = gameOptions.Dialogue.DefaultTextColor;

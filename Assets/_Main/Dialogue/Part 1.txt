@@ -1,84 +1,16 @@
-wait CreateCharacter(Void), wait CreateCharacter( "Mirror Void" , Void)
-wait CreateCharacter(Eccentric Guy)
-wait CreateCharacter(Marsh)
-wait CreateCharacter(Random Guy)
+wait CreateCharacters(v, eg, v1:v)
 
-v "Oh...?"
-Wait(1)
-v "Here you are."
-ShowCharacter(v)
-Wait(0.5)
-v as Void at 0:0 "You may call me Void. {a}And for now, your name will be... 'player'."
-v [Face: Void Face Evil, Body :Void Body Yukata   ] at 1: "Inspired, isn't it?"
-"You think to yourself that the developer hasn't implemented choices in visual novels yet."
-"Oh well..."
+SetCharacterPosInstant(v, 0, 0.5), SetCharacterPosInstant(eg, 1, 0.5)
+wait ShowCharacter(v, 0.5), wait ShowCharacter(eg, 0.5)
 
-wait ShowCharacter(eg)
-eg [   Eccentric Guy Playful  ] "Hi there~"
-Wait(0.5)
-eg [Eccentric Guy Laugh] at 0: "How are you?"
+Wait(5)
 
-wait ShowCharacter(m)
-m [   Evil  ] "Hi there too~"
-Wait(0.5)
-m [ ] at 0.5:1.0 "How are you?"
-HideCharacter(m)
-
-v "..."
-SetCharacterPos(v, 0, 1, 20)
-v "..."
-wait SetCharacterPosX(v, 1, 20)
-v "..."
-wait SetCharacterPosY(v, 0, 20)
-v "..."
-wait SetCharacterPos(v, 0.5, 0.5)
-v "..."
-v "Dizzy yet?"
-
-v "Look over here~"
-SetCharacterPos(v, 0, 0.5, 20)
-wait HideCharacter(v)
-wait ShowCharacter(v)
-v "Now here~"
-wait SetCharacterPos(v, 1, 0.5, 20)
-wait FlipCharacter(v)
-wait FaceLeftCharacter(v, 20)
-wait FaceRightCharacter(v, 20)
-wait FaceLeftCharacter(v, 20)
-v "You look confused."
-wait SetCharacterPos(v, 0.5, 0.5, 20)
-wait FlipCharacter(v, 20)
-wait UnhighlightCharacter(v)
-Wait(0.5)
-wait SetCharacterColor(v, #8A3033)
-Wait(1)
-wait HighlightCharacter(v)
-Wait(0.5)
-wait SetCharacterColor(v, #FFFFFF)
-v "...No, I wasn't changing colors just now.{a 0.5} You <i>do</i> have a rather vivid imagination though."
-SetCharacterAnimation(v,   "Hop" , true)
-Wait(2)
-SetCharacterAnimation(v,  "Hop"   , false)
-Wait(1)
-SetCharacterAnimation(v, "Enlarge" )
-Wait(0.5)
-SetCharacterAnimation(v, "Shrink")
-v "...Nope, I didn't move either. Been standing here for a while. But you... {c 1}You should probably lie down."
-
-SetCharacterPosX(v, 0.5)
-m "I see that you've started without me, Void."
-wait ShowCharacter(m)
-SetCharacterExpression(m, "Evil")
-m "That's no fun... {a 0.5} No fun at all."
-SetCharacterPriority(v, 0)
-Wait(0.5)
-SetCharacterPriority(v, 100)
-Wait(0.5)
-SetCharacterPriority(m, 1)
-SetCharacterPriority(v, 0)
-SetCharacterPos(v, 0, 0.5)
-v "Well, you know how it goes, Marsh."
-SetCharacterExpressionInstant(m, "")
-wait FlipCharacter(m)
-v "You snooze, you lose."
-SetCharacterMotion(m, Angry)
+wait SetCharacterPosX(v, 1, 1), wait SetCharacterPosX(eg, 0, 1)
+wait SetCharacterPosX(v, 0, 1), wait SetCharacterPosX(eg, 1, 1)
+wait SetCharacterPosX(v, 1, 1), wait SetCharacterPosX(eg, 0, 1)
+wait SetCharacterPosX(v, 0, 1), wait SetCharacterPosX(eg, 1, 1)
+wait SetCharacterPosX(v, 1, 1), wait SetCharacterPosX(eg, 0, 1)
+wait SetCharacterPosX(v, 0, 1), wait SetCharacterPosX(eg, 1, 1)
+wait SetCharacterPosX(v, 1, 1), wait SetCharacterPosX(eg, 0, 1)
+wait SetCharacterPosX(v, 0, 1), wait SetCharacterPosX(eg, 1, 1)
+wait SetCharacterPosX(v, 1, 1), wait SetCharacterPosX(eg, 0, 1)

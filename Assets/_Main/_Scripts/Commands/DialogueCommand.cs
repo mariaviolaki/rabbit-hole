@@ -5,6 +5,8 @@ namespace Commands
 {
 	public abstract class DialogueCommand
 	{
+		public static readonly string[] unskippableProcesses = new string[] { };
+
 		// Classes inheriting from DialogueCommand must redefine this function
 		public static void Register(CommandDirectory commandDirectory) { }
 

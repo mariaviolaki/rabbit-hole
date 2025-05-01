@@ -30,6 +30,7 @@ public class GameOptionsSO : ScriptableObject
 	[System.Serializable]
 	public class CharacterOptions
 	{
+		[SerializeField] float skipTransitionSpeed;
 		[SerializeField] float moveSpeed;
 		[SerializeField] float fadeTransitionSpeed;
 		[SerializeField] float brightnessTransitionSpeed;
@@ -37,6 +38,7 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField][Range(0, 1)] float darkenBrightness;
 		[SerializeField] bool spritesFacingRight;
 
+		public float SkipTransitionSpeed { get { return skipTransitionSpeed; } }
 		public float MoveSpeed { get { return moveSpeed; } }
 		public float FadeTransitionSpeed { get { return fadeTransitionSpeed; } }
 		public float BrightnessTransitionSpeed { get { return brightnessTransitionSpeed; } }

@@ -7,9 +7,10 @@ namespace Commands
 {
 	public class CommandDirectory
 	{
-		// Command Manager will search our scripts and dynamically populate this with every class inheriting from DialogueCommand
-		Dictionary<string, Delegate> directory = new Dictionary<string, Delegate>();
-		CharacterManager characterManager;
+		// Command Manager will search our scripts and dynamically populate these with every class inheriting from DialogueCommand
+		readonly Dictionary<string, Delegate> commandDirectory = new Dictionary<string, Delegate>();
+		readonly Dictionary<string, Delegate> skipCommandDirectory = new Dictionary<string, Delegate>();
+		readonly CharacterManager characterManager;
 
 		public CommandDirectory(CharacterManager characterManager)
 		{
@@ -18,7 +19,8 @@ namespace Commands
 
 		public CharacterManager GetCharacterManager() => characterManager;
 
-		public bool HasCommand(string commandName) => directory.ContainsKey(commandName);
+		public bool HasCommand(string commandName) => commandDirectory.ContainsKey(commandName);
+		public bool HasSkipCommand(string commandName) => skipCommandDirectory.ContainsKey(commandName);
 
 		public Delegate GetCommand(string commandName)
 		{
@@ -28,10 +30,21 @@ namespace Commands
 				return null;
 			}
 
-			return directory[commandName];
+			return commandDirectory[commandName];
 		}
 
-		public void AddCommand(string commandName, Delegate command)
+		public Delegate GetSkipCommand(string commandName)
+		{
+			if (!HasSkipCommand(commandName))
+			{
+				Debug.LogError($"{commandName} is not registered to the Skip Command Directory!");
+				return null;
+			}
+
+			return skipCommandDirectory[commandName];
+		}
+
+		public void AddCommand(string commandName, Delegate command, Delegate skipCommand = null)
 		{
 			if (HasCommand(commandName))
 			{
@@ -39,7 +52,8 @@ namespace Commands
 				return;
 			}
 
-			directory[commandName] = command;
+			commandDirectory[commandName] = command;
+			skipCommandDirectory[commandName] = skipCommand;
 		}
 	}
 }

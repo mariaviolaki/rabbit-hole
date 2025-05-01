@@ -9,80 +9,88 @@ namespace Commands
 	public class CharactersCMD : DialogueCommand
 	{
 		static CharacterManager characterManager;
+		public new static readonly string[] unskippableProcesses = new string[] { "CreateCharacters", "CreateCharacter" };
 
 		public new static void Register(CommandDirectory commandDirectory)
 		{
 			characterManager = commandDirectory.GetCharacterManager();
 
 			// All Characters
+			commandDirectory.AddCommand("CreateCharacters", new Func<string[], IEnumerator>(CreateCharacters));
 			commandDirectory.AddCommand("CreateCharacter", new Func<string[], IEnumerator>(CreateCharacter));
-			commandDirectory.AddCommand("SetCharacterShortName", new Action<string[]>(SetCharacterShortName));
+			commandDirectory.AddCommand("SetCharacterName", new Action<string[]>(SetCharacterName));
 			commandDirectory.AddCommand("SetCharacterDisplayName", new Action<string[]>(SetCharacterDisplayName));
 
 			// Graphics Characters
 			commandDirectory.AddCommand("SetCharacterPriority", new Action<string[]>(SetCharacterPriority));
 			commandDirectory.AddCommand("SetCharacterAnimation", new Action<string[]>(SetCharacterAnimation));
 			commandDirectory.AddCommand("ShowCharacterInstant", new Action<string[]>(ShowCharacterInstant));
-			commandDirectory.AddCommand("ShowCharacter", new Func<string[], IEnumerator>(ShowCharacter));
+			commandDirectory.AddCommand("ShowCharacter", new Func<string[], IEnumerator>(ShowCharacter), new Func<string[], IEnumerator>(ShowCharacter));
 			commandDirectory.AddCommand("HideCharacterInstant", new Action<string[]>(HideCharacterInstant));
-			commandDirectory.AddCommand("HideCharacter", new Func<string[], IEnumerator>(HideCharacter));
+			commandDirectory.AddCommand("HideCharacter", new Func<string[], IEnumerator>(HideCharacter), new Func<string[], IEnumerator>(HideCharacter));
 			commandDirectory.AddCommand("SetCharacterPosInstant", new Action<string[]>(SetCharacterPosInstant));
-			commandDirectory.AddCommand("SetCharacterPos", new Func<string[], IEnumerator>(SetCharacterPos));
+			commandDirectory.AddCommand("SetCharacterPos", new Func<string[], IEnumerator>(SetCharacterPos), new Func<string[], IEnumerator>(SetCharacterPos));
 			commandDirectory.AddCommand("SetCharacterPosXInstant", new Action<string[]>(SetCharacterPosXInstant));
-			commandDirectory.AddCommand("SetCharacterPosX", new Func<string[], IEnumerator>(SetCharacterPosX));
+			commandDirectory.AddCommand("SetCharacterPosX", new Func<string[], IEnumerator>(SetCharacterPosX), new Func<string[], IEnumerator>(SetCharacterPosX));
 			commandDirectory.AddCommand("SetCharacterPosYInstant", new Action<string[]>(SetCharacterPosYInstant));
-			commandDirectory.AddCommand("SetCharacterPosY", new Func<string[], IEnumerator>(SetCharacterPosY));
+			commandDirectory.AddCommand("SetCharacterPosY", new Func<string[], IEnumerator>(SetCharacterPosY), new Func<string[], IEnumerator>(SetCharacterPosY));
 			commandDirectory.AddCommand("FlipCharacterInstant", new Action<string[]>(FlipCharacterInstant));
-			commandDirectory.AddCommand("FlipCharacter", new Func<string[], IEnumerator>(FlipCharacter));
+			commandDirectory.AddCommand("FlipCharacter", new Func<string[], IEnumerator>(FlipCharacter), new Func<string[], IEnumerator>(FlipCharacter));
 			commandDirectory.AddCommand("FaceLeftCharacterInstant", new Action<string[]>(FaceLeftCharacterInstant));
-			commandDirectory.AddCommand("FaceLeftCharacter", new Func<string[], IEnumerator>(FaceLeftCharacter));
+			commandDirectory.AddCommand("FaceLeftCharacter", new Func<string[], IEnumerator>(FaceLeftCharacter), new Func<string[], IEnumerator>(FaceLeftCharacter));
 			commandDirectory.AddCommand("FaceRightCharacterInstant", new Action<string[]>(FaceRightCharacterInstant));
-			commandDirectory.AddCommand("FaceRightCharacter", new Func<string[], IEnumerator>(FaceRightCharacter));
+			commandDirectory.AddCommand("FaceRightCharacter", new Func<string[], IEnumerator>(FaceRightCharacter), new Func<string[], IEnumerator>(FaceRightCharacter));
 			commandDirectory.AddCommand("HighlightCharacterInstant", new Action<string[]>(HighlightCharacterInstant));
-			commandDirectory.AddCommand("HighlightCharacter", new Func<string[], IEnumerator>(HighlightCharacter));
+			commandDirectory.AddCommand("HighlightCharacter", new Func<string[], IEnumerator>(HighlightCharacter), new Func<string[], IEnumerator>(HighlightCharacter));
 			commandDirectory.AddCommand("UnhighlightCharacterInstant", new Action<string[]>(UnhighlightCharacterInstant));
-			commandDirectory.AddCommand("UnhighlightCharacter", new Func<string[], IEnumerator>(UnhighlightCharacter));
+			commandDirectory.AddCommand("UnhighlightCharacter", new Func<string[], IEnumerator>(UnhighlightCharacter), new Func<string[], IEnumerator>(UnhighlightCharacter));
 			commandDirectory.AddCommand("SetCharacterColorInstant", new Action<string[]>(SetCharacterColorInstant));
-			commandDirectory.AddCommand("SetCharacterColor", new Func<string[], IEnumerator>(SetCharacterColor));
+			commandDirectory.AddCommand("SetCharacterColor", new Func<string[], IEnumerator>(SetCharacterColor), new Func<string[], IEnumerator>(SetCharacterColor));
 
 			// Sprite Characters
 			commandDirectory.AddCommand("SetCharacterSpriteInstant", new Action<string[]>(SetCharacterSpriteInstant));
-			commandDirectory.AddCommand("SetCharacterSprite", new Func<string[], IEnumerator>(SetCharacterSprite));
+			commandDirectory.AddCommand("SetCharacterSprite", new Func<string[], IEnumerator>(SetCharacterSprite), new Func<string[], IEnumerator>(SetCharacterSprite));
 
 			// Model3D Characters
 			commandDirectory.AddCommand("SetCharacterExpressionInstant", new Action<string[]>(SetCharacterExpressionInstant));
-			commandDirectory.AddCommand("SetCharacterExpression", new Func<string[], IEnumerator>(SetCharacterExpression));
+			commandDirectory.AddCommand("SetCharacterExpression", new Func<string[], IEnumerator>(SetCharacterExpression), new Func<string[], IEnumerator>(SetCharacterExpression));
 			commandDirectory.AddCommand("SetCharacterMotion", new Action<string[]>(SetCharacterMotion));
 		}
 
 
 		/***** All Characters *****/
 
-		static IEnumerator CreateCharacter(string[] args)
+		static IEnumerator CreateCharacters(string[] args)
 		{
-			string name = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			string castName = args.Length > 1 ? ParseArgument<string>(args[1]) : null;
+			if (args.Length == 0) yield break;
 
-			if (string.IsNullOrEmpty(name) || (castName != null && castName == string.Empty)) yield break;
-
-			Task task = characterManager.CreateCharacter(name, castName);
+			Task task = characterManager.CreateCharacters(args);
 			yield return new WaitUntil(() => task.IsCompleted);
 		}
 
-		static void SetCharacterShortName(string[] args)
+		static IEnumerator CreateCharacter(string[] args)
 		{
-			string name = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			string shortName = args.Length > 1 ? ParseArgument<string>(args[1]) : null;
+			string shortName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
+			string castShortName = args.Length > 1 ? ParseArgument<string>(args[1]) : null;
+
+			if (string.IsNullOrEmpty(shortName) || (castShortName != null && castShortName == string.Empty)) yield break;
+
+			Task task = characterManager.CreateCharacter(shortName, castShortName);
+			yield return new WaitUntil(() => task.IsCompleted);
+		}
+
+		static void SetCharacterName(string[] args)
+		{
+			string name = args.Length > 1 ? ParseArgument<string>(args[1]) : null;
 
 			Character character = GetCharacterFromArgs<Character>(args);
 			if (character == null) return;
 
-			character.SetShortName(shortName);
+			character.SetName(name);
 		}
 
 		static void SetCharacterDisplayName(string[] args)
 		{
-			string name = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
 			string displayName = args.Length > 1 ? ParseArgument<string>(args[1]) : null;
 
 			Character character = GetCharacterFromArgs<Character>(args);

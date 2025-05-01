@@ -11,22 +11,22 @@ namespace Characters
 
 		public Dictionary<string, CharacterData> Characters { get { return characters; } }
 
-		public bool HasCharacterData(string name)
+		public bool HasCharacterData(string shortName)
 		{
-			return characters.ContainsKey(name);
+			return characters.ContainsKey(shortName);
 		}
 
-		public CharacterData GetCharacterData(string name, string castName, GameOptionsSO gameOptions)
+		public CharacterData GetCharacterData(string shortName, string castShortName, GameOptionsSO gameOptions)
 		{
-			if (characters.ContainsKey(castName))
-				return CharacterData.Get(name, characters[castName], name == castName);
+			if (characters.ContainsKey(castShortName))
+				return CharacterData.Get(shortName, characters[castShortName], shortName == castShortName);
 
-			return GetDefaultData(name, gameOptions);
+			return GetDefaultData(shortName, gameOptions);
 		}
 
-		public CharacterData GetDefaultData(string name, GameOptionsSO gameOptions)
+		public CharacterData GetDefaultData(string shortName, GameOptionsSO gameOptions)
 		{
-			return CharacterData.GetDefault(name, gameOptions);
+			return CharacterData.GetDefault(shortName, gameOptions);
 		}
 
 		void OnEnable()
@@ -34,7 +34,7 @@ namespace Characters
 			// Convert the array to a dictionary for fast lookups
 			foreach (CharacterData character in gameCharacters)
 			{
-				characters.Add(character.Name, character);
+				characters.Add(character.ShortName, character);
 			}
 		}
 	}

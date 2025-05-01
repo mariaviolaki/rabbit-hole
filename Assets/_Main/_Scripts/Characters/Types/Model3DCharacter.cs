@@ -62,10 +62,9 @@ namespace Characters
 		{
 			if (!IsValidExpression(expressionName)) return null;
 
-			manager.StopProcess(ref expressionCoroutine);
+			bool isSkipped = manager.StopProcess(ref expressionCoroutine);
 
-			speed = speed <= 0 ? manager.GameOptions.Model3D.ExpressionTransitionSpeed : speed;
-			expressionCoroutine = manager.StartCoroutine(TransitionExpression(expressionName, speed));
+			expressionCoroutine = manager.StartCoroutine(TransitionExpression(expressionName, speed, isSkipped));
 			return expressionCoroutine;
 		}
 
@@ -74,13 +73,13 @@ namespace Characters
 			modelContainer.localEulerAngles = new Vector3(0, -modelContainer.localEulerAngles.y, 0);
 			isFacingRight = !isFacingRight;
 		}
-		protected override IEnumerator FlipDirection(float speed)
+		protected override IEnumerator FlipDirection(float speed, bool isSkipped)
 		{
-			yield return FadeImage(canvasGroup, false, speed);
+			yield return FadeImage(canvasGroup, false, speed, isSkipped);
 
 			modelContainer.localEulerAngles = new Vector3(0, -modelContainer.localEulerAngles.y, 0);
 
-			yield return FadeImage(canvasGroup, true, speed);
+			yield return FadeImage(canvasGroup, true, speed, isSkipped);
 
 			isFacingRight = !isFacingRight;
 			directionCoroutine = null;
@@ -91,9 +90,9 @@ namespace Characters
 			rawImage.color = isHighlighted ? LightColor : DarkColor;
 			this.isHighlighted = isHighlighted;
 		}
-		protected override IEnumerator ChangeBrightness(bool isHighlighted, float speed)
+		protected override IEnumerator ChangeBrightness(bool isHighlighted, float speed, bool isSkipped)
 		{
-			yield return SetImageBrightness(rawImage, isHighlighted, speed);
+			yield return SetImageBrightness(rawImage, isHighlighted, speed, isSkipped);
 
 			brightnessCoroutine = null;
 		}
@@ -103,28 +102,28 @@ namespace Characters
 			rawImage.color = color;
 			LightColor = color;
 		}
-		protected override IEnumerator ChangeColor(Color color, float speed)
+		protected override IEnumerator ChangeColor(Color color, float speed, bool isSkipped)
 		{
-			yield return ColorImage(rawImage, color, speed);
+			yield return ColorImage(rawImage, color, speed, isSkipped);
 
 			colorCoroutine = null;
 		}
 
-		protected override IEnumerator FadeImage(CanvasGroup canvasGroup, bool isFadeIn, float speed)
+		protected override IEnumerator FadeImage(CanvasGroup canvasGroup, bool isFadeIn, float speed, bool isSkipped)
 		{
-			yield return base.FadeImage(canvasGroup, isFadeIn, speed);
+			yield return base.FadeImage(canvasGroup, isFadeIn, speed, isSkipped);
 			isVisible = isFadeIn;
 		}
 
-		protected override IEnumerator ColorImage(Graphic image, Color color, float speed)
+		protected override IEnumerator ColorImage(Graphic image, Color color, float speed, bool isSkipped)
 		{
-			yield return base.ColorImage(image, color, speed);
+			yield return base.ColorImage(image, color, speed, isSkipped);
 			LightColor = color;
 		}
 
-		protected override IEnumerator SetImageBrightness(Graphic image, bool isHighlighted, float speed)
+		protected override IEnumerator SetImageBrightness(Graphic image, bool isHighlighted, float speed, bool isSkipped)
 		{
-			yield return base.SetImageBrightness(image, isHighlighted, speed);
+			yield return base.SetImageBrightness(image, isHighlighted, speed, isSkipped);
 			this.isHighlighted = isHighlighted;
 		}
 
@@ -146,8 +145,9 @@ namespace Characters
 			}
 		}
 
-		IEnumerator TransitionExpression(string expressionName, float speed)
+		IEnumerator TransitionExpression(string expressionName, float speed, bool isSkipped)
 		{
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Model3D.ExpressionTransitionSpeed, isSkipped);
 			float transitionDuration = (1 / speed) * expressionTransitionMultiplier;
 
 			// Fade off the old expression
