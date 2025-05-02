@@ -39,7 +39,7 @@ namespace Characters
 
 				string layerName = layerParent.name;
 				if (Enum.TryParse(layerName, true, out SpriteLayerType layer))
-					spriteLayers[layer] = new CharacterSpriteLayer(layer, image);
+					spriteLayers[layer] = new CharacterSpriteLayer(layer, image, manager);
 			}
 		}
 
@@ -48,6 +48,7 @@ namespace Characters
 			Sprite sprite = GetSprite(layerType, spriteName);
 			if (sprite == null) return;
 
+			manager.StopProcess(ref spriteCoroutine);
 			spriteLayers[layerType].LayerImage.sprite = sprite;
 		}
 		public Coroutine SetSprite(SpriteLayerType layerType, string spriteName, float speed = 0)
@@ -63,6 +64,8 @@ namespace Characters
 
 		public override void FlipInstant()
 		{
+			manager.StopProcess(ref directionCoroutine);
+
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
 				Transform layerTransform = layer.LayerImage.transform;
@@ -89,8 +92,11 @@ namespace Characters
 
 		public override void ChangeBrightnessInstant(bool isHighlighted)
 		{
+			manager.StopProcess(ref brightnessCoroutine);
+
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
+				layer.StopBrightnessCoroutine();
 				layer.LayerImage.color = isHighlighted ? LightColor : DarkColor;
 			}
 
@@ -100,11 +106,12 @@ namespace Characters
 		{
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
-				layer.BrightnessCoroutine = manager.StartCoroutine(SetLayerImageBrightness(layer, isHighlighted, speed, isSkipped));
+				Coroutine brightnessCoroutine = manager.StartCoroutine(SetLayerImageBrightness(layer, isHighlighted, speed, isSkipped));
+				layer.SetBrightnessCoroutine(brightnessCoroutine);
 			}
 
 			yield return null;
-			while (spriteLayers.Values.Any(layer => layer.BrightnessCoroutine != null)) yield return null;
+			while (spriteLayers.Values.Any(layer => layer.IsChangingBrightness)) yield return null;
 
 			this.isHighlighted = isHighlighted;
 			brightnessCoroutine = null;
@@ -112,8 +119,11 @@ namespace Characters
 
 		public override void ChangeColorInstant(Color color)
 		{
+			manager.StopProcess(ref colorCoroutine);
+
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
+				layer.StopColorCoroutine();
 				layer.LayerImage.color = color;
 			}
 
@@ -123,11 +133,12 @@ namespace Characters
 		{
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
-				layer.ColorCoroutine = manager.StartCoroutine(ColorLayerImage(layer, color, speed, isSkipped));
+				Coroutine colorCoroutine = manager.StartCoroutine(ColorLayerImage(layer, color, speed, isSkipped));
+				layer.SetColorCoroutine(colorCoroutine);
 			}
 
 			yield return null;
-			while (spriteLayers.Values.Any(layer => layer.ColorCoroutine != null)) yield return null;
+			while (spriteLayers.Values.Any(layer => layer.IsChangingColor)) yield return null;
 
 			LightColor = color;
 			colorCoroutine = null;
@@ -147,13 +158,13 @@ namespace Characters
 		IEnumerator SetLayerImageBrightness(CharacterSpriteLayer layer, bool isHighlighted, float speed, bool isSkipped)
 		{
 			yield return SetImageBrightness(layer.LayerImage, isHighlighted, speed, isSkipped);
-			layer.BrightnessCoroutine = null;
+			layer.StopBrightnessCoroutine();
 		}
 
 		IEnumerator ColorLayerImage(CharacterSpriteLayer layer, Color color, float speed, bool isSkipped)
 		{
 			yield return ColorImage(layer.LayerImage, color, speed, isSkipped);
-			layer.ColorCoroutine = null;
+			layer.StopColorCoroutine();
 		}
 
 		Sprite GetSprite(SpriteLayerType layerType, string spriteName)

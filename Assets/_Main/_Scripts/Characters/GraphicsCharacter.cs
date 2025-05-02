@@ -79,6 +79,8 @@ namespace Characters
 		public void SetPositionYInstant(float y) => SetPositionInstant(new Vector2(currentPos.x, y));
 		public void SetPositionInstant(Vector2 normalizedPos)
 		{
+			manager.StopProcess(ref moveCoroutine);
+
 			currentPos = normalizedPos;
 			root.anchoredPosition = GetTargetPosition(normalizedPos);
 		}
@@ -237,6 +239,8 @@ namespace Characters
 
 		void ChangeVisibilityInstant(bool isVisible)
 		{
+			manager.StopProcess(ref visibilityCoroutine);
+
 			canvasGroup.alpha = isVisible ? 1f : 0f;
 			this.isVisible = isVisible;
 		}

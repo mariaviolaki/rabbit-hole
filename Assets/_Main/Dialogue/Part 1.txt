@@ -1,10 +1,16 @@
-wait CreateCharacters(v, eg, v1:v)
+wait CreateCharacters(v, eg, v1:v, m)
 
-SetCharacterPosInstant(v, 0, 0.5), SetCharacterPosInstant(eg, 1, 0.5)
-wait ShowCharacter(v, 0.5), wait ShowCharacter(eg, 0.5)
+SetCharacterPosInstant(v, 0, 0.5), SetCharacterPosInstant(eg, 1, 0.5), SetCharacterPosInstant(m, 0.5, 0.5)
+wait ShowCharacter(v, 0.5), wait ShowCharacter(eg, 0.5), wait ShowCharacter(m, 0.5)
 
 Wait(5)
 
+wait SetCharacterExpression(m, Evil, 1)
+wait SetCharacterExpression(m, "", 1)
+
+wait SetCharacterColor(v, #1446A0, 1), wait SetCharacterColor(eg, #1446A0, 1)
+wait SetCharacterColor(v, #DB3069, 1), wait SetCharacterColor(eg, #DB3069, 1)
+wait SetCharacterColor(v, #EBEBD3, 1), wait SetCharacterColor(eg, #EBEBD3, 1)
 wait SetCharacterPosX(v, 1, 1), wait SetCharacterPosX(eg, 0, 1)
 wait SetCharacterPosX(v, 0, 1), wait SetCharacterPosX(eg, 1, 1)
 wait SetCharacterPosX(v, 1, 1), wait SetCharacterPosX(eg, 0, 1)

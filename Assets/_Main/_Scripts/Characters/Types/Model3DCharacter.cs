@@ -55,7 +55,8 @@ namespace Characters
 		{
 			if (!IsValidExpression(expressionName)) return;
 
-			ChangeExpression(expressionName);
+			manager.StopProcess(ref expressionCoroutine);
+			ChangeExpressionInstant(expressionName);
 		}
 
 		public Coroutine SetExpression(string expressionName, float speed = 0)
@@ -64,12 +65,14 @@ namespace Characters
 
 			bool isSkipped = manager.StopProcess(ref expressionCoroutine);
 
-			expressionCoroutine = manager.StartCoroutine(TransitionExpression(expressionName, speed, isSkipped));
+			expressionCoroutine = manager.StartCoroutine(ChangeExpression(expressionName, speed, isSkipped));
 			return expressionCoroutine;
 		}
 
 		public override void FlipInstant()
 		{
+			manager.StopProcess(ref directionCoroutine);
+
 			modelContainer.localEulerAngles = new Vector3(0, -modelContainer.localEulerAngles.y, 0);
 			isFacingRight = !isFacingRight;
 		}
@@ -87,6 +90,8 @@ namespace Characters
 
 		public override void ChangeBrightnessInstant(bool isHighlighted)
 		{
+			manager.StopProcess(ref brightnessCoroutine);
+
 			rawImage.color = isHighlighted ? LightColor : DarkColor;
 			this.isHighlighted = isHighlighted;
 		}
@@ -99,6 +104,8 @@ namespace Characters
 
 		public override void ChangeColorInstant(Color color)
 		{
+			manager.StopProcess(ref colorCoroutine);
+
 			rawImage.color = color;
 			LightColor = color;
 		}
@@ -127,11 +134,11 @@ namespace Characters
 			this.isHighlighted = isHighlighted;
 		}
 
-		void ChangeExpression(string expressionName)
+		void ChangeExpressionInstant(string expressionName)
 		{
 			// Clear the old expression
 			if (currentExpression != string.Empty)
-				ChangeSubExpressions(currentExpression);
+				ChangeSubExpressionsInstant(currentExpression);
 
 			// If a new expression was specified, change into this - and cache the new expression
 			if (expressionName == string.Empty)
@@ -140,12 +147,12 @@ namespace Characters
 			}
 			else
 			{
-				ChangeSubExpressions(expressionName);
+				ChangeSubExpressionsInstant(expressionName);
 				currentExpression = expressionName;
 			}
 		}
 
-		IEnumerator TransitionExpression(string expressionName, float speed, bool isSkipped)
+		IEnumerator ChangeExpression(string expressionName, float speed, bool isSkipped)
 		{
 			speed = GetTransitionSpeed(speed, manager.GameOptions.Model3D.ExpressionTransitionSpeed, isSkipped);
 			float transitionDuration = (1 / speed) * expressionTransitionMultiplier;
@@ -154,7 +161,7 @@ namespace Characters
 			if (currentExpression != string.Empty)
 			{
 				float fadeOffDuration = expressionName == null ? transitionDuration : (transitionDuration / 2);
-				yield return TransitionSubExpressions(currentExpression, fadeOffDuration);
+				yield return ChangeSubExpressions(currentExpression, fadeOffDuration);
 			}
 
 			// If a new expression was specified, transition into this - and cache the new expression
@@ -164,14 +171,14 @@ namespace Characters
 			}
 			else
 			{
-				yield return TransitionSubExpressions(expressionName, transitionDuration);
+				yield return ChangeSubExpressions(expressionName, transitionDuration);
 				currentExpression = expressionName;
 			}
 
 			expressionCoroutine = null;
 		}
 
-		void ChangeSubExpressions(string expressionName)
+		void ChangeSubExpressionsInstant(string expressionName)
 		{
 			bool isNewExpression = expressionName != currentExpression;
 			SubExpression[] currentSubExpressions = expressionDirectory.Expressions[expressionName];
@@ -184,7 +191,7 @@ namespace Characters
 			}
 		}
 
-		IEnumerator TransitionSubExpressions(string expressionName, float transitionDuration)
+		IEnumerator ChangeSubExpressions(string expressionName, float transitionDuration)
 		{
 			bool isNewExpression = expressionName != currentExpression;
 			SubExpression[] currentSubExpressions = expressionDirectory.Expressions[expressionName];
