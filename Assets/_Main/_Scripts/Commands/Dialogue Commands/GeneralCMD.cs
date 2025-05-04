@@ -6,9 +6,11 @@ namespace Commands
 {
 	public class GeneralCMD : DialogueCommand
 	{
-		public new static void Register(CommandDirectory commandDirectory)
+		public new static void Register(CommandManager commandManager)
 		{
-			commandDirectory.AddCommand("Wait", new Func<string, IEnumerator>(Wait));
+			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
+
+			directory.AddCommand("Wait", new Func<string, IEnumerator>(Wait));
 		}
 
 		static IEnumerator Wait(string arg)

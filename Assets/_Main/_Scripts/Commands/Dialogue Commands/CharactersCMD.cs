@@ -11,50 +11,58 @@ namespace Commands
 		static CharacterManager characterManager;
 		public new static readonly string[] unskippableProcesses = new string[] { "CreateCharacters", "CreateCharacter" };
 
-		public new static void Register(CommandDirectory commandDirectory)
+		public new static void Register(CommandManager commandManager)
 		{
-			characterManager = commandDirectory.GetCharacterManager();
+			characterManager = commandManager.GetCharacterManager();
+
+			CommandDirectory mainDir = commandManager.GetDirectory(CommandManager.MainDirectoryName);
+			CommandDirectory charactersDir = commandManager.GetDirectory(CommandManager.CharacterDirectoryName);
+			CommandDirectory graphicsCharactersDir = commandManager.GetDirectory(CommandManager.GraphicsCharacterDirectoryName);
+			CommandDirectory spriteCharactersDir = commandManager.GetDirectory(CommandManager.SpriteCharacterDirectoryName);
+			CommandDirectory model3DCharactersDir = commandManager.GetDirectory(CommandManager.Model3DCharacterDirectoryName);
+
+			// All Characters (cannot be called on specific ones)
+			mainDir.AddCommand("CreateCharacters", new Func<string[], IEnumerator>(CreateCharacters));
+			mainDir.AddCommand("CreateCharacter", new Func<string[], IEnumerator>(CreateCharacter));
 
 			// All Characters
-			commandDirectory.AddCommand("CreateCharacters", new Func<string[], IEnumerator>(CreateCharacters));
-			commandDirectory.AddCommand("CreateCharacter", new Func<string[], IEnumerator>(CreateCharacter));
-			commandDirectory.AddCommand("SetCharacterName", new Action<string[]>(SetCharacterName));
-			commandDirectory.AddCommand("SetCharacterDisplayName", new Action<string[]>(SetCharacterDisplayName));
+			charactersDir.AddCommand("SetName", new Action<string[]>(SetName));
+			charactersDir.AddCommand("SetDisplayName", new Action<string[]>(SetDisplayName));
 
 			// Graphics Characters
-			commandDirectory.AddCommand("SetCharacterPriority", new Action<string[]>(SetCharacterPriority));
-			commandDirectory.AddCommand("SetCharacterAnimation", new Action<string[]>(SetCharacterAnimation));
-			commandDirectory.AddCommand("ShowCharacterInstant", new Action<string[]>(ShowCharacterInstant));
-			commandDirectory.AddCommand("ShowCharacter", new Func<string[], IEnumerator>(ShowCharacter), new Func<string[], IEnumerator>(ShowCharacter));
-			commandDirectory.AddCommand("HideCharacterInstant", new Action<string[]>(HideCharacterInstant));
-			commandDirectory.AddCommand("HideCharacter", new Func<string[], IEnumerator>(HideCharacter), new Func<string[], IEnumerator>(HideCharacter));
-			commandDirectory.AddCommand("SetCharacterPosInstant", new Action<string[]>(SetCharacterPosInstant));
-			commandDirectory.AddCommand("SetCharacterPos", new Func<string[], IEnumerator>(SetCharacterPos), new Func<string[], IEnumerator>(SetCharacterPos));
-			commandDirectory.AddCommand("SetCharacterPosXInstant", new Action<string[]>(SetCharacterPosXInstant));
-			commandDirectory.AddCommand("SetCharacterPosX", new Func<string[], IEnumerator>(SetCharacterPosX), new Func<string[], IEnumerator>(SetCharacterPosX));
-			commandDirectory.AddCommand("SetCharacterPosYInstant", new Action<string[]>(SetCharacterPosYInstant));
-			commandDirectory.AddCommand("SetCharacterPosY", new Func<string[], IEnumerator>(SetCharacterPosY), new Func<string[], IEnumerator>(SetCharacterPosY));
-			commandDirectory.AddCommand("FlipCharacterInstant", new Action<string[]>(FlipCharacterInstant));
-			commandDirectory.AddCommand("FlipCharacter", new Func<string[], IEnumerator>(FlipCharacter), new Func<string[], IEnumerator>(FlipCharacter));
-			commandDirectory.AddCommand("FaceLeftCharacterInstant", new Action<string[]>(FaceLeftCharacterInstant));
-			commandDirectory.AddCommand("FaceLeftCharacter", new Func<string[], IEnumerator>(FaceLeftCharacter), new Func<string[], IEnumerator>(FaceLeftCharacter));
-			commandDirectory.AddCommand("FaceRightCharacterInstant", new Action<string[]>(FaceRightCharacterInstant));
-			commandDirectory.AddCommand("FaceRightCharacter", new Func<string[], IEnumerator>(FaceRightCharacter), new Func<string[], IEnumerator>(FaceRightCharacter));
-			commandDirectory.AddCommand("HighlightCharacterInstant", new Action<string[]>(HighlightCharacterInstant));
-			commandDirectory.AddCommand("HighlightCharacter", new Func<string[], IEnumerator>(HighlightCharacter), new Func<string[], IEnumerator>(HighlightCharacter));
-			commandDirectory.AddCommand("UnhighlightCharacterInstant", new Action<string[]>(UnhighlightCharacterInstant));
-			commandDirectory.AddCommand("UnhighlightCharacter", new Func<string[], IEnumerator>(UnhighlightCharacter), new Func<string[], IEnumerator>(UnhighlightCharacter));
-			commandDirectory.AddCommand("SetCharacterColorInstant", new Action<string[]>(SetCharacterColorInstant));
-			commandDirectory.AddCommand("SetCharacterColor", new Func<string[], IEnumerator>(SetCharacterColor), new Func<string[], IEnumerator>(SetCharacterColor));
+			graphicsCharactersDir.AddCommand("SetPriority", new Action<string[]>(SetPriority));
+			graphicsCharactersDir.AddCommand("SetAnimation", new Action<string[]>(SetAnimation));
+			graphicsCharactersDir.AddCommand("ShowInstant", new Action<string[]>(ShowInstant));
+			graphicsCharactersDir.AddCommand("Show", new Func<string[], IEnumerator>(Show), new Func<string[], IEnumerator>(Show));
+			graphicsCharactersDir.AddCommand("HideInstant", new Action<string[]>(HideInstant));
+			graphicsCharactersDir.AddCommand("Hide", new Func<string[], IEnumerator>(Hide), new Func<string[], IEnumerator>(Hide));
+			graphicsCharactersDir.AddCommand("SetPosInstant", new Action<string[]>(SetPosInstant));
+			graphicsCharactersDir.AddCommand("SetPos", new Func<string[], IEnumerator>(SetPos), new Func<string[], IEnumerator>(SetPos));
+			graphicsCharactersDir.AddCommand("SetPosXInstant", new Action<string[]>(SetPosXInstant));
+			graphicsCharactersDir.AddCommand("SetPosX", new Func<string[], IEnumerator>(SetPosX), new Func<string[], IEnumerator>(SetPosX));
+			graphicsCharactersDir.AddCommand("SetPosYInstant", new Action<string[]>(SetPosYInstant));
+			graphicsCharactersDir.AddCommand("SetPosY", new Func<string[], IEnumerator>(SetPosY), new Func<string[], IEnumerator>(SetPosY));
+			graphicsCharactersDir.AddCommand("FlipInstant", new Action<string[]>(FlipInstant));
+			graphicsCharactersDir.AddCommand("Flip", new Func<string[], IEnumerator>(Flip), new Func<string[], IEnumerator>(Flip));
+			graphicsCharactersDir.AddCommand("FaceLeftInstant", new Action<string[]>(FaceLeftInstant));
+			graphicsCharactersDir.AddCommand("FaceLeft", new Func<string[], IEnumerator>(FaceLeft), new Func<string[], IEnumerator>(FaceLeft));
+			graphicsCharactersDir.AddCommand("FaceRightInstant", new Action<string[]>(FaceRightInstant));
+			graphicsCharactersDir.AddCommand("FaceRight", new Func<string[], IEnumerator>(FaceRight), new Func<string[], IEnumerator>(FaceRight));
+			graphicsCharactersDir.AddCommand("HighlightInstant", new Action<string[]>(HighlightInstant));
+			graphicsCharactersDir.AddCommand("Highlight", new Func<string[], IEnumerator>(Highlight), new Func<string[], IEnumerator>(Highlight));
+			graphicsCharactersDir.AddCommand("UnhighlightInstant", new Action<string[]>(UnhighlightInstant));
+			graphicsCharactersDir.AddCommand("Unhighlight", new Func<string[], IEnumerator>(Unhighlight), new Func<string[], IEnumerator>(Unhighlight));
+			graphicsCharactersDir.AddCommand("SetColorInstant", new Action<string[]>(SetColorInstant));
+			graphicsCharactersDir.AddCommand("SetColor", new Func<string[], IEnumerator>(SetColor), new Func<string[], IEnumerator>(SetColor));
 
 			// Sprite Characters
-			commandDirectory.AddCommand("SetCharacterSpriteInstant", new Action<string[]>(SetCharacterSpriteInstant));
-			commandDirectory.AddCommand("SetCharacterSprite", new Func<string[], IEnumerator>(SetCharacterSprite), new Func<string[], IEnumerator>(SetCharacterSprite));
+			spriteCharactersDir.AddCommand("SetSpriteInstant", new Action<string[]>(SetSpriteInstant));
+			spriteCharactersDir.AddCommand("SetSprite", new Func<string[], IEnumerator>(SetSprite), new Func<string[], IEnumerator>(SetSprite));
 
 			// Model3D Characters
-			commandDirectory.AddCommand("SetCharacterExpressionInstant", new Action<string[]>(SetCharacterExpressionInstant));
-			commandDirectory.AddCommand("SetCharacterExpression", new Func<string[], IEnumerator>(SetCharacterExpression), new Func<string[], IEnumerator>(SetCharacterExpression));
-			commandDirectory.AddCommand("SetCharacterMotion", new Action<string[]>(SetCharacterMotion));
+			model3DCharactersDir.AddCommand("SetExpressionInstant", new Action<string[]>(SetExpressionInstant));
+			model3DCharactersDir.AddCommand("SetExpression", new Func<string[], IEnumerator>(SetExpression), new Func<string[], IEnumerator>(SetExpression));
+			model3DCharactersDir.AddCommand("SetMotion", new Action<string[]>(SetMotion));
 		}
 
 
@@ -79,7 +87,7 @@ namespace Commands
 			yield return new WaitUntil(() => task.IsCompleted);
 		}
 
-		static void SetCharacterName(string[] args)
+		static void SetName(string[] args)
 		{
 			string name = args.Length > 1 ? ParseArgument<string>(args[1]) : null;
 
@@ -89,7 +97,7 @@ namespace Commands
 			character.SetName(name);
 		}
 
-		static void SetCharacterDisplayName(string[] args)
+		static void SetDisplayName(string[] args)
 		{
 			string displayName = args.Length > 1 ? ParseArgument<string>(args[1]) : null;
 
@@ -102,7 +110,7 @@ namespace Commands
 
 		/***** Graphics Characters *****/
 
-		static void SetCharacterPriority(string[] args)
+		static void SetPriority(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -112,7 +120,7 @@ namespace Commands
 			character.SetPriority(priority);
 		}
 
-		static void SetCharacterAnimation(string[] args)
+		static void SetAnimation(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -125,7 +133,7 @@ namespace Commands
 				character.SetAnimation(animation); // one-time
 		}
 
-		static void ShowCharacterInstant(string[] args)
+		static void ShowInstant(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -133,7 +141,7 @@ namespace Commands
 			character.ShowInstant();
 		}
 
-		static IEnumerator ShowCharacter(string[] args)
+		static IEnumerator Show(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) yield break;
@@ -143,7 +151,7 @@ namespace Commands
 			yield return character.Show(speed);
 		}
 
-		static void HideCharacterInstant(string[] args)
+		static void HideInstant(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -151,7 +159,7 @@ namespace Commands
 			character.HideInstant();
 		}
 
-		static IEnumerator HideCharacter(string[] args)
+		static IEnumerator Hide(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) yield break;
@@ -161,7 +169,7 @@ namespace Commands
 			yield return character.Hide(speed);
 		}
 
-		static void SetCharacterPosInstant(string[] args)
+		static void SetPosInstant(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -172,7 +180,7 @@ namespace Commands
 			character.SetPositionInstant(new Vector2(xPos, yPos));
 		}
 
-		static IEnumerator SetCharacterPos(string[] args)
+		static IEnumerator SetPos(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) yield break;
@@ -184,7 +192,7 @@ namespace Commands
 			yield return character.SetPosition(new Vector2(xPos, yPos), speed);
 		}
 
-		static void SetCharacterPosXInstant(string[] args)
+		static void SetPosXInstant(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -194,7 +202,7 @@ namespace Commands
 			character.SetPositionXInstant(xPos);
 		}
 
-		static IEnumerator SetCharacterPosX(string[] args)
+		static IEnumerator SetPosX(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) yield break;
@@ -205,7 +213,7 @@ namespace Commands
 			yield return character.SetPositionX(xPos, speed);
 		}
 
-		static void SetCharacterPosYInstant(string[] args)
+		static void SetPosYInstant(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -215,7 +223,7 @@ namespace Commands
 			character.SetPositionYInstant(yPos);
 		}
 
-		static IEnumerator SetCharacterPosY(string[] args)
+		static IEnumerator SetPosY(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) yield break;
@@ -226,7 +234,7 @@ namespace Commands
 			yield return character.SetPositionY(yPos, speed);
 		}
 
-		static void FlipCharacterInstant(string[] args)
+		static void FlipInstant(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -234,7 +242,7 @@ namespace Commands
 			character.FlipInstant();
 		}
 
-		static IEnumerator FlipCharacter(string[] args)
+		static IEnumerator Flip(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) yield break;
@@ -244,7 +252,7 @@ namespace Commands
 			yield return character.Flip(speed);
 		}
 
-		static void FaceLeftCharacterInstant(string[] args)
+		static void FaceLeftInstant(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -252,7 +260,7 @@ namespace Commands
 			character.FaceLeftInstant();
 		}
 
-		static IEnumerator FaceLeftCharacter(string[] args)
+		static IEnumerator FaceLeft(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) yield break;
@@ -262,7 +270,7 @@ namespace Commands
 			yield return character.FaceLeft(speed);
 		}
 
-		static void FaceRightCharacterInstant(string[] args)
+		static void FaceRightInstant(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -270,7 +278,7 @@ namespace Commands
 			character.FaceRightInstant();
 		}
 
-		static IEnumerator FaceRightCharacter(string[] args)
+		static IEnumerator FaceRight(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) yield break;
@@ -280,7 +288,7 @@ namespace Commands
 			yield return character.FaceRight(speed);
 		}
 
-		static void HighlightCharacterInstant(string[] args)
+		static void HighlightInstant(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -288,7 +296,7 @@ namespace Commands
 			character.HighlightInstant();
 		}
 
-		static IEnumerator HighlightCharacter(string[] args)
+		static IEnumerator Highlight(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) yield break;
@@ -298,7 +306,7 @@ namespace Commands
 			yield return character.Highlight(speed);
 		}
 
-		static void UnhighlightCharacterInstant(string[] args)
+		static void UnhighlightInstant(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -306,7 +314,7 @@ namespace Commands
 			character.UnhighlightInstant();
 		}
 
-		static IEnumerator UnhighlightCharacter(string[] args)
+		static IEnumerator Unhighlight(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) yield break;
@@ -316,7 +324,7 @@ namespace Commands
 			yield return character.Unhighlight(speed);
 		}
 
-		static void SetCharacterColorInstant(string[] args)
+		static void SetColorInstant(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return;
@@ -326,7 +334,7 @@ namespace Commands
 			character.SetColorInstant(GetColorFromHex(hexColor));
 		}
 
-		static IEnumerator SetCharacterColor(string[] args)
+		static IEnumerator SetColor(string[] args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) yield break;
@@ -340,7 +348,7 @@ namespace Commands
 
 		/***** Sprite Characters *****/
 
-		static void SetCharacterSpriteInstant(string[] args)
+		static void SetSpriteInstant(string[] args)
 		{
 			SpriteCharacter character = GetCharacterFromArgs<SpriteCharacter>(args);
 			if (character == null) return;
@@ -351,7 +359,7 @@ namespace Commands
 			character.SetSpriteInstant(layerType, spriteName);
 		}
 
-		static IEnumerator SetCharacterSprite(string[] args)
+		static IEnumerator SetSprite(string[] args)
 		{
 			SpriteCharacter character = GetCharacterFromArgs<SpriteCharacter>(args);
 			if (character == null) yield break;
@@ -366,7 +374,7 @@ namespace Commands
 
 		/***** Model 3D Characters *****/
 
-		static void SetCharacterExpressionInstant(string[] args)
+		static void SetExpressionInstant(string[] args)
 		{
 			Model3DCharacter character = GetCharacterFromArgs<Model3DCharacter>(args);
 			if (character == null) return;
@@ -376,7 +384,7 @@ namespace Commands
 			character.SetExpressionInstant(expressionName);
 		}
 
-		static IEnumerator SetCharacterExpression(string[] args)
+		static IEnumerator SetExpression(string[] args)
 		{
 			Model3DCharacter character = GetCharacterFromArgs<Model3DCharacter>(args);
 			if (character == null) yield break;
@@ -387,7 +395,7 @@ namespace Commands
 			yield return character.SetExpression(expressionName, speed);
 		}
 
-		static void SetCharacterMotion(string[] args)
+		static void SetMotion(string[] args)
 		{
 			Model3DCharacter character = GetCharacterFromArgs<Model3DCharacter>(args);
 			if (character == null) return;

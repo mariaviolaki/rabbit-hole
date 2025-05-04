@@ -10,35 +10,74 @@ namespace Commands
 {
 	public class CommandManager : MonoBehaviour
 	{
-		// The grouping of all dialogue commands available to be run
-		CommandDirectory commandDirectory;
+		class CommandInputData
+		{
+			public string Directory { get; private set; }
+			public string Command { get; private set; }
+			public string[] Arguments { get; private set; }
+
+			public CommandInputData(string directoryName, string commandName, string[] arguments)
+			{
+				Directory = directoryName;
+				Command = commandName;
+				Arguments = arguments;
+			}
+		}
+
+		// Command directory categories
+		public static readonly string MainDirectoryName = "Main";
+		public static readonly string CharacterDirectoryName = "Characters";
+		public static readonly string GraphicsCharacterDirectoryName = "GraphicsCharacters";
+		public static readonly string SpriteCharacterDirectoryName = "SpriteCharacters";
+		public static readonly string Model3DCharacterDirectoryName = "Model3DCharacters";
+		const char CommandDirectoryIdentifier = '.';
+
 		CharacterManager characterManager;
+
+		// The grouping of all dialogue commands available to be run (divided into categories)
+		Dictionary<string, CommandDirectory> commandDirectories = new Dictionary<string, CommandDirectory>();
 
 		// Keep track of all the processes that may run simultaneously
 		readonly Dictionary<Guid, CommandProcess> processes = new Dictionary<Guid, CommandProcess>();
 		readonly HashSet<string> unskippableProcessNames = new HashSet<string>();
 
 		public bool IsIdle => processes.Count == 0;
+		public CharacterManager GetCharacterManager() => characterManager;
 
 		void Awake()
 		{
+			characterManager = FindObjectOfType<CharacterManager>();
 			InitDirectory();
 		}
 
-		public CommandProcess Execute(string commandName, params string[] arguments)
+		public CommandProcess Execute(string fullCommandName, params string[] inputArguments)
 		{
-			Delegate command = commandDirectory.GetCommand(commandName);
-			Delegate skipCommand = commandDirectory.GetSkipCommand(commandName);
+			CommandInputData inputData = GetCommandInputData(fullCommandName, inputArguments);
+			if (inputData == null)
+			{
+				Debug.LogWarning($"Skipped invalid command: '{fullCommandName}'");
+				return null;
+			}
+
+			CommandDirectory directory = commandDirectories.ContainsKey(inputData.Directory) ? commandDirectories[inputData.Directory] : null;
+			if (directory == null || !directory.HasCommand(inputData.Command))
+			{
+				Debug.LogWarning($"Command '{inputData.Command}' not found in directory '{inputData.Directory}'. Command skipped.");
+				return null;
+			}
+
+			Delegate command = directory.GetCommand(inputData.Command);
+			Delegate skipCommand = directory.GetSkipCommand(inputData.Command);
 			if (command == null) return null;
 
 			if (command.Method.ReturnType == typeof(void))
 			{
-				ExecuteAction(command, arguments);
+				ExecuteAction(command, inputData.Arguments);
 				return null;
 			}
 			else if (command.Method.ReturnType == typeof(IEnumerator))
 			{
-				CommandProcess process = ExecuteProcess(command, skipCommand, commandName, arguments);
+				CommandProcess process = ExecuteProcess(command, skipCommand, inputData.Command, inputData.Arguments);
 				return process;
 			}
 
@@ -52,6 +91,14 @@ namespace Commands
 			{
 				process.Stop();
 			}
+		}
+
+		public CommandDirectory GetDirectory(string directoryName)
+		{
+			if (!commandDirectories.ContainsKey(directoryName))
+				commandDirectories.Add(directoryName, new CommandDirectory());
+
+			return commandDirectories[directoryName];
 		}
 
 		void DeleteProcess(Guid processId)
@@ -82,11 +129,64 @@ namespace Commands
 			return commandProcess;
 		}
 
+		CommandInputData GetCommandInputData(string fullCommandName, string[] arguments)
+		{
+			(string directoryName, string commandName) = ParseCommandInput(fullCommandName);
+
+			// If the directory name is valid, get the command from this directory
+			if (commandDirectories.ContainsKey(directoryName))
+				return new CommandInputData(directoryName, commandName, arguments);
+
+			// If not directory was found, assume that a character name was provided
+			string characterShortName = directoryName;
+			if (!characterManager.HasCharacter(characterShortName))
+			{
+				Debug.LogWarning($"Invalid Command Directory Entered: '{directoryName}'. Command '{fullCommandName}' skipped.");
+				return null;
+			}
+
+			directoryName = GetCharacterDirectoryName(characterShortName, commandName);
+
+			// Inject the character's short name into the arguments so that the command can find the character
+			string[] characterArguments = new string[arguments.Length + 1];
+			characterArguments[0] = characterShortName;
+			Array.Copy(arguments, 0, characterArguments, 1, arguments.Length);
+
+			return new CommandInputData(directoryName, commandName, characterArguments);
+		}
+
+		(string, string) ParseCommandInput(string fullCommandName)
+		{
+			// If no directory was specified, get the command from the main directory
+			int commandIndex = fullCommandName.LastIndexOf(CommandDirectoryIdentifier);
+			if (commandIndex == -1)
+				return (MainDirectoryName, fullCommandName);
+
+			string directoryName = fullCommandName.Substring(0, commandIndex);
+			string commandName = fullCommandName.Substring(commandIndex + 1);
+
+			return (directoryName, commandName);
+		}
+
+		string GetCharacterDirectoryName(string characterShortName, string commandName)
+		{
+			CharacterType characterType = characterManager.GetCharacter(characterShortName).Data.Type;
+			bool isGraphicsCharacter = characterType == CharacterType.Sprite || characterType == CharacterType.Model3D;
+
+			if (!isGraphicsCharacter) return CharacterDirectoryName;
+
+			if (characterType == CharacterType.Sprite && commandDirectories[SpriteCharacterDirectoryName].HasCommand(commandName))
+				return SpriteCharacterDirectoryName;
+			else if (characterType == CharacterType.Model3D && commandDirectories[Model3DCharacterDirectoryName].HasCommand(commandName))
+				return Model3DCharacterDirectoryName;
+			else if (commandDirectories[GraphicsCharacterDirectoryName].HasCommand(commandName))
+				return GraphicsCharacterDirectoryName;
+			
+			return CharacterDirectoryName;
+		}
+
 		void InitDirectory()
 		{
-			characterManager = FindObjectOfType<CharacterManager>();
-			commandDirectory = new CommandDirectory(characterManager);
-
 			Assembly projectAssembly = Assembly.GetExecutingAssembly();
 			Type[] commandTypes = projectAssembly.GetTypes().Where(t => t.IsSubclassOf(typeof(DialogueCommand))).ToArray();
 
@@ -95,7 +195,7 @@ namespace Commands
 				// Search for all scripts inheriting from DialogueCommand and register their commands to the directory 
 				MethodInfo registerMethod = commandType.GetMethod("Register", BindingFlags.Static | BindingFlags.Public);
 				if (registerMethod != null)
-					registerMethod.Invoke(null, new object[] { commandDirectory });
+					registerMethod.Invoke(null, new object[] { this });
 				else
 					Debug.LogError($"Register function not found in {commandType.Name}!");
 

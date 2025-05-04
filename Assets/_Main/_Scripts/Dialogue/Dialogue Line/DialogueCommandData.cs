@@ -20,8 +20,11 @@ namespace Dialogue
 			}
 		}
 
-		const string CommandWaitKeyword = "wait";
-		readonly string CommandDelimiterPattern = $@"\)\s*,\s*({CommandWaitKeyword}\s+)?[a-zA-Z][a-zA-Z0-9]*\s*\(";
+		// This is also used by the DialogueParser to split commands from dialogue text
+		readonly static string CommandWaitKeyword = "wait";
+		public readonly static string CommandPattern = $@"({CommandWaitKeyword}\s+)?[a-zA-Z][a-zA-Z0-9]*\s*(\.\s*[a-zA-Z][a-zA-Z0-9]*\s*)?\(";
+
+		readonly string CommandDelimiterPattern = $@"\)\s*,\s*{CommandPattern}";
 		const char CommandDelimiter = ',';
 		const char ArgsDelimiter = ',';
 		const char OpenArgsDelimiter = '(';

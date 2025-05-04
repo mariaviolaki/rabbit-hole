@@ -8,7 +8,7 @@ namespace Commands
 		public static readonly string[] unskippableProcesses = new string[] { };
 
 		// Classes inheriting from DialogueCommand must redefine this function
-		public static void Register(CommandDirectory commandDirectory) { }
+		public static void Register(CommandManager commandManager) { }
 
 		protected static T ParseArgument<T>(string arg, T defaultValue = default)
 		{

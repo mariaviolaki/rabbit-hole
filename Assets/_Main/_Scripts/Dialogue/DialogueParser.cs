@@ -4,14 +4,11 @@ namespace Dialogue
 {
 	public static class DialogueParser
 	{
-		const string CommandWaitKeyword = "wait";
-		readonly static string CommandRegexPattern = $@"({CommandWaitKeyword}\s+)?[a-zA-Z][a-zA-Z0-9]*\s*\(";
-
 		public static DialogueLine Parse(string rawLine)
 		{
 			string speaker = "", dialogue = "", commands = "";
 
-			Regex commandRegex = new Regex(CommandRegexPattern);
+			Regex commandRegex = new Regex(DialogueCommandData.CommandPattern);
 			MatchCollection commandMatches = commandRegex.Matches(rawLine);
 			int firstCommandStart = commandMatches.Count == 0 ? -1 : commandMatches[0].Index;
 

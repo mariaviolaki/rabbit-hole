@@ -26,6 +26,8 @@ namespace Characters
 		public RectTransform Container { get { return characterContainer; } }
 		public Transform Model3DContainer { get { return model3DContainer; } }
 
+		public bool HasCharacter(string shortName) => characters.ContainsKey(shortName);
+
 		public async Task CreateCharacters(string[] names)
 		{
 			Task[] characterTasks = new Task[names.Length];
