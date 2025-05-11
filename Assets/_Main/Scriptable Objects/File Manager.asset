@@ -22,3 +22,5 @@ MonoBehaviour:
     m_LabelString: Dialogue
   backgroundImageLabel:
     m_LabelString: Graphics/Backgrounds
+  backgroundVideoLabel:
+    m_LabelString: Videos

@@ -230,7 +230,7 @@ namespace Characters
 		protected float GetTransitionSpeed(float speedInput, float defaultSpeed, bool isTransitionSkipped)
 		{
 			if (isTransitionSkipped)
-				return manager.GameOptions.Characters.SkipTransitionSpeed;
+				return manager.GameOptions.General.SkipTransitionSpeed;
 			else if (speedInput <= 0)
 				return defaultSpeed;
 			else

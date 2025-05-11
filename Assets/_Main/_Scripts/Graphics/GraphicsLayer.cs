@@ -2,6 +2,7 @@ using System.Collections;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace Graphics
 {
@@ -12,11 +13,15 @@ namespace Graphics
 		readonly GraphicsLayerGroup layerGroup;
 		readonly CanvasGroup canvasGroup;
 		readonly RawImage rawImage;
+		readonly VideoPlayer videoPlayer;
+		readonly AudioSource audioSource;
 		readonly int depth;
 
 		Coroutine transitionProcess;
-		string currentGraphicName;
-		bool currentIsImage;
+		RenderTexture renderTexture;
+		string graphicName;
+		bool isImage;
+		bool hasAudio;
 
 		public int Depth => depth;
 
@@ -28,6 +33,14 @@ namespace Graphics
 			RectTransform rectTransform = layerObject.GetComponent<RectTransform>();
 			canvasGroup = layerObject.AddComponent<CanvasGroup>();
 			rawImage = layerObject.AddComponent<RawImage>();
+			videoPlayer = layerObject.AddComponent<VideoPlayer>();
+			audioSource = layerObject.AddComponent<AudioSource>();
+
+			videoPlayer.SetTargetAudioSource(0, audioSource);
+			videoPlayer.source = VideoSource.Url;
+			videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
+			videoPlayer.isLooping = true;
+			videoPlayer.errorReceived += OnVideoError;
 
 			// Add the layer as child under the layer group
 			int lastIndex = layerGroup.Root.childCount;
@@ -45,18 +58,18 @@ namespace Graphics
 
 		public async Task SetImageInstant(string name)
 		{
-			if (currentIsImage && currentGraphicName == name) return;
+			if (isImage && graphicName == name) return;
 
 			Sprite sprite = await layerGroup.Manager.FileManager.LoadBackgroundImage(name);
 			if (sprite == null) return;
 
 			StopProcess();
-			SetGraphic(name, sprite.texture, true);
+			ApplyImage(name, sprite);
 		}
 
 		public Coroutine SetImage(string name, float speed = 0)
 		{
-			if (currentIsImage && currentGraphicName == name) return null;
+			if (isImage && graphicName == name) return null;
 
 			bool isSkipped = StopProcess();
 
@@ -64,21 +77,66 @@ namespace Graphics
 			return transitionProcess;
 		}
 
-		IEnumerator ChangeGraphic(string name, float speed, bool isSkipped, bool isImage)
+		public void SetVideoInstant(string name, bool useAudio = true)
 		{
-			Task<Sprite> loadTask = layerGroup.Manager.FileManager.LoadBackgroundImage(name);
+			StopProcess();
+			ApplyVideo(name, useAudio);
+		}
+
+		public Coroutine SetVideo(string name, bool useAudio = true, float speed = 0)
+		{
+			bool isSkipped = StopProcess();
+
+			transitionProcess = layerGroup.Manager.StartCoroutine(ChangeGraphic(name, speed, isSkipped, false, useAudio));
+			return transitionProcess;
+		}
+
+		void ApplyImage(string name, Sprite sprite)
+		{
+			if (sprite == null) return;
+
+			ClearCurrentGraphic();
+
+			isImage = true;
+			hasAudio = false;
+			graphicName = name;
+			rawImage.texture = sprite.texture;
+		}
+
+		void ApplyVideo(string name, bool useAudio)
+		{
+			ClearCurrentGraphic();
+
+			isImage = false;
+			hasAudio = useAudio;
+			graphicName = name;
+
+			audioSource.mute = !useAudio;
+			audioSource.volume = 0;
+
+			videoPlayer.url = layerGroup.Manager.FileManager.GetVideoUrl(name);
+			videoPlayer.frame = 0;
+			videoPlayer.prepareCompleted += OnVideoPrepared;
+			videoPlayer.Prepare();
+		}
+
+		IEnumerator ChangeGraphic(string name, float speed, bool isSkipped, bool isImage, bool useAudio = false)
+		{
+			Task<Sprite> imageTask = isImage ? layerGroup.Manager.FileManager.LoadBackgroundImage(name) : null;
 			float fadeSpeed = GetTransitionSpeed(speed, isSkipped);
 
-			if (currentGraphicName != null)
+			if (graphicName != null)
 			{
 				fadeSpeed *= 2;
 				yield return FadeGraphic(canvasGroup, false, fadeSpeed);
 			}
-				
-			yield return new WaitUntil(() => loadTask.IsCompleted);
 
-			if (loadTask.IsCompletedSuccessfully && loadTask.Result != null)
-				SetGraphic(name, loadTask.Result.texture, isImage);
+			yield return new WaitUntil(() => !isImage || (imageTask != null && imageTask.IsCompleted));
+
+			if (isImage && imageTask.IsCompletedSuccessfully && imageTask.Result != null)
+				ApplyImage(name, imageTask.Result);
+			else if (!isImage)
+				ApplyVideo(name, useAudio);
 
 			yield return FadeGraphic(canvasGroup, true, fadeSpeed);
 			transitionProcess = null;
@@ -96,34 +154,48 @@ namespace Graphics
 				timeElapsed += Time.deltaTime;
 				float smoothPercentage = Mathf.SmoothStep(0, 1, Mathf.Clamp01(timeElapsed / duration));
 
-				canvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, smoothPercentage);
+				float transitionValue = Mathf.Lerp(startAlpha, targetAlpha, smoothPercentage);
+				canvasGroup.alpha = transitionValue;
+
+				if (!isImage && hasAudio)
+					audioSource.volume = transitionValue;
+				
 				yield return null;
 			}
 
 			canvasGroup.alpha = targetAlpha;
 		}
-
-		void SetGraphic(string name, Texture texture, bool isImage)
+		
+		void ClearCurrentGraphic()
 		{
-			if (texture == null) return;
+			if (graphicName == null) return;
 
-			if (currentGraphicName != null)
+			if (isImage)
 			{
-				if (currentIsImage)
-					layerGroup.Manager.FileManager.UnloadBackgroundImage(currentGraphicName);
+				layerGroup.Manager.FileManager.UnloadBackgroundImage(graphicName);
+			}
+			else
+			{
+				videoPlayer.Stop();
+				videoPlayer.url = null;
+				videoPlayer.targetTexture = null;
+
+				if (renderTexture != null)
+				{
+					renderTexture.Release();
+					Object.Destroy(renderTexture);
+				}
 			}
 
-			currentIsImage = isImage;
-			currentGraphicName = name;
-			rawImage.texture = texture;
+			graphicName = null;
 		}
 
 		float GetTransitionSpeed(float speedInput, bool isTransitionSkipped)
 		{
 			if (isTransitionSkipped)
-				return layerGroup.Manager.GameOptions.Characters.SkipTransitionSpeed;
+				return layerGroup.Manager.GameOptions.General.SkipTransitionSpeed;
 			else if (speedInput <= 0)
-				return layerGroup.Manager.GameOptions.Characters.FadeTransitionSpeed;
+				return layerGroup.Manager.GameOptions.BackgroundLayers.TransitionSpeed;
 			else
 				return speedInput;
 		}
@@ -136,6 +208,25 @@ namespace Graphics
 			transitionProcess = null;
 
 			return true;
+		}
+
+		void OnVideoPrepared(VideoPlayer videoPlayer)
+		{
+			this.videoPlayer.prepareCompleted -= OnVideoPrepared;
+
+			RenderTexture texture = new RenderTexture((int)videoPlayer.width, (int)videoPlayer.height, 0);
+			rawImage.texture = texture;
+			this.videoPlayer.targetTexture = texture;
+
+			if (transitionProcess == null && hasAudio)
+				audioSource.volume = 1f;
+
+			this.videoPlayer.Play();
+		}
+
+		void OnVideoError(VideoPlayer source, string message)
+		{
+			Debug.LogWarning($"Video failed to load. {message}");
 		}
 	}
 }

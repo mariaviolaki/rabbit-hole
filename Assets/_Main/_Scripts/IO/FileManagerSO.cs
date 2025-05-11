@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -9,6 +10,9 @@ using UnityEngine.U2D;
 [CreateAssetMenu(fileName = "File Manager", menuName = "Scriptable Objects/File Manager")]
 public class FileManagerSO : ScriptableObject
 {
+	static readonly string StreamingAssetsVideoPath = Path.Combine(Application.streamingAssetsPath, "Videos");
+	const string VideoFormat = ".mp4";
+
 	[SerializeField] AssetLabelReference characterPrefabLabel;
 	[SerializeField] AssetLabelReference model3DPrefabLabel;
 	[SerializeField] AssetLabelReference characterAtlasLabel;
@@ -35,6 +39,11 @@ public class FileManagerSO : ScriptableObject
 		CacheLabeledAssetsIntoDictionary(characterAtlasLabel, characterAtlasKeys);
 		CacheLabeledAssetsIntoDictionary(dialogueFileLabel, dialogueFileKeys);
 		CacheLabeledAssetsIntoDictionary(backgroundImageLabel, backgroundImageKeys);
+	}
+
+	public string GetVideoUrl(string fileName)
+	{
+		return Path.Combine(StreamingAssetsVideoPath, fileName + VideoFormat);
 	}
 
 	public async Task<GameObject> LoadCharacterPrefab(string characterName)

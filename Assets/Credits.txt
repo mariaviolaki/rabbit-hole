@@ -10,3 +10,7 @@ Character sprites made by:
 
 3D Models made by:
 - CGANIME (https://assetstore.unity.com/publishers/56844)
+
+Music made by:
+- cynicmusic (https://opengameart.org/content/crystal-cave-song18)
+- cynicmusic (https://opengameart.org/content/a-new-town-rpg-theme)

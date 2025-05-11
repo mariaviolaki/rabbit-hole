@@ -5,13 +5,25 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Game Options", menuName = "Scriptable Objects/Game Options")]
 public class GameOptionsSO : ScriptableObject
 {
+	[SerializeField] GeneralOptions general;
 	[SerializeField] DialogueOptions dialogue;
 	[SerializeField] CharacterOptions characters;
 	[SerializeField] Model3DOptions model3D;
+	[SerializeField] BackgroundLayerOptions backgroundLayers;
 
+	public GeneralOptions General { get { return general; } }
 	public DialogueOptions Dialogue { get { return dialogue; } }
 	public CharacterOptions Characters { get { return characters; } }
 	public Model3DOptions Model3D { get { return model3D; } }
+	public BackgroundLayerOptions BackgroundLayers { get { return backgroundLayers; } }
+
+	[System.Serializable]
+	public class GeneralOptions
+	{
+		[SerializeField] float skipTransitionSpeed;
+
+		public float SkipTransitionSpeed { get { return skipTransitionSpeed; } }
+	}
 
 	[System.Serializable]
 	public class DialogueOptions
@@ -30,7 +42,6 @@ public class GameOptionsSO : ScriptableObject
 	[System.Serializable]
 	public class CharacterOptions
 	{
-		[SerializeField] float skipTransitionSpeed;
 		[SerializeField] float moveSpeed;
 		[SerializeField] float fadeTransitionSpeed;
 		[SerializeField] float brightnessTransitionSpeed;
@@ -38,7 +49,6 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField][Range(0, 1)] float darkenBrightness;
 		[SerializeField] bool spritesFacingRight;
 
-		public float SkipTransitionSpeed { get { return skipTransitionSpeed; } }
 		public float MoveSpeed { get { return moveSpeed; } }
 		public float FadeTransitionSpeed { get { return fadeTransitionSpeed; } }
 		public float BrightnessTransitionSpeed { get { return brightnessTransitionSpeed; } }
@@ -57,5 +67,13 @@ public class GameOptionsSO : ScriptableObject
 		public RenderTexture RenderTexture3D { get { return renderTexture3D; } }
 		public float ExpressionTransitionSpeed { get { return expressionTransitionSpeed; } }
 		public float DefaultAngle { get { return defaultAngle; } }
+	}
+
+	[System.Serializable]
+	public class BackgroundLayerOptions
+	{
+		[SerializeField] float transitionSpeed;
+
+		public float TransitionSpeed { get { return transitionSpeed; } }
 	}
 }

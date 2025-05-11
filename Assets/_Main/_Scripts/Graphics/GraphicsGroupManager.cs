@@ -64,6 +64,24 @@ namespace Graphics
 				GraphicsLayer layer0 = layerGroup.GetLayer(0);
 				layer0.SetImage("Green-Forest-Front");
 			}
+			else if (Input.GetKeyDown(KeyCode.A))
+			{
+				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
+				GraphicsLayer layer1 = layerGroup.GetLayer(1);
+				layer1.SetVideo("Day");
+			}
+			else if (Input.GetKeyDown(KeyCode.S))
+			{
+				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
+				GraphicsLayer layer1 = layerGroup.GetLayer(1);
+				layer1.SetVideo("Night");
+			}
+			else if (Input.GetKeyDown(KeyCode.D))
+			{
+				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
+				GraphicsLayer layer1 = layerGroup.GetLayer(1);
+				layer1.SetVideo("Day", false);
+			}
 		}
 
 		GraphicsLayerGroup GetLayerGroup(string name)
