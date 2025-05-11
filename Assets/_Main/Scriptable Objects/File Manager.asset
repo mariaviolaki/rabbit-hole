@@ -20,3 +20,5 @@ MonoBehaviour:
     m_LabelString: Sprite Atlas/Characters
   dialogueFileLabel:
     m_LabelString: Dialogue
+  backgroundImageLabel:
+    m_LabelString: Graphics/Backgrounds
