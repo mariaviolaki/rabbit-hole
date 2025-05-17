@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Graphics
@@ -11,6 +13,7 @@ namespace Graphics
 
 		GraphicsGroupManager manager;
 		Dictionary<int, GraphicsLayer> layers = new();
+		Coroutine clearCoroutine;
 
 		public string Name => name;
 		public RectTransform Root => root;
@@ -19,6 +22,30 @@ namespace Graphics
 		public void Init(GraphicsGroupManager manager)
 		{
 			this.manager = manager;
+		}
+
+		public void ClearInstant()
+		{
+			foreach (GraphicsLayer layer in layers.Values)
+			{
+				layer.ClearInstant();
+			}
+		}
+
+		public Coroutine Clear(float speed = 0)
+		{
+			bool isAnyProcessStopped = false;
+			foreach (GraphicsLayer layer in layers.Values)
+			{
+				if (layer.StopTransition())
+					isAnyProcessStopped = true;
+			}
+
+			bool isClearStopped = manager.StopProcess(ref clearCoroutine);
+			speed = manager.GetTransitionSpeed(speed, isClearStopped || isAnyProcessStopped);
+
+			clearCoroutine = manager.StartCoroutine(ClearLayers(speed));
+			return clearCoroutine;
 		}
 
 		public GraphicsLayer GetLayer(int depth)
@@ -48,6 +75,17 @@ namespace Graphics
 
 			if (depth != clampedIndex)
 				Debug.LogWarning($"'Layer {depth}' was created as 'Layer {clampedIndex}' in {name} layer group because it was out of bounds.");
+		}
+
+		IEnumerator ClearLayers(float speed)
+		{
+			foreach (GraphicsLayer layer in layers.Values)
+			{
+				layer.Clear(speed);
+			}
+
+			yield return new WaitUntil(() => layers.Values.All(l => l.IsIdle));
+			clearCoroutine = null;
 		}
 	}
 }

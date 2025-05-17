@@ -59,7 +59,7 @@ namespace Graphics
 			}
 			else if (Input.GetKeyDown(KeyCode.R))
 			{
-				GraphicsLayerGroup layerGroup = GetLayerGroup("Foreground");
+				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
 				layerGroup.CreateLayer(0);
 				GraphicsLayer layer0 = layerGroup.GetLayer(0);
 				layer0.SetImage("Green-Forest-Front");
@@ -82,6 +82,36 @@ namespace Graphics
 				GraphicsLayer layer1 = layerGroup.GetLayer(1);
 				layer1.SetVideo("Day", false);
 			}
+			else if (Input.GetKeyDown(KeyCode.Z))
+			{
+				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
+				layerGroup.Clear();
+			}
+			else if (Input.GetKeyDown(KeyCode.X))
+			{
+				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
+				layerGroup.ClearInstant();
+			}
+		}
+
+		public float GetTransitionSpeed(float speedInput, bool isTransitionSkipped)
+		{
+			if (isTransitionSkipped)
+				return gameOptions.General.SkipTransitionSpeed;
+			else if (speedInput <= 0)
+				return gameOptions.BackgroundLayers.TransitionSpeed;
+			else
+				return speedInput;
+		}
+
+		public bool StopProcess(ref Coroutine process)
+		{
+			if (process == null) return false;
+
+			StopCoroutine(process);
+			process = null;
+
+			return true;
 		}
 
 		GraphicsLayerGroup GetLayerGroup(string name)
