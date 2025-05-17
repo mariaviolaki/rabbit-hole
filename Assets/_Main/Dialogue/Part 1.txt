@@ -8,9 +8,11 @@ Wait(1)
 Visuals.CreateBackground(2), Visuals.CreateForeground(), Visuals.CreateCinematic()
 
 wait Visuals.SetBackgroundImage(Green-Forest-Back, 1), wait Visuals.SetBackgroundImage(Green-Forest-Front)
-wait Visuals.SetForegroundImage(Red-Forest-Front)
 
 Wait(1)
+wait Visuals.ClearBackground(1)
+
+Wait(2)
 wait Visuals.SetBackgroundVideo(Day, 1)
 Wait(1)
 wait Visuals.SetBackgroundVideo(Night, 1, true)

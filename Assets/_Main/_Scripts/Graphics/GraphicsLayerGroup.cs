@@ -24,18 +24,24 @@ namespace Graphics
 			this.manager = manager;
 		}
 
-		public void ClearInstant()
+		public void ClearInstant(int depth = -1)
 		{
-			foreach (GraphicsLayer layer in layers.Values)
+			GraphicsLayer[] layersToClear = GetLayersFromDepth(depth);
+			if (layersToClear == null) return;
+
+			foreach (GraphicsLayer layer in layersToClear)
 			{
 				layer.ClearInstant();
 			}
 		}
 
-		public Coroutine Clear(float speed = 0)
+		public Coroutine Clear(int depth = -1, float speed = 0)
 		{
+			GraphicsLayer[] layersToClear = GetLayersFromDepth(depth);
+			if (layersToClear == null) return null;
+
 			bool isAnyProcessStopped = false;
-			foreach (GraphicsLayer layer in layers.Values)
+			foreach (GraphicsLayer layer in layersToClear)
 			{
 				if (layer.StopTransition())
 					isAnyProcessStopped = true;
@@ -44,7 +50,7 @@ namespace Graphics
 			bool isClearStopped = manager.StopProcess(ref clearCoroutine);
 			speed = manager.GetTransitionSpeed(speed, isClearStopped || isAnyProcessStopped);
 
-			clearCoroutine = manager.StartCoroutine(ClearLayers(speed));
+			clearCoroutine = manager.StartCoroutine(ClearLayers(layersToClear, speed));
 			return clearCoroutine;
 		}
 
@@ -90,14 +96,25 @@ namespace Graphics
 				Debug.LogWarning($"'Layer {depth}' was created as 'Layer {clampedIndex}' in {name} layer group because it was out of bounds.");
 		}
 
-		IEnumerator ClearLayers(float speed)
+		GraphicsLayer[] GetLayersFromDepth(int depth)
 		{
-			foreach (GraphicsLayer layer in layers.Values)
+			if (depth < 0)
+				return layers.Values.ToArray();
+
+			GraphicsLayer layer = GetLayer(depth);
+			if (layer == null) return null;
+
+			return new GraphicsLayer[] { GetLayer(depth) };
+		}
+
+		IEnumerator ClearLayers(GraphicsLayer[] layersToClear, float speed)
+		{
+			foreach (GraphicsLayer layer in layersToClear)
 			{
 				layer.Clear(speed);
 			}
 
-			yield return new WaitUntil(() => layers.Values.All(l => l.IsIdle));
+			yield return new WaitUntil(() => layersToClear.All(l => l.IsIdle));
 			clearCoroutine = null;
 		}
 	}

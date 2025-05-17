@@ -175,7 +175,8 @@ namespace Commands
 			GraphicsLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) return;
 
-			layerGroup.ClearInstant();
+			int layerDepth = args.Length > 0 ? ParseArgument<int>(args[0]) : -1;
+			layerGroup.ClearInstant(layerDepth);
 		}
 
 		static IEnumerator ClearVisualGroup(string visualGroupName, string[] args)
@@ -183,8 +184,10 @@ namespace Commands
 			GraphicsLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) yield break;
 
-			float speed = args.Length > 0 ? ParseArgument<float>(args[0]) : default;
-			yield return layerGroup.Clear(speed);
+			int layerDepth = args.Length > 0 ? ParseArgument<int>(args[0]) : -1;
+			float speed = args.Length > 1 ? ParseArgument<float>(args[1]) : default;
+
+			yield return layerGroup.Clear(layerDepth, speed);
 		}
 
 		static async Task SetVisualGroupImageInstant(string visualGroupName, string[] args)
@@ -193,9 +196,9 @@ namespace Commands
 			if (layerGroup == null) return;
 
 			string imageName = args.Length > 0 ? ParseArgument<string>(args[0]) : default;
-			int layerIndex = args.Length > 1 ? ParseArgument<int>(args[1]) : default;
+			int layerDepth = args.Length > 1 ? ParseArgument<int>(args[1]) : default;
 
-			GraphicsLayer layer = layerGroup.GetLayer(layerIndex);
+			GraphicsLayer layer = layerGroup.GetLayer(layerDepth);
 			if (layer == null) return;
 
 			await layer.SetImageInstant(imageName);
@@ -207,10 +210,10 @@ namespace Commands
 			if (layerGroup == null) yield break;
 
 			string imageName = args.Length > 0 ? ParseArgument<string>(args[0]) : default;
-			int layerIndex = args.Length > 1 ? ParseArgument<int>(args[1]) : default;
+			int layerDepth = args.Length > 1 ? ParseArgument<int>(args[1]) : default;
 			float speed = args.Length > 2 ? ParseArgument<float>(args[2]) : default;
 
-			GraphicsLayer layer = layerGroup.GetLayer(layerIndex);
+			GraphicsLayer layer = layerGroup.GetLayer(layerDepth);
 			if (layer == null) yield break;
 
 			yield return layer.SetImage(imageName, speed);
@@ -222,10 +225,10 @@ namespace Commands
 			if (layerGroup == null) return;
 
 			string videoName = args.Length > 0 ? ParseArgument<string>(args[0]) : default;
-			int layerIndex = args.Length > 1 ? ParseArgument<int>(args[1]) : default;
+			int layerDepth = args.Length > 1 ? ParseArgument<int>(args[1]) : default;
 			bool isMuted = args.Length > 2 ? ParseArgument<bool>(args[2]) : false;
 
-			GraphicsLayer layer = layerGroup.GetLayer(layerIndex);
+			GraphicsLayer layer = layerGroup.GetLayer(layerDepth);
 			if (layer == null) return;
 
 			layer.SetVideoInstant(videoName, isMuted);
@@ -237,11 +240,11 @@ namespace Commands
 			if (layerGroup == null) yield break;
 
 			string videoName = args.Length > 0 ? ParseArgument<string>(args[0]) : default;
-			int layerIndex = args.Length > 1 ? ParseArgument<int>(args[1]) : default;
+			int layerDepth = args.Length > 1 ? ParseArgument<int>(args[1]) : default;
 			bool isMuted = args.Length > 2 ? ParseArgument<bool>(args[2]) : false;
 			float speed = args.Length > 3 ? ParseArgument<float>(args[3]) : default;
 
-			GraphicsLayer layer = layerGroup.GetLayer(layerIndex);
+			GraphicsLayer layer = layerGroup.GetLayer(layerDepth);
 			if (layer == null) yield break;
 
 			yield return layer.SetVideo(videoName, isMuted, speed);
