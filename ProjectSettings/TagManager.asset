@@ -56,3 +56,6 @@ TagManager:
   - name: Controls
     uniqueID: 2075256777
     locked: 0
+  - name: Cinematic
+    uniqueID: 4159017233
+    locked: 0

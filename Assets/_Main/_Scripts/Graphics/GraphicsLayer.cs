@@ -21,7 +21,7 @@ namespace Graphics
 		RenderTexture renderTexture;
 		string graphicName;
 		bool isImage;
-		bool hasAudio;
+		bool isMuted;
 
 		public int Depth => depth;
 		public bool IsIdle => transitionCoroutine == null;
@@ -79,7 +79,9 @@ namespace Graphics
 			if (sprite == null) return;
 
 			layerGroup.Manager.StopProcess(ref transitionCoroutine);
+
 			ApplyImage(name, sprite);
+			canvasGroup.alpha = 1f;
 		}
 
 		public Coroutine SetImage(string name, float speed = 0)
@@ -88,21 +90,21 @@ namespace Graphics
 
 			bool isSkipped = layerGroup.Manager.StopProcess(ref transitionCoroutine);
 
-			transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeGraphic(name, speed, isSkipped, true));
+			transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeGraphic(name, speed, isSkipped, true, true));
 			return transitionCoroutine;
 		}
 
-		public void SetVideoInstant(string name, bool useAudio = true)
+		public void SetVideoInstant(string name, bool isMuted = false)
 		{
 			layerGroup.Manager.StopProcess(ref transitionCoroutine);
-			ApplyVideo(name, useAudio);
+			ApplyVideo(name, isMuted);
 		}
 
-		public Coroutine SetVideo(string name, bool useAudio = true, float speed = 0)
+		public Coroutine SetVideo(string name, bool isMuted = false, float speed = 0)
 		{
 			bool isSkipped = layerGroup.Manager.StopProcess(ref transitionCoroutine);
 
-			transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeGraphic(name, speed, isSkipped, false, useAudio));
+			transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeGraphic(name, speed, isSkipped, false, isMuted));
 			return transitionCoroutine;
 		}
 
@@ -118,20 +120,20 @@ namespace Graphics
 			UnloadGraphic();
 
 			isImage = true;
-			hasAudio = false;
+			isMuted = true;
 			graphicName = name;
 			rawImage.texture = sprite.texture;
 		}
 
-		void ApplyVideo(string name, bool useAudio)
+		void ApplyVideo(string name, bool isMuted)
 		{
 			UnloadGraphic();
 
 			isImage = false;
-			hasAudio = useAudio;
+			this.isMuted = isMuted;
 			graphicName = name;
 
-			audioSource.mute = !useAudio;
+			audioSource.mute = isMuted;
 			audioSource.volume = 0;
 
 			videoPlayer.url = layerGroup.Manager.FileManager.GetVideoUrl(name);
@@ -139,7 +141,7 @@ namespace Graphics
 			videoPlayer.Prepare();
 		}
 
-		IEnumerator ChangeGraphic(string name, float speed, bool isSkipped, bool isImage, bool useAudio = false)
+		IEnumerator ChangeGraphic(string name, float speed, bool isSkipped, bool isImage, bool isMuted)
 		{
 			Task<Sprite> imageTask = isImage ? layerGroup.Manager.FileManager.LoadBackgroundImage(name) : null;
 			float fadeSpeed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
@@ -155,7 +157,7 @@ namespace Graphics
 			if (isImage && imageTask.IsCompletedSuccessfully && imageTask.Result != null)
 				ApplyImage(name, imageTask.Result);
 			else if (!isImage)
-				ApplyVideo(name, useAudio);
+				ApplyVideo(name, isMuted);
 
 			yield return FadeGraphic(true, fadeSpeed);
 			transitionCoroutine = null;
@@ -176,7 +178,7 @@ namespace Graphics
 				float transitionValue = Mathf.Lerp(startAlpha, targetAlpha, smoothPercentage);
 				canvasGroup.alpha = transitionValue;
 
-				if (!isImage && hasAudio)
+				if (!isImage && !isMuted)
 					audioSource.volume = transitionValue;
 				
 				yield return null;
@@ -226,8 +228,11 @@ namespace Graphics
 			rawImage.texture = renderTexture;
 			this.videoPlayer.targetTexture = renderTexture;
 
-			if (transitionCoroutine == null && hasAudio)
-				audioSource.volume = 1f;
+			if (transitionCoroutine == null)
+			{
+				audioSource.volume = isMuted ? 0f : 1f;
+				canvasGroup.alpha = 1f;
+			}
 
 			this.videoPlayer.Play();
 		}

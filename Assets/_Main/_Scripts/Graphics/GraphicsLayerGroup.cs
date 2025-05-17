@@ -59,7 +59,20 @@ namespace Graphics
 			return layers[depth];
 		}
 
-		public void CreateLayer(int depth)
+		public void CreateLayers(int count = 0)
+		{
+			// Prevent multiple initializations
+			if (layers.Count > 0) return;
+
+			count = Mathf.Max(1, count);
+
+			for (int i = 0; i < count; i++)
+			{
+				CreateLayer(i);
+			}
+		}
+
+		void CreateLayer(int depth)
 		{
 			int clampedIndex = Mathf.Clamp(depth, 0, layers.Count);
 

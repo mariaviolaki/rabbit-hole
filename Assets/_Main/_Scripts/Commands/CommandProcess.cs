@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Commands
@@ -20,6 +21,7 @@ namespace Commands
 
 		public string Name => name;
 		public bool IsCompleted => commandCoroutine == null;
+		public bool IsTask => command is Func<Task> || command is Func<string, Task> || command is Func<string[], Task>;
 
 		public CommandProcess(string name, string[] arguments, Delegate command, Delegate skipCommand, CommandManager commandManager, bool isUnskippable)
 		{
@@ -38,7 +40,7 @@ namespace Commands
 
 		public void Stop()
 		{
-			if (isUnskippable || commandCoroutine == null) return;
+			if (isUnskippable || commandCoroutine == null || IsTask) return;
 
 			commandManager.StopCoroutine(commandCoroutine);
 			commandCoroutine = null;
@@ -59,11 +61,25 @@ namespace Commands
 				yield return command.DynamicInvoke(arguments[0]);
 			else if (command is Func<string[], IEnumerator>)
 				yield return command.DynamicInvoke((object)arguments);
+			else if (command is Func<Task>)
+				yield return WaitForTask((Task)command.DynamicInvoke());
+			else if (command is Func<string, Task>)
+				yield return WaitForTask((Task)command.DynamicInvoke(arguments[0]));
+			else if (command is Func<string[], Task>)
+				yield return WaitForTask((Task)command.DynamicInvoke((object)arguments));
 
 			if (commandCoroutine != null) commandCoroutine = null;
 			else skipCommandCoroutine = null;
 
 			OnFullyCompleted?.Invoke();
+		}
+
+		IEnumerator WaitForTask(Task task)
+		{
+			while (!task.IsCompleted) yield return null;
+
+			if (task.IsFaulted)
+				Debug.LogWarning($"CommandProcess '{name}' error: {task.Exception}");
 		}
 
 		void ExecuteAction()

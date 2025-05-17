@@ -11,9 +11,9 @@ namespace Commands
 			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
 
 			// Lambda function examples
-			directory.AddCommand("LogLambda", new Action(() => Debug.Log("Logging Lambda...")));
-			directory.AddCommand("LogLambdaArg", new Action<string>((string arg) => Debug.Log($"Logging Lambda Arg...\n{arg}")));
-			directory.AddCommand("LogLambdaArgs", new Action<string[]>((string[] args) => Debug.Log($"Logging Lambda Args...\n{string.Join("\n", args)}")));
+			directory.AddCommand("LogLambda", new Action(() => Debug.LogWarning("Logging Lambda...")));
+			directory.AddCommand("LogLambdaArg", new Action<string>((string arg) => Debug.LogWarning($"Logging Lambda Arg...\n{arg}")));
+			directory.AddCommand("LogLambdaArgs", new Action<string[]>((string[] args) => Debug.LogWarning($"Logging Lambda Args...\n{string.Join("\n", args)}")));
 
 			// Defined function examples
 			directory.AddCommand("LogFunction", new Action(LogFunction));
@@ -28,42 +28,42 @@ namespace Commands
 
 		static void LogFunction()
 		{
-			Debug.Log("Logging Function...");
+			Debug.LogWarning("Logging Function...");
 		}
 
 		static void LogFunctionArg(string arg)
 		{
-			Debug.Log($"Logging Function Arg...\n{arg}");
+			Debug.LogWarning($"Logging Function Arg...\n{arg}");
 		}
 
 		static void LogFunctionArgs(string[] args)
 		{
-			Debug.Log($"Logging Function Args...\n{string.Join("\n", args)}");
+			Debug.LogWarning($"Logging Function Args...\n{string.Join("\n", args)}");
 		}
 
 		static IEnumerator LogCoroutine()
 		{
-			Debug.Log("Logging Coroutine... (1/2)");
+			Debug.LogWarning("Logging Coroutine... (1/2)");
 			yield return new WaitForSeconds(1);
-			Debug.Log("Logging Coroutine... (2/2)");
+			Debug.LogWarning("Logging Coroutine... (2/2)");
 		}
 
 		static IEnumerator LogCoroutineArg(string arg)
 		{
-			Debug.Log("Logging Coroutine Arg... (1/2)");
+			Debug.LogWarning("Logging Coroutine Arg... (1/2)");
 			yield return new WaitForSeconds(1);
-			Debug.Log($"{arg} (2/2)");
+			Debug.LogWarning($"{arg} (2/2)");
 		}
 
 		static IEnumerator LogCoroutineArgs(string[] args)
 		{
 			int logCount = args.Length + 1;
-			Debug.Log($"Logging Coroutine Args... (1/{logCount})");
+			Debug.LogWarning($"Logging Coroutine Args... (1/{logCount})");
 
 			for (int i = 1; i <= args.Length; i++)
 			{
 				yield return new WaitForSeconds(1);
-				Debug.Log($"{args[i-1]} ({i+1}/{logCount})");
+				Debug.LogWarning($"{args[i-1]} ({i+1}/{logCount})");
 			}
 		}
 	}

@@ -163,10 +163,13 @@ namespace Dialogue
 
 			foreach (DialogueCommandData.Command command in commandList)
 			{
-				if (command.IsWaiting || command.Name == "Wait")
-					processesToWait.Add(commandManager.Execute(command.Name, command.Arguments));
-				else
-					commandManager.Execute(command.Name, command.Arguments);
+				CommandProcess process = commandManager.Execute(command.Name, command.Arguments);
+				if (process == null) continue;
+
+				if (process.IsTask)
+					yield return new WaitUntil(() => process.IsCompleted);
+				else if (command.IsWaiting || command.Name == "Wait")
+					processesToWait.Add(process);						
 			}
 
 			// Wait to execute all processes of this line concurrently

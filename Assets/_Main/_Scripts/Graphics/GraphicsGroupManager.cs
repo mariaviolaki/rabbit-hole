@@ -9,6 +9,10 @@ namespace Graphics
 		[SerializeField] FileManagerSO fileManager;
 		[SerializeField] GameOptionsSO gameOptions;
 
+		public static string BackgroundName = "Background";
+		public static string ForegroundName = "Foreground";
+		public static string CinematicName = "Cinematic";
+
 		Dictionary<string, GraphicsLayerGroup> layerGroupDirectory = new Dictionary<string, GraphicsLayerGroup>();
 
 		public FileManagerSO FileManager => fileManager;
@@ -23,75 +27,11 @@ namespace Graphics
 			}
 		}
 
-		void Update()
+		public GraphicsLayerGroup GetLayerGroup(string name)
 		{
-			// TODO remove test functionality
-			if (Input.GetKeyDown(KeyCode.Space))
-			{
-				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
-				if (layerGroup == null) return;
+			if (!layerGroupDirectory.ContainsKey(name)) return null;
 
-				layerGroup.CreateLayer(0);
-				GraphicsLayer layer0 = layerGroup.GetLayer(0);
-				layer0.SetImage("Red-Forest-Front");
-
-				layerGroup.CreateLayer(10);
-				GraphicsLayer layer1 = layerGroup.GetLayer(1);
-				layer1.SetImage("Green-Forest-Back");
-			}
-			else if (Input.GetKeyDown(KeyCode.Q))
-			{
-				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
-				GraphicsLayer layer1 = layerGroup.GetLayer(1);
-				layer1.SetImage("Red-Forest-Back");
-			}
-			else if (Input.GetKeyDown(KeyCode.W))
-			{
-				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
-				GraphicsLayer layer1 = layerGroup.GetLayer(1);
-				layer1.SetImage("Green-Forest-Back");
-			}
-			else if (Input.GetKeyDown(KeyCode.E))
-			{
-				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
-				GraphicsLayer layer1 = layerGroup.GetLayer(1);
-				layer1.SetImageInstant("Yellow-Forest-Back");
-			}
-			else if (Input.GetKeyDown(KeyCode.R))
-			{
-				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
-				layerGroup.CreateLayer(0);
-				GraphicsLayer layer0 = layerGroup.GetLayer(0);
-				layer0.SetImage("Green-Forest-Front");
-			}
-			else if (Input.GetKeyDown(KeyCode.A))
-			{
-				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
-				GraphicsLayer layer1 = layerGroup.GetLayer(1);
-				layer1.SetVideo("Day");
-			}
-			else if (Input.GetKeyDown(KeyCode.S))
-			{
-				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
-				GraphicsLayer layer1 = layerGroup.GetLayer(1);
-				layer1.SetVideo("Night");
-			}
-			else if (Input.GetKeyDown(KeyCode.D))
-			{
-				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
-				GraphicsLayer layer1 = layerGroup.GetLayer(1);
-				layer1.SetVideo("Day", false);
-			}
-			else if (Input.GetKeyDown(KeyCode.Z))
-			{
-				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
-				layerGroup.Clear();
-			}
-			else if (Input.GetKeyDown(KeyCode.X))
-			{
-				GraphicsLayerGroup layerGroup = GetLayerGroup("Background");
-				layerGroup.ClearInstant();
-			}
+			return layerGroupDirectory[name];
 		}
 
 		public float GetTransitionSpeed(float speedInput, bool isTransitionSkipped)
@@ -112,13 +52,6 @@ namespace Graphics
 			process = null;
 
 			return true;
-		}
-
-		GraphicsLayerGroup GetLayerGroup(string name)
-		{
-			if (!layerGroupDirectory.ContainsKey(name)) return null;
-
-			return layerGroupDirectory[name];
 		}
 	}
 }

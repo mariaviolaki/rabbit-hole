@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Characters;
+using Graphics;
 using UnityEngine;
 
 namespace Commands
@@ -26,6 +28,7 @@ namespace Commands
 
 		// Command directory categories
 		public static readonly string MainDirectoryName = "Main";
+		public static readonly string VisualsDirectoryName = "Visuals";
 		public static readonly string CharacterDirectoryName = "Characters";
 		public static readonly string GraphicsCharacterDirectoryName = "GraphicsCharacters";
 		public static readonly string SpriteCharacterDirectoryName = "SpriteCharacters";
@@ -33,6 +36,7 @@ namespace Commands
 		const char CommandDirectoryIdentifier = '.';
 
 		CharacterManager characterManager;
+		GraphicsGroupManager graphicsGroupManager;
 
 		// The grouping of all dialogue commands available to be run (divided into categories)
 		Dictionary<string, CommandDirectory> commandDirectories = new Dictionary<string, CommandDirectory>();
@@ -43,10 +47,12 @@ namespace Commands
 
 		public bool IsIdle => processes.Count == 0;
 		public CharacterManager GetCharacterManager() => characterManager;
+		public GraphicsGroupManager GetGraphicsGroupManager() => graphicsGroupManager;
 
-		void Awake()
+		void Start()
 		{
 			characterManager = FindObjectOfType<CharacterManager>();
+			graphicsGroupManager = FindObjectOfType<GraphicsGroupManager>();
 			InitDirectory();
 		}
 
@@ -75,7 +81,7 @@ namespace Commands
 				ExecuteAction(command, inputData.Arguments);
 				return null;
 			}
-			else if (command.Method.ReturnType == typeof(IEnumerator))
+			else if (command.Method.ReturnType == typeof(IEnumerator) || command.Method.ReturnType == typeof(Task))
 			{
 				CommandProcess process = ExecuteProcess(command, skipCommand, inputData.Command, inputData.Arguments);
 				return process;
