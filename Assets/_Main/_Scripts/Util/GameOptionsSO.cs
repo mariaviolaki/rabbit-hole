@@ -6,12 +6,14 @@ using UnityEngine;
 public class GameOptionsSO : ScriptableObject
 {
 	[SerializeField] GeneralOptions general;
+	[SerializeField] IOOptions inputOutput;
 	[SerializeField] DialogueOptions dialogue;
 	[SerializeField] CharacterOptions characters;
 	[SerializeField] Model3DOptions model3D;
 	[SerializeField] BackgroundLayerOptions backgroundLayers;
 
 	public GeneralOptions General { get { return general; } }
+	public IOOptions IO { get { return inputOutput; } }
 	public DialogueOptions Dialogue { get { return dialogue; } }
 	public CharacterOptions Characters { get { return characters; } }
 	public Model3DOptions Model3D { get { return model3D; } }
@@ -23,6 +25,16 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField] float skipTransitionSpeed;
 
 		public float SkipTransitionSpeed { get { return skipTransitionSpeed; } }
+	}
+
+	[System.Serializable]
+	public class IOOptions
+	{
+		[SerializeField] GameIO.FileExtension audioExtension;
+		[SerializeField] GameIO.FileExtension videoExtension;
+
+		public GameIO.FileExtension AudioExtension { get { return audioExtension; } }
+		public GameIO.FileExtension VideoExtension { get { return videoExtension; } }
 	}
 
 	[System.Serializable]

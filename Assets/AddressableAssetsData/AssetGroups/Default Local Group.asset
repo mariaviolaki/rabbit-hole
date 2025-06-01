@@ -47,6 +47,30 @@ MonoBehaviour:
     m_SerializedLabels:
     - Graphics/Backgrounds
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ed834fec4c7177c4e97ee97d2811ead2
+    m_Address: Assets/_Main/Audio/Ambient
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Audio/Ambient
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2299a5c8cf74d0d4eae50536594c2b6c
+    m_Address: Assets/_Main/Audio/Music
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Audio/Music
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9784111bf1500f34d85e77b774576809
+    m_Address: Assets/_Main/Audio/SFX
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Audio/SFX
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 788d9a3b562d6474eb5127e40751192a
+    m_Address: Assets/_Main/Audio/Voice
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Audio/Voice
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 9a96d69e6c0910047aed3e71b766540f, type: 2}
   m_SchemaSet:

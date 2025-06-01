@@ -29,6 +29,7 @@ namespace Commands
 		// Command directory categories
 		public static readonly string MainDirectoryName = "Main";
 		public static readonly string VisualsDirectoryName = "Visuals";
+		public static readonly string AudioDirectoryName = "Audio";
 		public static readonly string CharacterDirectoryName = "Characters";
 		public static readonly string GraphicsCharacterDirectoryName = "GraphicsCharacters";
 		public static readonly string SpriteCharacterDirectoryName = "SpriteCharacters";
@@ -37,6 +38,7 @@ namespace Commands
 
 		CharacterManager characterManager;
 		GraphicsGroupManager graphicsGroupManager;
+		AudioManager audioManager;
 
 		// The grouping of all dialogue commands available to be run (divided into categories)
 		Dictionary<string, CommandDirectory> commandDirectories = new Dictionary<string, CommandDirectory>();
@@ -48,11 +50,13 @@ namespace Commands
 		public bool IsIdle => processes.Count == 0;
 		public CharacterManager GetCharacterManager() => characterManager;
 		public GraphicsGroupManager GetGraphicsGroupManager() => graphicsGroupManager;
+		public AudioManager GetAudioManager() => audioManager;
 
 		void Start()
 		{
 			characterManager = FindObjectOfType<CharacterManager>();
 			graphicsGroupManager = FindObjectOfType<GraphicsGroupManager>();
+			audioManager = FindObjectOfType<AudioManager>();
 			InitDirectory();
 		}
 

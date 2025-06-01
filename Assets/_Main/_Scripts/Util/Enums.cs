@@ -10,3 +10,11 @@ namespace Characters
 		None, Body, Face
 	}
 }
+
+namespace GameIO
+{
+	public enum FileExtension
+	{
+		None, mp4, mp3, ogg
+	}
+}

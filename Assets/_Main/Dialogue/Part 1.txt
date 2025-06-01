@@ -3,7 +3,27 @@ wait CreateCharacters(v, eg, v1:v, m)
 v.SetPosInstant(0, 0.5), eg.SetPosInstant(1, 0.5), m.SetPosInstant(0.5, 0.5)
 wait v.Show(0.5), wait eg.Show(0.5), wait m.Show(0.5)
 
-Wait(1)
+Audio.PlayAmbient(Wind, 1);
+Wait(2)
+Audio.StopAmbient(Wind);
+Wait(2)
+Audio.PlayMusic(Day);
+Wait(2)
+Audio.StopMusic(Day);
+Wait(2)
+Audio.PlaySFX(Warp);
+Wait(0.5)
+Audio.PlaySFX(Warp);
+Wait(0.5)
+Audio.PlaySFX(Warp);
+Wait(0.5)
+Audio.PlaySFX(Warp);
+Wait(2)
+Audio.StopSFX(Warp);
+Wait(2)
+Audio.PlayVoice(Greet);
+Audio.PlayVoice(Greet, 1, 1, true);
+Wait(2)
 
 Visuals.CreateBackground(2), Visuals.CreateForeground(), Visuals.CreateCinematic()
 
@@ -13,7 +33,7 @@ Wait(1)
 wait Visuals.ClearBackground(1)
 
 Wait(2)
-wait Visuals.SetBackgroundVideo(Day, 1)
+wait Visuals.SetBackgroundVideo(Day.mp4, 1)
 Wait(1)
 wait Visuals.SetBackgroundVideo(Night, 1, true)
 Visuals.ClearForeground()

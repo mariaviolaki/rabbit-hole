@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb211cb578ecf2f4ebafa535438063ae, type: 3}
   m_Name: File Manager
   m_EditorClassIdentifier: 
+  gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
   characterPrefabLabel:
     m_LabelString: Prefabs/Characters
   model3DPrefabLabel:
@@ -22,5 +23,11 @@ MonoBehaviour:
     m_LabelString: Dialogue
   backgroundImageLabel:
     m_LabelString: Graphics/Backgrounds
-  backgroundVideoLabel:
-    m_LabelString: Videos
+  ambientAudioLabel:
+    m_LabelString: Audio/Ambient
+  musicAudioLabel:
+    m_LabelString: Audio/Music
+  sfxAudioLabel:
+    m_LabelString: Audio/SFX
+  voiceAudioLabel:
+    m_LabelString: Audio/Voice
