@@ -1,7 +1,7 @@
 using Characters;
 using Commands;
+using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Dialogue
@@ -33,7 +33,7 @@ namespace Dialogue
 			// TODO start dialogue using other triggers
 			if (Input.GetKeyDown(KeyCode.Return))
 			{
-				StartDialogueFromFile();
+				StartCoroutine(StartDialogueFromFile());
 			}
 		}
 
@@ -47,13 +47,14 @@ namespace Dialogue
 			return dialogueReader.StartReading(speakerName, lines);
 		}
 
-		async Task<Coroutine> StartDialogueFromFile()
+		IEnumerator StartDialogueFromFile()
 		{
-			TextAsset dialogueAsset = await fileManager.LoadDialogueFile(dialogueFileName);
-			if (dialogueAsset == null) return null;
+			yield return fileManager.LoadDialogueFile(dialogueFileName);
+			TextAsset dialogueAsset = fileManager.GetDialogueFile(dialogueFileName);
+			if (dialogueAsset == null) yield break;
 
 			dialogueFile = new DialogueFile(dialogueAsset.name, dialogueAsset.text);
-			return dialogueReader.StartReading(dialogueFile.Lines);
+			yield return dialogueReader.StartReading(dialogueFile.Lines);
 		}
 
 		void AdvanceDialogue()

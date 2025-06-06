@@ -1,12 +1,12 @@
-using System.Threading.Tasks;
+using System.Collections;
 
 namespace Characters
 {
 	public class TextCharacter : Character
 	{
-		protected override Task Init()
+		protected override IEnumerator Init()
 		{
-			return Task.CompletedTask;
+			yield break;
 		}
 	}
 }

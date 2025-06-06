@@ -1,7 +1,7 @@
 using GameIO;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -61,15 +61,25 @@ public class FileManagerSO : ScriptableObject
 	public string GetVideoUrl(string fileName) =>
 		Path.Combine(StreamingAssetsVideoPath, GetFileNameWithExtension(fileName, gameOptions.IO.VideoExtension));
 
-	public async Task<GameObject> LoadCharacterPrefab(string characterName) => await LoadAsset(characterName, characterPrefabKeys, characterPrefabHandles);
-	public async Task<GameObject> LoadModel3DPrefab(string characterName) => await LoadAsset(characterName, model3DPrefabKeys, model3DPrefabHandles);
-	public async Task<SpriteAtlas> LoadCharacterAtlas(string characterName) => await LoadAsset(characterName, characterAtlasKeys, characterAtlasHandles);
-	public async Task<TextAsset> LoadDialogueFile(string fileName) => await LoadAsset(fileName, dialogueFileKeys, dialogueFileHandles);
-	public async Task<Sprite> LoadBackgroundImage(string imageName) => await LoadAsset(imageName, backgroundImageKeys, backgroundImageHandles);
-	public async Task<AudioClip> LoadAmbientAudio(string audioName) => await LoadAsset(audioName, ambientAudioKeys, ambientAudioHandles);
-	public async Task<AudioClip> LoadMusicAudio(string audioName) => await LoadAsset(audioName, musicAudioKeys, musicAudioHandles);
-	public async Task<AudioClip> LoadSFXAudio(string audioName) => await LoadAsset(audioName, sfxAudioKeys, sfxAudioHandles);
-	public async Task<AudioClip> LoadVoiceAudio(string audioName) => await LoadAsset(audioName, voiceAudioKeys, voiceAudioHandles);
+	public IEnumerator LoadCharacterPrefab(string characterName) => LoadAsset(characterName, characterPrefabKeys, characterPrefabHandles);
+	public IEnumerator LoadModel3DPrefab(string characterName) => LoadAsset(characterName, model3DPrefabKeys, model3DPrefabHandles);
+	public IEnumerator LoadCharacterAtlas(string characterName) => LoadAsset(characterName, characterAtlasKeys, characterAtlasHandles);
+	public IEnumerator LoadDialogueFile(string fileName) => LoadAsset(fileName, dialogueFileKeys, dialogueFileHandles);
+	public IEnumerator LoadBackgroundImage(string imageName) => LoadAsset(imageName, backgroundImageKeys, backgroundImageHandles);
+	public IEnumerator LoadAmbientAudio(string audioName) => LoadAsset(audioName, ambientAudioKeys, ambientAudioHandles);
+	public IEnumerator LoadMusicAudio(string audioName) => LoadAsset(audioName, musicAudioKeys, musicAudioHandles);
+	public IEnumerator LoadSFXAudio(string audioName) => LoadAsset(audioName, sfxAudioKeys, sfxAudioHandles);
+	public IEnumerator LoadVoiceAudio(string audioName) => LoadAsset(audioName, voiceAudioKeys, voiceAudioHandles);
+
+	public GameObject GetCharacterPrefab(string characterName) => GetAsset(characterName, characterPrefabHandles);
+	public GameObject GetModel3DPrefab(string characterName) => GetAsset(characterName, model3DPrefabHandles);
+	public SpriteAtlas GetCharacterAtlas(string characterName) => GetAsset(characterName, characterAtlasHandles);
+	public TextAsset GetDialogueFile(string fileName) => GetAsset(fileName, dialogueFileHandles);
+	public Sprite GetBackgroundImage(string imageName) => GetAsset(imageName, backgroundImageHandles);
+	public AudioClip GetAmbientAudio(string audioName) => GetAsset(audioName, ambientAudioHandles);
+	public AudioClip GetMusicAudio(string audioName) => GetAsset(audioName, musicAudioHandles);
+	public AudioClip GetSFXAudio(string audioName) => GetAsset(audioName, sfxAudioHandles);
+	public AudioClip GetVoiceAudio(string audioName) => GetAsset(audioName, voiceAudioHandles);
 
 	public void UnloadCharacterPrefab(string characterName) => UnloadAsset(characterName, characterPrefabHandles);
 	public void UnloadModel3DPrefab(string characterName) => UnloadAsset(characterName, model3DPrefabHandles);
@@ -81,36 +91,44 @@ public class FileManagerSO : ScriptableObject
 	public void UnloadSFXAudio(string audioName) => UnloadAsset(audioName, sfxAudioHandles);
 	public void UnloadVoiceAudio(string audioName) => UnloadAsset(audioName, voiceAudioHandles);
 
-	async Task<T> LoadAsset<T>(string name, Dictionary<string, string> keys, Dictionary<string, AsyncOperationHandle<T>> handles)
+	IEnumerator LoadAsset<T>(string name, Dictionary<string, string> keys, Dictionary<string, AsyncOperationHandle<T>> handles)
 		where T : UnityEngine.Object
 	{
-		if (!keys.ContainsKey(name))
+		if (!keys.TryGetValue(name, out string addressableKey))
 		{
 			Debug.LogWarning($"Addressable asset not found: {name}");
-			return null;
+			yield break;
 		}
 
-		if (handles.ContainsKey(name))
-			return handles[name].Result;
+		// The asset is already loaded
+		if (handles.ContainsKey(name)) yield break;
 
-		string addressableKey = keys[name];
 		AsyncOperationHandle<T> asyncHandle = Addressables.LoadAssetAsync<T>(addressableKey);
+		yield return asyncHandle.WaitForCompletion();
 
-		await asyncHandle.Task;
-		handles.Add(name, asyncHandle);
+		if (asyncHandle.Status != AsyncOperationStatus.Succeeded)
+		{
+			Debug.LogWarning($"Failed to load addressable asset: {name}");
+			UnloadAsset(name, handles);
+			yield break;
+		}
 
-		if (asyncHandle.Status == AsyncOperationStatus.Succeeded)
-			return asyncHandle.Result;
+		// Check once more if the asset is loaded
+		if (handles.ContainsKey(name))
+			Addressables.Release(asyncHandle);
+		else
+			handles.Add(name, asyncHandle);
+	}
 
-		Debug.LogWarning($"Failed to load addressable asset: {name}");
-		UnloadAsset(name, handles);
-
-		return null;
+	T GetAsset<T>(string name, Dictionary<string, AsyncOperationHandle<T>> handles) where T : UnityEngine.Object
+	{
+		if (!handles.TryGetValue(name, out AsyncOperationHandle<T> handle)) return null;
+		return handle.Result;
 	}
 
 	void UnloadAsset<T>(string name, Dictionary<string, AsyncOperationHandle<T>> handles) where T : UnityEngine.Object
 	{
-		if (!handles.ContainsKey(name)) return;
+		if (!handles.TryGetValue(name, out AsyncOperationHandle<T> handle)) return;
 
 		Addressables.Release(handles[name]);
 		handles.Remove(name);

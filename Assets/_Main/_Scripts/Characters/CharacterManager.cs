@@ -1,7 +1,8 @@
 using Dialogue;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Characters
@@ -26,11 +27,22 @@ namespace Characters
 		public RectTransform Container { get { return characterContainer; } }
 		public Transform Model3DContainer { get { return model3DContainer; } }
 
+		void Awake()
+		{
+			Character.OnCreateCharacter += (Character character) => SaveCharacter(character);
+		}
+
 		public bool HasCharacter(string shortName) => characters.ContainsKey(shortName);
 
-		public async Task CreateCharacters(string[] names)
+		public IEnumerator CreateCharacters(string[] names)
 		{
-			Task[] characterTasks = new Task[names.Length];
+			bool[] completedCharacters = new bool[names.Length];
+
+			IEnumerator MarkCharacterCompletion(int index, string shortName, string castShortName)
+			{
+				yield return CreateCharacter(shortName, castShortName);
+				completedCharacters[index] = true;
+			}
 
 			for (int i = 0; i < names.Length; i++)
 			{
@@ -38,24 +50,24 @@ namespace Characters
 				string shortName = nameParts[0].Trim();
 				string castShortName = nameParts.Length > 1 ? nameParts[1] : shortName;
 
-				characterTasks[i] = CreateCharacter(shortName, castShortName);
+				StartCoroutine(MarkCharacterCompletion(i, shortName, castShortName));
 			}
 
-			await Task.WhenAll(characterTasks);
+			yield return new WaitUntil(() => completedCharacters.All(isCompleted => isCompleted));
 		}
 
-		public Task CreateCharacter(string shortName) => CreateCharacter(shortName, shortName);
-		public async Task CreateCharacter(string shortName, string castShortName)
+		public IEnumerator CreateCharacter(string shortName) => CreateCharacter(shortName, shortName);
+		public IEnumerator CreateCharacter(string shortName, string castShortName)
 		{
 			if (characters.ContainsKey(shortName))
 			{
 				Debug.LogWarning($"Unable to create character '{shortName}' because they already exist.");
-				return;
+				yield break;
 			}
 			else if (!IsValidShortName(shortName) || !IsValidShortName(castShortName))
 			{
 				Debug.LogWarning($"Unable to create character '${shortName}' because their short name is invalid.");
-				return;
+				yield break;
 			}
 
 			castShortName = castShortName ?? shortName;
@@ -64,14 +76,14 @@ namespace Characters
 			switch (data.Type)
 			{
 				case CharacterType.Model3D:
-					characters[shortName] = await Character.Create<Model3DCharacter>(this, data);
+					yield return Character.Create<Model3DCharacter>(this, data);
 					break;
 				case CharacterType.Sprite:
-					characters[shortName] = await Character.Create<SpriteCharacter>(this, data);
+					yield return Character.Create<SpriteCharacter>(this, data);
 					break;
 				case CharacterType.Text:
 				default:
-					characters[shortName] = await Character.Create<TextCharacter>(this, data);
+					yield return Character.Create<TextCharacter>(this, data);
 					break;
 			}
 		}
@@ -155,6 +167,12 @@ namespace Characters
 			characters[newShortName] = characters[oldShortName];
 			characters.Remove(oldShortName);
 			return true;
+		}
+
+		// Called when a character is initialized asyncronously
+		void SaveCharacter(Character character)
+		{
+			characters[character.Data.ShortName] = character;
 		}
 
 		int SortInvisibleCharacters()

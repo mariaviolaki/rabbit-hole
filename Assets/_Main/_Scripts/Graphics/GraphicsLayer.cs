@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -71,17 +72,11 @@ namespace Graphics
 			return transitionCoroutine;
 		}
 
-		public async Task SetImageInstant(string name)
+		public void SetImageInstant(string name)
 		{
 			if (isImage && graphicName == name) return;
 
-			Sprite sprite = await layerGroup.Manager.FileManager.LoadBackgroundImage(name);
-			if (sprite == null) return;
-
-			layerGroup.Manager.StopProcess(ref transitionCoroutine);
-
-			ApplyImage(name, sprite);
-			canvasGroup.alpha = 1f;
+			layerGroup.Manager.StartCoroutine(LoadImage(name));
 		}
 
 		public Coroutine SetImage(string name, float speed = 0)
@@ -141,9 +136,20 @@ namespace Graphics
 			videoPlayer.Prepare();
 		}
 
+		IEnumerator LoadImage(string name)
+		{
+			yield return layerGroup.Manager.FileManager.LoadBackgroundImage(name);
+			Sprite sprite = layerGroup.Manager.FileManager.GetBackgroundImage(name);
+			if (sprite == null) yield break;
+
+			layerGroup.Manager.StopProcess(ref transitionCoroutine);
+
+			ApplyImage(name, sprite);
+			canvasGroup.alpha = 1f;
+		}
+
 		IEnumerator ChangeGraphic(string name, float speed, bool isSkipped, bool isImage, bool isMuted)
 		{
-			Task<Sprite> imageTask = isImage ? layerGroup.Manager.FileManager.LoadBackgroundImage(name) : null;
 			float fadeSpeed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
 
 			if (graphicName != null)
@@ -152,12 +158,17 @@ namespace Graphics
 				yield return FadeGraphic(false, fadeSpeed);
 			}
 
-			yield return new WaitUntil(() => !isImage || (imageTask != null && imageTask.IsCompleted));
-
-			if (isImage && imageTask.IsCompletedSuccessfully && imageTask.Result != null)
-				ApplyImage(name, imageTask.Result);
-			else if (!isImage)
+			if (isImage)
+			{
+				yield return layerGroup.Manager.FileManager.LoadBackgroundImage(name);
+				Sprite sprite = layerGroup.Manager.FileManager.GetBackgroundImage(name);
+				if (sprite != null)
+					ApplyImage(name, sprite);
+			}
+			else
+			{
 				ApplyVideo(name, isMuted);
+			}
 
 			yield return FadeGraphic(true, fadeSpeed);
 			transitionCoroutine = null;

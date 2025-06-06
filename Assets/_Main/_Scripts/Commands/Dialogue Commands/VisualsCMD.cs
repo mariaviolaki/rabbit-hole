@@ -1,8 +1,6 @@
 using Graphics;
 using System;
 using System.Collections;
-using System.Threading.Tasks;
-using UnityEngine;
 
 namespace Commands
 {
@@ -20,8 +18,8 @@ namespace Commands
 			directory.AddCommand("CreateCinematic", new Action<string[]>(CreateCinematic));
 			directory.AddCommand("ClearCinematicInstant", new Action<string[]>(ClearCinematicInstant));
 			directory.AddCommand("ClearCinematic", new Func<string[], IEnumerator>(ClearCinematic), new Action<string[]>(ClearCinematicInstant));
-			directory.AddCommand("SetCinematicImageInstant", new Func<string[], Task>(SetCinematicImageInstant));
-			directory.AddCommand("SetCinematicImage", new Func<string[], IEnumerator>(SetCinematicImage), new Func<string[], Task>(SetCinematicImageInstant));
+			directory.AddCommand("SetCinematicImageInstant", new Action<string[]>(SetCinematicImageInstant));
+			directory.AddCommand("SetCinematicImage", new Func<string[], IEnumerator>(SetCinematicImage), new Action<string[]>(SetCinematicImageInstant));
 			directory.AddCommand("SetCinematicVideoInstant", new Action<string[]>(SetCinematicVideoInstant));
 			directory.AddCommand("SetCinematicVideo", new Func<string[], IEnumerator>(SetCinematicVideo), new Action<string[]>(SetCinematicVideoInstant));
 
@@ -29,8 +27,8 @@ namespace Commands
 			directory.AddCommand("CreateForeground", new Action<string[]>(CreateForeground));
 			directory.AddCommand("ClearForegroundInstant", new Action<string[]>(ClearForegroundInstant));
 			directory.AddCommand("ClearForeground", new Func<string[], IEnumerator>(ClearForeground), new Action<string[]>(ClearForegroundInstant));
-			directory.AddCommand("SetForegroundImageInstant", new Func<string[], Task>(SetForegroundImageInstant));
-			directory.AddCommand("SetForegroundImage", new Func<string[], IEnumerator>(SetForegroundImage), new Func<string[], Task>(SetForegroundImageInstant));
+			directory.AddCommand("SetForegroundImageInstant", new Action<string[]>(SetForegroundImageInstant));
+			directory.AddCommand("SetForegroundImage", new Func<string[], IEnumerator>(SetForegroundImage), new Action<string[]>(SetForegroundImageInstant));
 			directory.AddCommand("SetForegroundVideoInstant", new Action<string[]>(SetForegroundVideoInstant));
 			directory.AddCommand("SetForegroundVideo", new Func<string[], IEnumerator>(SetForegroundVideo), new Action<string[]>(SetForegroundVideoInstant));
 
@@ -38,8 +36,8 @@ namespace Commands
 			directory.AddCommand("CreateBackground", new Action<string[]>(CreateBackground));
 			directory.AddCommand("ClearBackgroundInstant", new Action<string[]>(ClearBackgroundInstant));
 			directory.AddCommand("ClearBackground", new Func<string[], IEnumerator>(ClearBackground), new Action<string[]>(ClearBackgroundInstant));
-			directory.AddCommand("SetBackgroundImageInstant", new Func<string[], Task>(SetBackgroundImageInstant));
-			directory.AddCommand("SetBackgroundImage", new Func<string[], IEnumerator>(SetBackgroundImage), new Func<string[], Task>(SetBackgroundImageInstant));
+			directory.AddCommand("SetBackgroundImageInstant", new Action<string[]>(SetBackgroundImageInstant));
+			directory.AddCommand("SetBackgroundImage", new Func<string[], IEnumerator>(SetBackgroundImage), new Action<string[]>(SetBackgroundImageInstant));
 			directory.AddCommand("SetBackgroundVideoInstant", new Action<string[]>(SetBackgroundVideoInstant));
 			directory.AddCommand("SetBackgroundVideo", new Func<string[], IEnumerator>(SetBackgroundVideo), new Action<string[]>(SetBackgroundVideoInstant));
 		}
@@ -62,9 +60,9 @@ namespace Commands
 			yield return ClearVisualGroup(GraphicsGroupManager.CinematicName, args);
 		}
 
-		static async Task SetCinematicImageInstant(string[] args)
+		static void SetCinematicImageInstant(string[] args)
 		{
-			await SetVisualGroupImageInstant(GraphicsGroupManager.CinematicName, args);
+			SetVisualGroupImageInstant(GraphicsGroupManager.CinematicName, args);
 		}
 
 		static IEnumerator SetCinematicImage(string[] args)
@@ -100,9 +98,9 @@ namespace Commands
 			yield return ClearVisualGroup(GraphicsGroupManager.ForegroundName, args);
 		}
 
-		static async Task SetForegroundImageInstant(string[] args)
+		static void SetForegroundImageInstant(string[] args)
 		{
-			await SetVisualGroupImageInstant(GraphicsGroupManager.ForegroundName, args);
+			SetVisualGroupImageInstant(GraphicsGroupManager.ForegroundName, args);
 		}
 
 		static IEnumerator SetForegroundImage(string[] args)
@@ -138,9 +136,9 @@ namespace Commands
 			yield return ClearVisualGroup(GraphicsGroupManager.BackgroundName, args);
 		}
 
-		static async Task SetBackgroundImageInstant(string[] args)
+		static void SetBackgroundImageInstant(string[] args)
 		{
-			await SetVisualGroupImageInstant(GraphicsGroupManager.BackgroundName, args);
+			SetVisualGroupImageInstant(GraphicsGroupManager.BackgroundName, args);
 		}
 
 		static IEnumerator SetBackgroundImage(string[] args)
@@ -190,7 +188,7 @@ namespace Commands
 			yield return layerGroup.Clear(layerDepth, speed);
 		}
 
-		static async Task SetVisualGroupImageInstant(string visualGroupName, string[] args)
+		static void SetVisualGroupImageInstant(string visualGroupName, string[] args)
 		{
 			GraphicsLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) return;
@@ -201,7 +199,7 @@ namespace Commands
 			GraphicsLayer layer = layerGroup.GetLayer(layerDepth);
 			if (layer == null) return;
 
-			await layer.SetImageInstant(imageName);
+			layer.SetImageInstant(imageName);
 		}
 
 		static IEnumerator SetVisualGroupImage(string visualGroupName, string[] args)

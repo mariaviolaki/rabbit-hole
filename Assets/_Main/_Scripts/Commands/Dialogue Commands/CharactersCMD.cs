@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Threading.Tasks;
 using Characters;
 using UnityEngine;
 
@@ -72,8 +71,7 @@ namespace Commands
 		{
 			if (args.Length == 0) yield break;
 
-			Task task = characterManager.CreateCharacters(args);
-			yield return new WaitUntil(() => task.IsCompleted);
+			yield return characterManager.CreateCharacters(args);
 		}
 
 		static IEnumerator CreateCharacter(string[] args)
@@ -83,8 +81,7 @@ namespace Commands
 
 			if (string.IsNullOrEmpty(shortName) || (castShortName != null && castShortName == string.Empty)) yield break;
 
-			Task task = characterManager.CreateCharacter(shortName, castShortName);
-			yield return new WaitUntil(() => task.IsCompleted);
+			yield return characterManager.CreateCharacter(shortName, castShortName);
 		}
 
 		static void SetName(string[] args)

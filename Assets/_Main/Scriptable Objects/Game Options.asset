@@ -35,3 +35,5 @@ MonoBehaviour:
     defaultAngle: -25
   backgroundLayers:
     transitionSpeed: 10
+  audio:
+    transitionSpeed: 10

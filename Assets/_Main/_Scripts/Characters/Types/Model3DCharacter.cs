@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,12 +20,15 @@ namespace Characters
 		string currentExpression = string.Empty;
 		Coroutine expressionCoroutine;
 
-		protected override async Task Init()
+		protected override IEnumerator Init()
 		{
-			await base.Init();
+			yield return base.Init();
 
 			// Load this character's model into the scene
-			GameObject modelPrefab = await manager.FileManager.LoadModel3DPrefab(data.CastName);
+			yield return manager.FileManager.LoadModel3DPrefab(data.CastName);
+			GameObject modelPrefab = manager.FileManager.GetModel3DPrefab(data.CastName);
+			if (modelPrefab == null) yield break;
+
 			GameObject modelRootGameObject = Object.Instantiate(modelPrefab, manager.Model3DContainer);
 			RenderTexture renderTexture = new RenderTexture(manager.GameOptions.Model3D.RenderTexture3D);
 			int model3DCount = manager.GetCharacterCount(CharacterType.Model3D);

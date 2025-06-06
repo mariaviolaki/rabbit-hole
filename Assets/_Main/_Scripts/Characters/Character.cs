@@ -1,5 +1,6 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Characters
@@ -15,19 +16,20 @@ namespace Characters
 		public CharacterData Data { get { return data; } }
 		public bool IsVisible { get { return isVisible; } }
 
-		protected Character() { }
-		protected abstract Task Init();
+		public static event Action<Character> OnCreateCharacter;
 
-		public static async Task<T> Create<T>(CharacterManager characterManager, CharacterData data) where T : Character, new()
+		protected Character() { }
+		protected abstract IEnumerator Init();
+
+		public static IEnumerator Create<T>(CharacterManager characterManager, CharacterData data) where T : Character, new()
 		{
 			T character = new T();
 			character.manager = characterManager;
 			character.data = data;
 
 			// Perform any asyncronous operations needed for initialization
-			await character.Init();
-
-			return character;
+			yield return character.Init();
+			OnCreateCharacter?.Invoke(character);
 		}
 
 		public static TextCharacter CreateDefault(CharacterManager characterManager, CharacterData data)

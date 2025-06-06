@@ -11,6 +11,14 @@ namespace Characters
 	}
 }
 
+namespace Audio
+{
+	public enum AudioType
+	{
+		None, Ambient, Music, SFX, Voice
+	}
+}
+
 namespace GameIO
 {
 	public enum FileExtension

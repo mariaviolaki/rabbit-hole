@@ -11,6 +11,7 @@ public class GameOptionsSO : ScriptableObject
 	[SerializeField] CharacterOptions characters;
 	[SerializeField] Model3DOptions model3D;
 	[SerializeField] BackgroundLayerOptions backgroundLayers;
+	[SerializeField] AudioOptions audio;
 
 	public GeneralOptions General { get { return general; } }
 	public IOOptions IO { get { return inputOutput; } }
@@ -18,6 +19,7 @@ public class GameOptionsSO : ScriptableObject
 	public CharacterOptions Characters { get { return characters; } }
 	public Model3DOptions Model3D { get { return model3D; } }
 	public BackgroundLayerOptions BackgroundLayers { get { return backgroundLayers; } }
+	public AudioOptions Audio { get { return audio; } }
 
 	[System.Serializable]
 	public class GeneralOptions
@@ -83,6 +85,14 @@ public class GameOptionsSO : ScriptableObject
 
 	[System.Serializable]
 	public class BackgroundLayerOptions
+	{
+		[SerializeField] float transitionSpeed;
+
+		public float TransitionSpeed { get { return transitionSpeed; } }
+	}
+
+	[System.Serializable]
+	public class AudioOptions
 	{
 		[SerializeField] float transitionSpeed;
 

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.U2D;
 using UnityEngine.UI;
@@ -18,12 +17,15 @@ namespace Characters
 
 		Coroutine spriteCoroutine;
 
-		protected override async Task Init()
+		protected override IEnumerator Init()
 		{
-			await base.Init();
-			
+			yield return base.Init();
+
 			spriteLayers = new Dictionary<SpriteLayerType, CharacterSpriteLayer>();
-			spriteAtlas = await manager.FileManager.LoadCharacterAtlas(data.CastName);
+
+			yield return manager.FileManager.LoadCharacterAtlas(data.CastName);
+			spriteAtlas = manager.FileManager.GetCharacterAtlas(data.CastName);
+			if (spriteAtlas == null) yield break;
 
 			InitSpriteLayers();
 		}

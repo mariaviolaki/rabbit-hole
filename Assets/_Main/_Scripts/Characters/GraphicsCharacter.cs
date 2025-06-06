@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -35,12 +34,15 @@ namespace Characters
 		protected abstract IEnumerator ChangeBrightness(bool isHighlighted, float speed, bool isSkipped);
 		protected abstract IEnumerator ChangeColor(Color color, float speed, bool isSkipped);
 
-		protected async override Task Init()
+		protected override IEnumerator Init()
 		{
 			// Load this character's prefab into the scene
-			GameObject prefab = await manager.FileManager.LoadCharacterPrefab(data.CastName);
-			GameObject rootGameObject = Object.Instantiate(prefab, manager.Container);
+			yield return manager.FileManager.LoadCharacterPrefab(data.CastName);
 
+			GameObject prefab = manager.FileManager.GetCharacterPrefab(data.CastName);
+			if (prefab == null) yield break;
+
+			GameObject rootGameObject = Object.Instantiate(prefab, manager.Container);
 			root = rootGameObject.GetComponent<RectTransform>();
 			canvasGroup = root.GetComponent<CanvasGroup>();
 			animator = root.GetComponentInChildren<Animator>();
