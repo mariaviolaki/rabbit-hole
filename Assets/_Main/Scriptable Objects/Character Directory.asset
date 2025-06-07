@@ -19,7 +19,7 @@ MonoBehaviour:
     nameColor: {r: 1, g: 0.8501212, b: 0.7058824, a: 1}
     dialogueColor: {r: 1, g: 0.99927163, b: 0.8352941, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
-    dialogueFont: {fileID: 11400000, guid: c85ed5e6ef07ade4eba8182e447d5a87, type: 2}
+    dialogueFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
     type: 1
   - name: Zero
     shortName: z
@@ -27,7 +27,7 @@ MonoBehaviour:
     nameColor: {r: 0.91241854, g: 0.7905661, b: 1, a: 1}
     dialogueColor: {r: 1, g: 0.8745098, b: 0.9757089, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
-    dialogueFont: {fileID: 11400000, guid: c85ed5e6ef07ade4eba8182e447d5a87, type: 2}
+    dialogueFont: {fileID: 11400000, guid: 4d653226df26af64eb74b6101908300c, type: 2}
     type: 1
   - name: Eccentric Guy
     shortName: eg
@@ -43,5 +43,5 @@ MonoBehaviour:
     nameColor: {r: 0.9547169, g: 0.69712347, b: 0.9058067, a: 1}
     dialogueColor: {r: 0.9824421, g: 0.9264151, b: 1, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
-    dialogueFont: {fileID: 11400000, guid: c85ed5e6ef07ade4eba8182e447d5a87, type: 2}
+    dialogueFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     type: 2

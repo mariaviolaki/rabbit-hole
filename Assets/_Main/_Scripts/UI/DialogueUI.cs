@@ -1,15 +1,22 @@
 using Characters;
+using Dialogue;
 using TMPro;
 using UnityEngine;
 
 public class DialogueUI : MonoBehaviour
 {
 	[SerializeField] GameOptionsSO gameOptions;
+	[SerializeField] FontDirectorySO fontDirectory;
 	[SerializeField] GameObject nameContainer;
 	[SerializeField] TextMeshProUGUI nameText;
 	[SerializeField] TextMeshProUGUI dialogueText;
 
 	public TextMeshProUGUI DialogueText { get { return dialogueText; } }
+
+	void Start()
+	{
+		UpdateFontSize(gameOptions.Dialogue.DefaultFont);
+	}
 
 	public void ShowSpeaker(CharacterData characterData)
 	{
@@ -35,5 +42,13 @@ public class DialogueUI : MonoBehaviour
 	{
 		dialogueText.color = characterData == null ? gameOptions.Dialogue.DefaultTextColor : characterData.DialogueColor;
 		dialogueText.font = characterData == null ? gameOptions.Dialogue.DefaultFont : characterData.DialogueFont;
+		UpdateFontSize(characterData.DialogueFont);
+	}
+
+	void UpdateFontSize(TMP_FontAsset font)
+	{
+		float baseFontSize = gameOptions.Dialogue.DialogueFontSize;
+		float fontSizeMultiplier = fontDirectory.Fonts[font.name].SizeMultiplier;
+		dialogueText.fontSize = baseFontSize * fontSizeMultiplier;
 	}
 }

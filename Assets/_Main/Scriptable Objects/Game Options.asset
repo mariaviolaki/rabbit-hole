@@ -23,6 +23,7 @@ MonoBehaviour:
     textMode: 3
     textSpeed: 5
     promptPos: 0
+    dialogueFontSize: 40
   characters:
     moveSpeed: 10
     fadeTransitionSpeed: 10

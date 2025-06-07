@@ -47,12 +47,14 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField] TextBuilder.TextMode textMode;
 		[SerializeField][Range(1, 12)] float textSpeed;
 		[SerializeField] PromptPosition promptPos;
+		[SerializeField][Range(1, 100)] float dialogueFontSize;
 
 		public Color DefaultTextColor { get { return defaultTextColor; } }
 		public TMP_FontAsset DefaultFont { get { return defaultFont; } }
 		public TextBuilder.TextMode TextMode { get { return textMode; } }
 		public float TextSpeed { get { return textSpeed; } }
 		public PromptPosition PromptPos { get { return promptPos; } }
+		public float DialogueFontSize { get { return dialogueFontSize; } }
 	}
 
 	[System.Serializable]
