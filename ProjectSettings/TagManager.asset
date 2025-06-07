@@ -53,9 +53,12 @@ TagManager:
   - name: Dialogue
     uniqueID: 260540859
     locked: 0
-  - name: Controls
+  - name: Gameplay Controls
     uniqueID: 2075256777
     locked: 0
   - name: Cinematic
     uniqueID: 4159017233
+    locked: 0
+  - name: Overlay Controls
+    uniqueID: 2515262785
     locked: 0
