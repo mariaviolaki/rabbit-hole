@@ -10,7 +10,7 @@ namespace Dialogue
 			None, InputClear, InputAppend, AutoClear, AutoAppend
 		}
 
-		public struct Segment
+		public class Segment
 		{
 			public string Text { get; private set; }
 			public StartMode Mode { get; private set; }

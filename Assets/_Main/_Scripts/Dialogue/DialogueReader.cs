@@ -108,18 +108,23 @@ namespace Dialogue
 
 		IEnumerator DisplayDialogue(DialogueLine line)
 		{
-			foreach (DialogueTextData.Segment segment in line.Dialogue.Segments)
+			List<DialogueTextData.Segment> lineSegments = line.Dialogue.Segments;
+
+			for (int i = 0; i < lineSegments.Count; i++)
 			{
+				DialogueTextData.Segment segment = lineSegments[i];
+				DialogueTextData.Segment nextSegment = (i == lineSegments.Count - 1) ? null : lineSegments[i + 1];
+
 				yield return DisplayDialogueSegment(segment);
 				continuePrompt.Show();
-				yield return WaitForNextDialogueSegment(segment);
+				yield return WaitForNextDialogueSegment(nextSegment);
 				continuePrompt.Hide();
 			}
 		}
 
 		IEnumerator WaitForNextDialogueSegment(DialogueTextData.Segment segment)
 		{
-			if (segment.IsAuto)
+			if (segment != null && segment.IsAuto)
 			{
 				float startTime = Time.time;
 				yield return new WaitUntil(() => IsRunning || Time.time >= startTime + segment.WaitTime);
