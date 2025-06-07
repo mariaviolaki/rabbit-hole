@@ -11,6 +11,14 @@ namespace Characters
 	}
 }
 
+namespace Dialogue
+{
+	public enum PromptPosition
+	{
+		EndOfText, TextboxBottomRight
+	}
+}
+
 namespace Audio
 {
 	public enum AudioType

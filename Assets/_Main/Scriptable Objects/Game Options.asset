@@ -22,6 +22,7 @@ MonoBehaviour:
     defaultFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     textMode: 3
     textSpeed: 5
+    promptPos: 0
   characters:
     moveSpeed: 10
     fadeTransitionSpeed: 10

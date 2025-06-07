@@ -14,6 +14,7 @@ namespace Dialogue
 		[SerializeField] CommandManager commandManager;
 		[SerializeField] CharacterManager characterManager;
 		[SerializeField] DialogueUI dialogueUI;
+		[SerializeField] DialogueContinuePrompt continuePrompt;
 		[SerializeField] string dialogueFileName; // TODO get dynamically
 
 		DialogueReader dialogueReader;
@@ -23,7 +24,7 @@ namespace Dialogue
 
 		void Start()
 		{
-			dialogueReader = new DialogueReader(this, characterManager, commandManager, dialogueUI);
+			dialogueReader = new DialogueReader(this, characterManager, commandManager, dialogueUI, continuePrompt);
 
 			inputManager.OnAdvance += AdvanceDialogue;
 		}

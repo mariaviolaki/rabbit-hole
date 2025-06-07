@@ -15,6 +15,7 @@ namespace Dialogue
 		readonly CharacterManager characterManager;
 		readonly CommandManager commandManager;
 		readonly DialogueUI dialogueUI;
+		readonly DialogueContinuePrompt continuePrompt;
 
 		Coroutine readProcess;
 
@@ -22,12 +23,14 @@ namespace Dialogue
 
 		bool IsValidDialogueLine(string line) => !string.IsNullOrEmpty(line) && !line.StartsWith(CommentLineDelimiter);
 
-		public DialogueReader(DialogueSystem dialogueSystem, CharacterManager characterManager, CommandManager commandManager, DialogueUI dialogueUI)
+		public DialogueReader(DialogueSystem dialogueSystem, CharacterManager characterManager, CommandManager commandManager,
+			DialogueUI dialogueUI, DialogueContinuePrompt continuePrompt)
 		{
 			this.dialogueSystem = dialogueSystem;
 			this.characterManager = characterManager;
 			this.commandManager = commandManager;
 			this.dialogueUI = dialogueUI;
+			this.continuePrompt = continuePrompt;
 			textBuilder = new TextBuilder(dialogueUI.DialogueText);
 		}
 
@@ -108,7 +111,9 @@ namespace Dialogue
 			foreach (DialogueTextData.Segment segment in line.Dialogue.Segments)
 			{
 				yield return DisplayDialogueSegment(segment);
+				continuePrompt.Show();
 				yield return WaitForNextDialogueSegment(segment);
+				continuePrompt.Hide();
 			}
 		}
 

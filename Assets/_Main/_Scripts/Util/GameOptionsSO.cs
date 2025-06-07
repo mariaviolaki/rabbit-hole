@@ -46,11 +46,13 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField] TMP_FontAsset defaultFont;
 		[SerializeField] TextBuilder.TextMode textMode;
 		[SerializeField][Range(1, 12)] float textSpeed;
+		[SerializeField] PromptPosition promptPos;
 
 		public Color DefaultTextColor { get { return defaultTextColor; } }
 		public TMP_FontAsset DefaultFont { get { return defaultFont; } }
 		public TextBuilder.TextMode TextMode { get { return textMode; } }
 		public float TextSpeed { get { return textSpeed; } }
+		public PromptPosition PromptPos { get { return promptPos; } }
 	}
 
 	[System.Serializable]
