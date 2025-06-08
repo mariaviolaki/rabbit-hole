@@ -13,6 +13,14 @@ MonoBehaviour:
   m_Name: Character Directory
   m_EditorClassIdentifier: 
   gameCharacters:
+  - name: <mcName>
+    shortName: mc
+    displayName: <mcName>
+    nameColor: {r: 0.9062934, g: 0.5647059, b: 1, a: 1}
+    dialogueColor: {r: 0.8196521, g: 0.7830188, b: 1, a: 1}
+    nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
+    dialogueFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    type: 0
   - name: Void
     shortName: v
     displayName: OG Blond Boy

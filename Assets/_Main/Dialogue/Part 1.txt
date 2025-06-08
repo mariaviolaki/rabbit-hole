@@ -3,33 +3,21 @@ Audio.CreateAmbient(2), Audio.CreateMusic(2), Audio.CreateSFX(2), Audio.CreateVo
 
 Dialogue.Show();
 
-wait CreateCharacters(v, eg, v1:v, m)
+wait CreateCharacters(v, eg, v1:v, m, mc)
 wait Visuals.SetBackgroundImage(Green-Forest-Back, 1), wait Visuals.SetBackgroundImage(Green-Forest-Front)
 Audio.PlayMusic(Day, 0.02, 1, true)
 
 v.SetPosInstant(0, 0.5), eg.SetPosInstant(1, 0.5), m.SetPosInstant(0.5, 0.5)
 wait v.Show(), wait eg.Show(), wait m.Show()
 
-v "Aaaand let's test the fonts now."
-v "Ready, guys?"
+v "Welcome, welcome~"
+v "Your name is <mcName>, right?"
+mc "Yup!"
 
 Dialogue.HideDialogue()
 
-eg "Yo, Marsh, say something!"
-m "Something."
-eg "Very original."
-
-Dialogue.HideDialogue()
-Wait(2)
-Dialogue.ShowDialogue()
-
-m "But it works. Anyway, if you wanted to test a longer sentence, dev... {a 0.5}<i>here you go.</i>"
-v "Satisfied?"
-"Yup! Thanks guys!"
-v "<i>Anytime~</i>"
-
-Dialogue.Hide(1);
-
-Wait(2)
-
-Dialogue.ShowInstant();
+eg "WHAT AN INSPIRED NAME!"
+m "Calm down. So let's check these..."
+m "playerLevel is <playerLevel>, value1 is <value1>."
+v "Looks good to me. Good job, <mcName>."
+mc "Hehe."

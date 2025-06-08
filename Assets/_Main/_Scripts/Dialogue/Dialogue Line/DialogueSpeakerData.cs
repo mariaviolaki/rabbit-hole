@@ -25,7 +25,7 @@ namespace Dialogue
 		Dictionary<SpriteLayerType, string> layers;
 
 		public string Name { get { return name; } }
-		public string DisplayName { get { return displayName; } }
+		public string DisplayName { get { return displayName; } set { displayName = value; } }
 		public float XPos { get { return xPos; } }
 		public float YPos { get { return yPos; } }
 		public Dictionary<SpriteLayerType, string> Layers { get { return layers; } }

@@ -17,6 +17,7 @@ namespace Dialogue
 		readonly CommandManager commandManager;
 		readonly VisualNovelUI visualNovelUI;
 		readonly DialogueContinuePrompt continuePrompt;
+		readonly DialogueTagManager tagManager;
 
 		Coroutine readProcess;
 
@@ -31,7 +32,9 @@ namespace Dialogue
 			commandManager = dialogueSystem.GetCommandManager();
 			visualNovelUI = dialogueSystem.GetVisualNovelUI();
 			continuePrompt = dialogueSystem.GetContinuePrompt();
+
 			textBuilder = new TextBuilder(visualNovelUI.DialogueText);
+			tagManager = new DialogueTagManager(dialogueSystem.GetTagDirectory());
 		}
 
 		public Coroutine StartReading(List<string> lines)
@@ -137,12 +140,14 @@ namespace Dialogue
 
 		IEnumerator DisplayDialogueSegment(DialogueTextData.Segment segment)
 		{
+			string dialogueText = tagManager.Parse(segment.Text);
+
 			while (true)
 			{
 				if (segment.IsAppended)
-					textBuilder.Append(segment.Text, dialogueSystem.GameOptions.Dialogue.TextMode);
+					textBuilder.Append(dialogueText, dialogueSystem.GameOptions.Dialogue.TextMode);
 				else
-					textBuilder.Write(segment.Text, dialogueSystem.GameOptions.Dialogue.TextMode);
+					textBuilder.Write(dialogueText, dialogueSystem.GameOptions.Dialogue.TextMode);
 
 				IsRunning = false;
 				yield return new WaitUntil(() => IsRunning || !textBuilder.IsBuilding);
@@ -160,7 +165,11 @@ namespace Dialogue
 			}
 
 			Character character = characterManager.GetCharacter(speakerData.Name);
-			
+
+			string tagValue = tagManager.GetTagValue(character.Data.Name);
+			if (tagValue != null)
+				speakerData.DisplayName = tagManager.Parse(character.Data.Name);
+
 			ChangeSpeakerDisplayName(character, speakerData.DisplayName);
 			ChangeSpeakerPosition(character, speakerData.XPos, speakerData.YPos);
 			ChangeSpeakerGraphics(character, speakerData.Layers);
