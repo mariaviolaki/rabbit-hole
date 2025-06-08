@@ -55,7 +55,7 @@ namespace Commands
 		public CharacterManager GetCharacterManager() => characterManager;
 		public GraphicsGroupManager GetGraphicsGroupManager() => graphicsGroupManager;
 		public AudioManager GetAudioManager() => audioManager;
-		public DialogueUI GetDialogueUI() => dialogueSystem.GetDialogueUI();
+		public DialogueSystem GetDialogueSystem() => dialogueSystem;
 
 		void Start()
 		{

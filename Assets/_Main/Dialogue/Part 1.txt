@@ -1,6 +1,8 @@
 Visuals.CreateBackground(2), Visuals.CreateForeground(), Visuals.CreateCinematic()
 Audio.CreateAmbient(2), Audio.CreateMusic(2), Audio.CreateSFX(2), Audio.CreateVoice(2)
 
+Dialogue.Show();
+
 wait CreateCharacters(v, eg, v1:v, m)
 wait Visuals.SetBackgroundImage(Green-Forest-Back, 1), wait Visuals.SetBackgroundImage(Green-Forest-Front)
 Audio.PlayMusic(Day, 0.02, 1, true)
@@ -11,17 +13,23 @@ wait v.Show(), wait eg.Show(), wait m.Show()
 v "Aaaand let's test the fonts now."
 v "Ready, guys?"
 
-Dialogue.HideDialogueBox()
+Dialogue.HideDialogue()
 
 eg "Yo, Marsh, say something!"
 m "Something."
 eg "Very original."
 
-Dialogue.HideDialogueBox()
+Dialogue.HideDialogue()
 Wait(2)
-Dialogue.ShowDialogueBox()
+Dialogue.ShowDialogue()
 
 m "But it works. Anyway, if you wanted to test a longer sentence, dev... {a 0.5}<i>here you go.</i>"
 v "Satisfied?"
 "Yup! Thanks guys!"
 v "<i>Anytime~</i>"
+
+Dialogue.Hide(1);
+
+Wait(2)
+
+Dialogue.ShowInstant();

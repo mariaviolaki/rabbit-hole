@@ -1,7 +1,6 @@
 using Dialogue;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -36,12 +35,12 @@ namespace Characters
 
 		public IEnumerator CreateCharacters(string[] names)
 		{
-			bool[] completedCharacters = new bool[names.Length];
+			int completedCharacterCount = 0;
 
-			IEnumerator MarkCharacterCompletion(int index, string shortName, string castShortName)
+			IEnumerator MarkCharacterCompletion(string shortName, string castShortName)
 			{
 				yield return CreateCharacter(shortName, castShortName);
-				completedCharacters[index] = true;
+				completedCharacterCount++;
 			}
 
 			for (int i = 0; i < names.Length; i++)
@@ -50,10 +49,10 @@ namespace Characters
 				string shortName = nameParts[0].Trim();
 				string castShortName = nameParts.Length > 1 ? nameParts[1] : shortName;
 
-				StartCoroutine(MarkCharacterCompletion(i, shortName, castShortName));
+				StartCoroutine(MarkCharacterCompletion(shortName, castShortName));
 			}
 
-			yield return new WaitUntil(() => completedCharacters.All(isCompleted => isCompleted));
+			yield return new WaitUntil(() => completedCharacterCount == names.Length);
 		}
 
 		public IEnumerator CreateCharacter(string shortName) => CreateCharacter(shortName, shortName);

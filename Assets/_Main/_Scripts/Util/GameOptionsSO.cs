@@ -49,6 +49,7 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField] PromptPosition promptPos;
 		[SerializeField][Range(1, 100)] float dialogueFontSize;
 		[SerializeField] float fadeTransitionSpeed;
+		[SerializeField] float sceneFadeTransitionSpeed;
 
 		public Color DefaultTextColor { get { return defaultTextColor; } }
 		public TMP_FontAsset DefaultFont { get { return defaultFont; } }
@@ -57,6 +58,7 @@ public class GameOptionsSO : ScriptableObject
 		public PromptPosition PromptPos { get { return promptPos; } }
 		public float DialogueFontSize { get { return dialogueFontSize; } }
 		public float FadeTransitionSpeed { get { return fadeTransitionSpeed; } }
+		public float SceneFadeTransitionSpeed { get { return sceneFadeTransitionSpeed; } }
 	}
 
 	[System.Serializable]

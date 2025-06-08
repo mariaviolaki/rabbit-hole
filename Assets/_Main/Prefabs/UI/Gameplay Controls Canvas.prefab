@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 7860042479862442387}
   - component: {fileID: 494698333296932296}
   - component: {fileID: 6998610010463110812}
+  - component: {fileID: 6945872208627437948}
+  - component: {fileID: 7636838250576349356}
   m_Layer: 5
   m_Name: Gameplay Controls Canvas
   m_TagString: Untagged
@@ -102,6 +104,31 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!225 &6945872208627437948
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5027699353536438327}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &7636838250576349356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5027699353536438327}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 626bf99d0f4dbdf4d944fcc938cef8df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
 --- !u!1 &8138005592846935261
 GameObject:
   m_ObjectHideFlags: 0

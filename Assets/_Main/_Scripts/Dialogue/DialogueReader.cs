@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Characters;
 using Commands;
+using UI;
 using UnityEngine;
 
 namespace Dialogue
@@ -14,7 +15,7 @@ namespace Dialogue
 		readonly TextBuilder textBuilder;
 		readonly CharacterManager characterManager;
 		readonly CommandManager commandManager;
-		readonly DialogueUI dialogueUI;
+		readonly VisualNovelUI visualNovelUI;
 		readonly DialogueContinuePrompt continuePrompt;
 
 		Coroutine readProcess;
@@ -23,15 +24,14 @@ namespace Dialogue
 
 		bool IsValidDialogueLine(string line) => !string.IsNullOrEmpty(line) && !line.StartsWith(CommentLineDelimiter);
 
-		public DialogueReader(DialogueSystem dialogueSystem, CharacterManager characterManager, CommandManager commandManager,
-			DialogueUI dialogueUI, DialogueContinuePrompt continuePrompt)
+		public DialogueReader(DialogueSystem dialogueSystem)
 		{
 			this.dialogueSystem = dialogueSystem;
-			this.characterManager = characterManager;
-			this.commandManager = commandManager;
-			this.dialogueUI = dialogueUI;
-			this.continuePrompt = continuePrompt;
-			textBuilder = new TextBuilder(dialogueUI.DialogueText);
+			characterManager = dialogueSystem.GetCharacterManager();
+			commandManager = dialogueSystem.GetCommandManager();
+			visualNovelUI = dialogueSystem.GetVisualNovelUI();
+			continuePrompt = dialogueSystem.GetContinuePrompt();
+			textBuilder = new TextBuilder(visualNovelUI.DialogueText);
 		}
 
 		public Coroutine StartReading(List<string> lines)
@@ -155,7 +155,7 @@ namespace Dialogue
 		{
 			if (speakerData == null || string.IsNullOrEmpty(speakerData.Name))
 			{
-				dialogueUI.HideSpeaker();
+				visualNovelUI.HideSpeaker();
 				return;
 			}
 
@@ -202,7 +202,7 @@ namespace Dialogue
 
 		public void SetSpeakerName(CharacterData characterData)
 		{
-			dialogueUI.ShowSpeaker(characterData);
+			visualNovelUI.ShowSpeaker(characterData);
 		}
 
 		void ChangeSpeakerDisplayName(Character character, string displayName)

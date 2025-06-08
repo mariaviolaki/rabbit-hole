@@ -1,30 +1,84 @@
 using System;
 using System.Collections;
+using UI;
 
 namespace Commands
 {
 	public class DialogueCMD : DialogueCommand
 	{
-		static DialogueUI dialogueUI;
+		static VisualNovelUI visualNovelUI;
 
 		public new static void Register(CommandManager commandManager)
 		{
-			dialogueUI = commandManager.GetDialogueUI();
+			visualNovelUI = commandManager.GetDialogueSystem().GetVisualNovelUI();
 
 			CommandDirectory directory = commandManager.GetDirectory(CommandManager.DialogueDirectoryName);
 
-			directory.AddCommand("ShowDialogueBox", new Func<string[], IEnumerator>(ShowDialogueBox));
-			directory.AddCommand("HideDialogueBox", new Func<string[], IEnumerator>(HideDialogueBox));
+			// Show Dialogue UI
+			directory.AddCommand("ShowInstant", new Action<string[]>(ShowInstant));
+			directory.AddCommand("Show", new Func<string[], IEnumerator>(Show));
+			directory.AddCommand("ShowDialogueInstant", new Action<string[]>(ShowDialogueInstant));
+			directory.AddCommand("ShowDialogue", new Func<string[], IEnumerator>(ShowDialogue));
+
+			// Hide Dialogue UI
+			directory.AddCommand("HideInstant", new Action<string[]>(HideInstant));
+			directory.AddCommand("Hide", new Func<string[], IEnumerator>(Hide));
+			directory.AddCommand("HideDialogueInstant", new Action<string[]>(HideDialogueInstant));
+			directory.AddCommand("HideDialogue", new Func<string[], IEnumerator>(HideDialogue));
 		}
 
-		static IEnumerator ShowDialogueBox(string[] args)
+
+		/***** Show Dialogue UI *****/
+
+		static void ShowInstant(string[] args)
 		{
-			yield return dialogueUI.ShowDialogueBox();
+			visualNovelUI.ShowInstant();
 		}
 
-		static IEnumerator HideDialogueBox(string[] args)
+		static IEnumerator Show(string[] args)
 		{
-			yield return dialogueUI.HideDialogueBox();
+			float fadeSpeed = args.Length > 0 ? ParseArgument<float>(args[0]) : 0;
+
+			yield return visualNovelUI.Show(fadeSpeed);
+		}
+
+		static void ShowDialogueInstant(string[] args)
+		{
+			visualNovelUI.ShowDialogueInstant();
+		}
+
+		static IEnumerator ShowDialogue(string[] args)
+		{
+			float fadeSpeed = args.Length > 0 ? ParseArgument<float>(args[0]) : 0;
+
+			yield return visualNovelUI.ShowDialogue(fadeSpeed);
+		}
+
+
+		/***** Hide Dialogue UI *****/
+
+		static void HideInstant(string[] args)
+		{
+			visualNovelUI.HideInstant();
+		}
+
+		static IEnumerator Hide(string[] args)
+		{
+			float fadeSpeed = args.Length > 0 ? ParseArgument<float>(args[0]) : 0;
+
+			yield return visualNovelUI.Hide(fadeSpeed);
+		}
+
+		static void HideDialogueInstant(string[] args)
+		{
+			visualNovelUI.HideDialogueInstant();
+		}
+
+		static IEnumerator HideDialogue(string[] args)
+		{
+			float fadeSpeed = args.Length > 0 ? ParseArgument<float>(args[0]) : 0;
+
+			yield return visualNovelUI.HideDialogue(fadeSpeed);
 		}
 	}
 }

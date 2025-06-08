@@ -25,6 +25,7 @@ MonoBehaviour:
     promptPos: 0
     dialogueFontSize: 40
     fadeTransitionSpeed: 10
+    sceneFadeTransitionSpeed: 10
   characters:
     moveSpeed: 10
     fadeTransitionSpeed: 10
