@@ -10,8 +10,18 @@ wait v.Show(), wait eg.Show(), wait m.Show()
 
 v "Aaaand let's test the fonts now."
 v "Ready, guys?"
+
+Dialogue.HideDialogueBox()
+
 eg "Yo, Marsh, say something!"
 m "Something."
 eg "Very original."
+
+Dialogue.HideDialogueBox()
+Wait(2)
+Dialogue.ShowDialogueBox()
+
 m "But it works. Anyway, if you wanted to test a longer sentence, dev... {a 0.5}<i>here you go.</i>"
 v "Satisfied?"
+"Yup! Thanks guys!"
+v "<i>Anytime~</i>"

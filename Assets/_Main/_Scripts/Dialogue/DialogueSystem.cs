@@ -22,6 +22,8 @@ namespace Dialogue
 
 		public GameOptionsSO GameOptions { get { return gameOptions; } }
 
+		public DialogueUI GetDialogueUI() => dialogueUI;
+
 		void Start()
 		{
 			dialogueReader = new DialogueReader(this, characterManager, commandManager, dialogueUI, continuePrompt);

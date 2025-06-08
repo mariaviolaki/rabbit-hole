@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Audio;
 using Characters;
+using Dialogue;
 using Graphics;
 using UnityEngine;
 
@@ -29,6 +30,7 @@ namespace Commands
 
 		// Command directory categories
 		public static readonly string MainDirectoryName = "Main";
+		public static readonly string DialogueDirectoryName = "Dialogue";
 		public static readonly string VisualsDirectoryName = "Visuals";
 		public static readonly string AudioDirectoryName = "Audio";
 		public static readonly string CharacterDirectoryName = "Characters";
@@ -40,6 +42,7 @@ namespace Commands
 		CharacterManager characterManager;
 		GraphicsGroupManager graphicsGroupManager;
 		AudioManager audioManager;
+		DialogueSystem dialogueSystem;
 
 		// The grouping of all dialogue commands available to be run (divided into categories)
 		Dictionary<string, CommandDirectory> commandDirectories = new Dictionary<string, CommandDirectory>();
@@ -52,12 +55,14 @@ namespace Commands
 		public CharacterManager GetCharacterManager() => characterManager;
 		public GraphicsGroupManager GetGraphicsGroupManager() => graphicsGroupManager;
 		public AudioManager GetAudioManager() => audioManager;
+		public DialogueUI GetDialogueUI() => dialogueSystem.GetDialogueUI();
 
 		void Start()
 		{
 			characterManager = FindObjectOfType<CharacterManager>();
 			graphicsGroupManager = FindObjectOfType<GraphicsGroupManager>();
 			audioManager = FindObjectOfType<AudioManager>();
+			dialogueSystem = FindObjectOfType<DialogueSystem>();
 			InitDirectory();
 		}
 
