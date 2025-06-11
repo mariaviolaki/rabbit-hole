@@ -4,18 +4,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.U2D;
-using UnityEngine.UI;
 
 namespace Characters
 {
 	public class SpriteCharacter : GraphicsCharacter
 	{
-		const string LayerContainerName = "Layers";
-
 		SpriteAtlas spriteAtlas;
 		Dictionary<SpriteLayerType, CharacterSpriteLayer> spriteLayers;
-
-		Coroutine spriteCoroutine;
 
 		protected override IEnumerator Init()
 		{
@@ -32,16 +27,13 @@ namespace Characters
 
 		void InitSpriteLayers()
 		{
-			Transform layerParentContainer = animator.transform.Find(LayerContainerName);
+			Transform layerParentContainer = animator.transform.GetChild(0);
 
 			foreach (Transform layerParent in layerParentContainer)
 			{
-				Image image = layerParent.GetComponentInChildren<Image>();
-				if (image == null) continue;
-
 				string layerName = layerParent.name;
-				if (Enum.TryParse(layerName, true, out SpriteLayerType layer))
-					spriteLayers[layer] = new CharacterSpriteLayer(layer, image, manager);
+				if (Enum.TryParse(layerName, true, out SpriteLayerType layerType))
+					spriteLayers[layerType] = new CharacterSpriteLayer(manager, layerType, layerParent);
 			}
 		}
 
@@ -50,18 +42,18 @@ namespace Characters
 			Sprite sprite = GetSprite(layerType, spriteName);
 			if (sprite == null) return;
 
-			manager.StopProcess(ref spriteCoroutine);
-			spriteLayers[layerType].LayerImage.sprite = sprite;
+			spriteLayers[layerType].SetSpriteInstant(sprite);
 		}
 		public Coroutine SetSprite(SpriteLayerType layerType, string spriteName, float speed = 0)
 		{
 			Sprite sprite = GetSprite(layerType, spriteName);
 			if (sprite == null) return null;
 
-			bool isSkipped = manager.StopProcess(ref spriteCoroutine);
+			CharacterSpriteLayer layer = spriteLayers[layerType];
+			bool isSkipped = layer.IsChangingSprite;
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
 
-			spriteCoroutine = manager.StartCoroutine(ChangeSprite(spriteLayers[layerType], sprite, speed, isSkipped));
-			return spriteCoroutine;
+			return layer.SetSprite(sprite, speed);
 		}
 
 		public override void FlipInstant()
@@ -70,23 +62,22 @@ namespace Characters
 
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
-				Transform layerTransform = layer.LayerImage.transform;
-				layerTransform.localScale = new Vector3(-layerTransform.localScale.x, 1, 1);
+				layer.FlipInstant();
 			}
 
 			isFacingRight = !isFacingRight;
 		}
 		protected override IEnumerator FlipDirection(float speed, bool isSkipped)
 		{
-			yield return FadeImage(canvasGroup, false, speed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
 
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
-				Transform layerTransform = layer.LayerImage.transform;
-				layerTransform.localScale = new Vector3(-layerTransform.localScale.x, 1, 1);
+				manager.StartCoroutine(SetLayerImageDirection(layer, speed));
 			}
 
-			yield return FadeImage(canvasGroup, true, speed, isSkipped);
+			yield return null;
+			while (spriteLayers.Values.Any(layer => layer.IsChangingDirection)) yield return null;
 
 			isFacingRight = !isFacingRight;
 			directionCoroutine = null;
@@ -98,18 +89,19 @@ namespace Characters
 
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
-				layer.StopBrightnessCoroutine();
-				layer.LayerImage.color = isHighlighted ? LightColor : DarkColor;
+				layer.SetBrightnessInstant(isHighlighted ? LightColor : DarkColor);
 			}
 
 			this.isHighlighted = isHighlighted;
 		}
 		protected override IEnumerator ChangeBrightness(bool isHighlighted, float speed, bool isSkipped)
 		{
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.BrightnessTransitionSpeed, isSkipped);
+			Color targetColor = isHighlighted ? LightColor : DarkColor;
+
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
-				Coroutine brightnessCoroutine = manager.StartCoroutine(SetLayerImageBrightness(layer, isHighlighted, speed, isSkipped));
-				layer.SetBrightnessCoroutine(brightnessCoroutine);
+				manager.StartCoroutine(SetLayerImageBrightness(layer, targetColor, speed));
 			}
 
 			yield return null;
@@ -125,18 +117,19 @@ namespace Characters
 
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
-				layer.StopColorCoroutine();
-				layer.LayerImage.color = color;
+				layer.SetColorInstant(color);
 			}
 
 			LightColor = color;
 		}
 		protected override IEnumerator ChangeColor(Color color, float speed, bool isSkipped)
 		{
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.ColorTransitionSpeed, isSkipped);
+			Color targetColor = isHighlighted ? color : GetDarkColor(color);
+
 			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
 			{
-				Coroutine colorCoroutine = manager.StartCoroutine(ColorLayerImage(layer, color, speed, isSkipped));
-				layer.SetColorCoroutine(colorCoroutine);
+				manager.StartCoroutine(ColorLayerImage(layer, targetColor, speed));
 			}
 
 			yield return null;
@@ -146,27 +139,19 @@ namespace Characters
 			colorCoroutine = null;
 		}
 
-		IEnumerator ChangeSprite(CharacterSpriteLayer spriteLayer, Sprite sprite, float speed, bool isSkipped)
+		IEnumerator SetLayerImageDirection(CharacterSpriteLayer layer, float speed)
 		{
-			yield return FadeImage(spriteLayer.LayerCanvasGroup, false, speed, isSkipped);
-
-			spriteLayer.LayerImage.sprite = sprite;
-
-			yield return FadeImage(spriteLayer.LayerCanvasGroup, true, speed, isSkipped);
-
-			spriteCoroutine = null;
+			yield return layer.Flip(speed);
 		}
 
-		IEnumerator SetLayerImageBrightness(CharacterSpriteLayer layer, bool isHighlighted, float speed, bool isSkipped)
+		IEnumerator SetLayerImageBrightness(CharacterSpriteLayer layer, Color targetColor, float speed)
 		{
-			yield return SetImageBrightness(layer.LayerImage, isHighlighted, speed, isSkipped);
-			layer.StopBrightnessCoroutine();
+			yield return layer.SetBrightness(targetColor, speed);
 		}
 
-		IEnumerator ColorLayerImage(CharacterSpriteLayer layer, Color color, float speed, bool isSkipped)
+		IEnumerator ColorLayerImage(CharacterSpriteLayer layer, Color targetColor, float speed)
 		{
-			yield return ColorImage(layer.LayerImage, color, speed, isSkipped);
-			layer.StopColorCoroutine();
+			yield return layer.SetColor(targetColor, speed);
 		}
 
 		Sprite GetSprite(SpriteLayerType layerType, string spriteName)

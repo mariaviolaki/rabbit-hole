@@ -11,13 +11,65 @@ v.SetPosInstant(0, 0.5), eg.SetPosInstant(1, 0.5), m.SetPosInstant(0.5, 0.5)
 wait v.Show(), wait eg.Show(), wait m.Show()
 
 v "Welcome, welcome~"
-v "Your name is <mcName>, right?"
-mc "Yup!"
+v.SetSprite(face, Void Face Smug)
+v "Today we test my transitions."
+v.SetSprite(face, Void Face Evil)
+v "Is..."
+v.SetSprite(face, Void Face Flustered)
+v "...this..."
+v.SetSprite(face, Void Face Crazy)
+v "...good?"
 
-Dialogue.HideDialogue()
+eg "What about the forest?"
+wait Visuals.SetBackgroundImage(Red-Forest-Back)
+eg "Is that right?"
+wait Visuals.SetBackgroundImage(Yellow-Forest-Back)
+eg "That's what I thought!"
+wait Visuals.SetBackgroundVideo(Night)
+eg "Is that a video?!"
+wait Visuals.SetBackgroundVideo(Night)
+eg "Can I play it again?!?!"
+wait Visuals.SetBackgroundVideo(Day)
+eg "Aw. How about this?"
+wait Visuals.SetBackgroundImage(Green-Forest-Back)
+eg "Oh, well. Back to the forest then."
 
-eg "WHAT AN INSPIRED NAME!"
-m "Calm down. So let's check these..."
-m "playerLevel is <playerLevel>, value1 is <value1>."
-v "Looks good to me. Good job, <mcName>."
-mc "Hehe."
+m "And me?"
+m.SetExpression(Crazy)
+m "All good?"
+m.SetExpression(Surprised)
+m "Are you sure?"
+m.SetExpression(Happy)
+m "Huh. That makes sense."
+
+m "And how about flipping?"
+m.FlipInstant()
+m "Again."
+m.Flip()
+m "Good?"
+m.Flip()
+m "Great."
+
+eg "Oh! Me too, me too!"
+eg.Flip()
+eg "Two!"
+eg.Flip()
+eg "Three!"
+eg.Flip()
+eg "Whoo!"
+
+v "Okay guys, back to the routine."
+v "Ready?{a 0.1} <i>Go.</i>"
+wait m.Hide(), wait v.Hide(), wait eg.Hide()
+Wait(1)
+wait m.Show(), wait v.Show(), wait eg.Show()
+Wait(1)
+wait m.Unhighlight(), wait v.Unhighlight(), wait eg.Unhighlight()
+Wait(1)
+wait m.SetColor(#32a852), wait v.SetColor(#32a852), wait eg.SetColor(#32a852)
+Wait(1)
+wait m.Highlight(), wait v.Highlight(), wait eg.Highlight()
+Wait(1)
+wait m.SetColor(#FFFFFF), wait v.SetColor(#FFFFFF), wait eg.SetColor(#FFFFFF)
+Wait(1)
+wait m.SetPosX(1), wait v.SetPosX(0.5), wait eg.SetPosX(0)

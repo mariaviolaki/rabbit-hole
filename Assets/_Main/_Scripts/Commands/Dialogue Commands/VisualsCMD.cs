@@ -6,7 +6,7 @@ namespace Commands
 {
 	public class VisualsCMD : DialogueCommand
 	{
-		static GraphicsGroupManager graphicsGroupManager;
+		static VisualGroupManager graphicsGroupManager;
 
 		public new static void Register(CommandManager commandManager)
 		{
@@ -47,37 +47,37 @@ namespace Commands
 
 		static void CreateCinematic(string[] args)
 		{
-			CreateVisualGroup(GraphicsGroupManager.CinematicName, args);
+			CreateVisualGroup(VisualGroupManager.CinematicName, args);
 		}
 
 		static void ClearCinematicInstant(string[] args)
 		{
-			ClearVisualGroupInstant(GraphicsGroupManager.CinematicName, args);
+			ClearVisualGroupInstant(VisualGroupManager.CinematicName, args);
 		}
 
 		static IEnumerator ClearCinematic(string[] args)
 		{
-			yield return ClearVisualGroup(GraphicsGroupManager.CinematicName, args);
+			yield return ClearVisualGroup(VisualGroupManager.CinematicName, args);
 		}
 
 		static void SetCinematicImageInstant(string[] args)
 		{
-			SetVisualGroupImageInstant(GraphicsGroupManager.CinematicName, args);
+			SetVisualGroupImageInstant(VisualGroupManager.CinematicName, args);
 		}
 
 		static IEnumerator SetCinematicImage(string[] args)
 		{
-			yield return SetVisualGroupImage(GraphicsGroupManager.CinematicName, args);
+			yield return SetVisualGroupImage(VisualGroupManager.CinematicName, args);
 		}
 
 		static void SetCinematicVideoInstant(string[] args)
 		{
-			SetVisualGroupVideoInstant(GraphicsGroupManager.CinematicName, args);
+			SetVisualGroupVideoInstant(VisualGroupManager.CinematicName, args);
 		}
 
 		static IEnumerator SetCinematicVideo(string[] args)
 		{
-			yield return SetVisualGroupVideo(GraphicsGroupManager.CinematicName, args);
+			yield return SetVisualGroupVideo(VisualGroupManager.CinematicName, args);
 		}
 
 
@@ -85,37 +85,37 @@ namespace Commands
 
 		static void CreateForeground(string[] args)
 		{
-			CreateVisualGroup(GraphicsGroupManager.ForegroundName, args);
+			CreateVisualGroup(VisualGroupManager.ForegroundName, args);
 		}
 
 		static void ClearForegroundInstant(string[] args)
 		{
-			ClearVisualGroupInstant(GraphicsGroupManager.ForegroundName, args);
+			ClearVisualGroupInstant(VisualGroupManager.ForegroundName, args);
 		}
 
 		static IEnumerator ClearForeground(string[] args)
 		{
-			yield return ClearVisualGroup(GraphicsGroupManager.ForegroundName, args);
+			yield return ClearVisualGroup(VisualGroupManager.ForegroundName, args);
 		}
 
 		static void SetForegroundImageInstant(string[] args)
 		{
-			SetVisualGroupImageInstant(GraphicsGroupManager.ForegroundName, args);
+			SetVisualGroupImageInstant(VisualGroupManager.ForegroundName, args);
 		}
 
 		static IEnumerator SetForegroundImage(string[] args)
 		{
-			yield return SetVisualGroupImage(GraphicsGroupManager.ForegroundName, args);
+			yield return SetVisualGroupImage(VisualGroupManager.ForegroundName, args);
 		}
 
 		static void SetForegroundVideoInstant(string[] args)
 		{
-			SetVisualGroupVideoInstant(GraphicsGroupManager.ForegroundName, args);
+			SetVisualGroupVideoInstant(VisualGroupManager.ForegroundName, args);
 		}
 
 		static IEnumerator SetForegroundVideo(string[] args)
 		{
-			yield return SetVisualGroupVideo(GraphicsGroupManager.ForegroundName, args);
+			yield return SetVisualGroupVideo(VisualGroupManager.ForegroundName, args);
 		}
 
 
@@ -123,37 +123,37 @@ namespace Commands
 
 		static void CreateBackground(string[] args)
 		{
-			CreateVisualGroup(GraphicsGroupManager.BackgroundName, args);
+			CreateVisualGroup(VisualGroupManager.BackgroundName, args);
 		}
 
 		static void ClearBackgroundInstant(string[] args)
 		{
-			ClearVisualGroupInstant(GraphicsGroupManager.BackgroundName, args);
+			ClearVisualGroupInstant(VisualGroupManager.BackgroundName, args);
 		}
 
 		static IEnumerator ClearBackground(string[] args)
 		{
-			yield return ClearVisualGroup(GraphicsGroupManager.BackgroundName, args);
+			yield return ClearVisualGroup(VisualGroupManager.BackgroundName, args);
 		}
 
 		static void SetBackgroundImageInstant(string[] args)
 		{
-			SetVisualGroupImageInstant(GraphicsGroupManager.BackgroundName, args);
+			SetVisualGroupImageInstant(VisualGroupManager.BackgroundName, args);
 		}
 
 		static IEnumerator SetBackgroundImage(string[] args)
 		{
-			yield return SetVisualGroupImage(GraphicsGroupManager.BackgroundName, args);
+			yield return SetVisualGroupImage(VisualGroupManager.BackgroundName, args);
 		}
 
 		static void SetBackgroundVideoInstant(string[] args)
 		{
-			SetVisualGroupVideoInstant(GraphicsGroupManager.BackgroundName, args);
+			SetVisualGroupVideoInstant(VisualGroupManager.BackgroundName, args);
 		}
 
 		static IEnumerator SetBackgroundVideo(string[] args)
 		{
-			yield return SetVisualGroupVideo(GraphicsGroupManager.BackgroundName, args);
+			yield return SetVisualGroupVideo(VisualGroupManager.BackgroundName, args);
 		}
 
 
@@ -161,7 +161,7 @@ namespace Commands
 
 		static void CreateVisualGroup(string visualGroupName, string[] args)
 		{
-			GraphicsLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
+			VisualLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) return;
 
 			int layerCount = args.Length > 0 ? ParseArgument<int>(args[0]) : default;
@@ -170,7 +170,7 @@ namespace Commands
 
 		static void ClearVisualGroupInstant(string visualGroupName, string[] args)
 		{
-			GraphicsLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
+			VisualLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) return;
 
 			int layerDepth = args.Length > 0 ? ParseArgument<int>(args[0]) : -1;
@@ -179,7 +179,7 @@ namespace Commands
 
 		static IEnumerator ClearVisualGroup(string visualGroupName, string[] args)
 		{
-			GraphicsLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
+			VisualLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) yield break;
 
 			int layerDepth = args.Length > 0 ? ParseArgument<int>(args[0]) : -1;
@@ -190,13 +190,13 @@ namespace Commands
 
 		static void SetVisualGroupImageInstant(string visualGroupName, string[] args)
 		{
-			GraphicsLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
+			VisualLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) return;
 
 			string imageName = args.Length > 0 ? ParseArgument<string>(args[0]) : default;
 			int layerDepth = args.Length > 1 ? ParseArgument<int>(args[1]) : default;
 
-			GraphicsLayer layer = layerGroup.GetLayer(layerDepth);
+			VisualLayer layer = layerGroup.GetLayer(layerDepth);
 			if (layer == null) return;
 
 			layer.SetImageInstant(imageName);
@@ -204,14 +204,14 @@ namespace Commands
 
 		static IEnumerator SetVisualGroupImage(string visualGroupName, string[] args)
 		{
-			GraphicsLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
+			VisualLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) yield break;
 
 			string imageName = args.Length > 0 ? ParseArgument<string>(args[0]) : default;
 			int layerDepth = args.Length > 1 ? ParseArgument<int>(args[1]) : default;
 			float speed = args.Length > 2 ? ParseArgument<float>(args[2]) : default;
 
-			GraphicsLayer layer = layerGroup.GetLayer(layerDepth);
+			VisualLayer layer = layerGroup.GetLayer(layerDepth);
 			if (layer == null) yield break;
 
 			yield return layer.SetImage(imageName, speed);
@@ -219,14 +219,14 @@ namespace Commands
 
 		static void SetVisualGroupVideoInstant(string visualGroupName, string[] args)
 		{
-			GraphicsLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
+			VisualLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) return;
 
 			string videoName = args.Length > 0 ? ParseArgument<string>(args[0]) : default;
 			int layerDepth = args.Length > 1 ? ParseArgument<int>(args[1]) : default;
 			bool isMuted = args.Length > 2 ? ParseArgument<bool>(args[2]) : false;
 
-			GraphicsLayer layer = layerGroup.GetLayer(layerDepth);
+			VisualLayer layer = layerGroup.GetLayer(layerDepth);
 			if (layer == null) return;
 
 			layer.SetVideoInstant(videoName, isMuted);
@@ -234,7 +234,7 @@ namespace Commands
 
 		static IEnumerator SetVisualGroupVideo(string visualGroupName, string[] args)
 		{
-			GraphicsLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
+			VisualLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) yield break;
 
 			string videoName = args.Length > 0 ? ParseArgument<string>(args[0]) : default;
@@ -242,7 +242,7 @@ namespace Commands
 			bool isMuted = args.Length > 2 ? ParseArgument<bool>(args[2]) : false;
 			float speed = args.Length > 3 ? ParseArgument<float>(args[3]) : default;
 
-			GraphicsLayer layer = layerGroup.GetLayer(layerDepth);
+			VisualLayer layer = layerGroup.GetLayer(layerDepth);
 			if (layer == null) yield break;
 
 			yield return layer.SetVideo(videoName, isMuted, speed);

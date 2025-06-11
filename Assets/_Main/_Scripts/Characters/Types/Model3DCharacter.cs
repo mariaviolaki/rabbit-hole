@@ -6,16 +6,26 @@ namespace Characters
 {
 	public class Model3DCharacter : GraphicsCharacter
 	{
+		const string primaryContainerName = "Primary";
+		const string secondaryContainerName = "Secondary";
 		const int ModelHeightOffset = 15;
 		const float expressionTransitionMultiplier = 5f;
 
 		Transform modelRoot;
-		Camera modelCamera;
 		Transform modelContainer;
 		Animator modelAnimator;
-		RawImage rawImage;
 		SkinnedMeshRenderer skinnedMeshRenderer;
 		Model3DExpressionDirectory expressionDirectory;
+
+		Camera primaryModelCamera;
+		GameObject primaryImageContainer;
+		RawImage primaryRawImage;
+		CanvasGroup primaryCanvasGroup;
+
+		Camera secondaryModelCamera;
+		GameObject secondaryImageContainer;
+		RawImage secondaryRawImage;
+		CanvasGroup secondaryCanvasGroup;
 
 		string currentExpression = string.Empty;
 		Coroutine expressionCoroutine;
@@ -30,22 +40,39 @@ namespace Characters
 			if (modelPrefab == null) yield break;
 
 			GameObject modelRootGameObject = Object.Instantiate(modelPrefab, manager.Model3DContainer);
-			RenderTexture renderTexture = new RenderTexture(manager.GameOptions.Model3D.RenderTexture3D);
 			int model3DCount = manager.GetCharacterCount(CharacterType.Model3D);
-
 			modelRoot = modelRootGameObject.GetComponent<Transform>();
-			modelCamera = modelRoot.GetComponentInChildren<Camera>();
-			modelContainer = modelCamera.transform.GetChild(0);
+
+			// Setup how the 3D model is displayed in the UI
+			RenderTexture renderTexture = new RenderTexture(manager.GameOptions.Model3D.RenderTexture3D);
+			primaryImageContainer = animator.transform.GetChild(0).gameObject;
+			primaryModelCamera = modelRoot.GetComponentInChildren<Camera>();
+			primaryCanvasGroup = primaryImageContainer.GetComponent<CanvasGroup>();
+			primaryRawImage = primaryImageContainer.GetComponent<RawImage>();
+			primaryModelCamera.targetTexture = renderTexture;
+			primaryRawImage.texture = renderTexture;
+			primaryImageContainer.name = primaryContainerName;
+
+			modelContainer = primaryModelCamera.transform.GetChild(0);
 			modelAnimator = modelContainer.GetComponentInChildren<Animator>();
 			skinnedMeshRenderer = modelAnimator.GetComponentInChildren<SkinnedMeshRenderer>();
 			expressionDirectory = skinnedMeshRenderer.GetComponent<Model3DExpressionDirectory>();
-			rawImage = animator.GetComponentInChildren<RawImage>();
 
+			// Initialize 3D model position and rotation
 			modelRoot.localPosition = new Vector3(0, model3DCount * ModelHeightOffset, 0);
 			modelContainer.localEulerAngles = new Vector3(0, manager.GameOptions.Model3D.DefaultAngle, 0);
-			rawImage.texture = renderTexture;
-			modelCamera.targetTexture = renderTexture;
 			modelRoot.name = data.Name;
+
+			// Create a secondary image for smooth transitions
+			RenderTexture oldRenderTexture = new RenderTexture(manager.GameOptions.Model3D.RenderTexture3D);
+			secondaryImageContainer = Object.Instantiate(primaryImageContainer, primaryImageContainer.transform.parent);
+			secondaryModelCamera = Object.Instantiate(primaryModelCamera, primaryModelCamera.transform.parent);
+			secondaryCanvasGroup = secondaryImageContainer.GetComponent<CanvasGroup>();
+			secondaryRawImage = secondaryImageContainer.GetComponent<RawImage>();
+			ToggleSecondaryImage(false);
+			secondaryModelCamera.targetTexture = oldRenderTexture;
+			secondaryRawImage.texture = oldRenderTexture;
+			secondaryImageContainer.name = secondaryContainerName;		
 		}
 
 		public void SetMotion(string motionName)
@@ -75,17 +102,22 @@ namespace Characters
 		{
 			manager.StopProcess(ref directionCoroutine);
 
-			modelContainer.localEulerAngles = new Vector3(0, -modelContainer.localEulerAngles.y, 0);
+			Vector3 currentLocalScale = primaryRawImage.transform.localScale;
+			primaryRawImage.transform.localScale = new Vector3(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
 			isFacingRight = !isFacingRight;
 		}
 		protected override IEnumerator FlipDirection(float speed, bool isSkipped)
 		{
-			yield return FadeImage(canvasGroup, false, speed, isSkipped);
+			ToggleSecondaryImage(true);
 
-			modelContainer.localEulerAngles = new Vector3(0, -modelContainer.localEulerAngles.y, 0);
+			Vector3 currentLocalScale = primaryRawImage.transform.localScale;
+			secondaryCanvasGroup.alpha = 0f;
+			secondaryCanvasGroup.transform.localScale = new Vector3(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
 
-			yield return FadeImage(canvasGroup, true, speed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Model3D.ExpressionTransitionSpeed, isSkipped);
+			yield return Utils.TransitionUtils.SetNewImage(primaryCanvasGroup, secondaryCanvasGroup, speed);
 
+			ToggleSecondaryImage(false);
 			isFacingRight = !isFacingRight;
 			directionCoroutine = null;
 		}
@@ -94,12 +126,12 @@ namespace Characters
 		{
 			manager.StopProcess(ref brightnessCoroutine);
 
-			rawImage.color = isHighlighted ? LightColor : DarkColor;
+			primaryRawImage.color = isHighlighted ? LightColor : DarkColor;
 			this.isHighlighted = isHighlighted;
 		}
 		protected override IEnumerator ChangeBrightness(bool isHighlighted, float speed, bool isSkipped)
 		{
-			yield return SetImageBrightness(rawImage, isHighlighted, speed, isSkipped);
+			yield return SetImageBrightness(primaryRawImage, isHighlighted, speed, isSkipped);
 
 			brightnessCoroutine = null;
 		}
@@ -108,31 +140,33 @@ namespace Characters
 		{
 			manager.StopProcess(ref colorCoroutine);
 
-			rawImage.color = color;
+			primaryRawImage.color = color;
 			LightColor = color;
 		}
 		protected override IEnumerator ChangeColor(Color color, float speed, bool isSkipped)
 		{
-			yield return ColorImage(rawImage, color, speed, isSkipped);
+			yield return ColorImage(primaryRawImage, color, speed, isSkipped);
 
 			colorCoroutine = null;
 		}
 
-		protected override IEnumerator FadeImage(CanvasGroup canvasGroup, bool isFadeIn, float speed, bool isSkipped)
+		IEnumerator ColorImage(Graphic image, Color color, float speed, bool isSkipped)
 		{
-			yield return base.FadeImage(canvasGroup, isFadeIn, speed, isSkipped);
-			isVisible = isFadeIn;
-		}
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.ColorTransitionSpeed, isSkipped);
+			Color targetColor = isHighlighted ? color : GetDarkColor(color);
 
-		protected override IEnumerator ColorImage(Graphic image, Color color, float speed, bool isSkipped)
-		{
-			yield return base.ColorImage(image, color, speed, isSkipped);
+			yield return Utils.TransitionUtils.SetImageColor(image, targetColor, speed);
+
 			LightColor = color;
 		}
 
-		protected override IEnumerator SetImageBrightness(Graphic image, bool isHighlighted, float speed, bool isSkipped)
+		IEnumerator SetImageBrightness(Graphic image, bool isHighlighted, float speed, bool isSkipped)
 		{
-			yield return base.SetImageBrightness(image, isHighlighted, speed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.BrightnessTransitionSpeed, isSkipped);
+			Color targetColor = isHighlighted ? LightColor : DarkColor;
+
+			yield return Utils.TransitionUtils.SetImageColor(image, targetColor, speed);
+
 			this.isHighlighted = isHighlighted;
 		}
 
@@ -228,6 +262,44 @@ namespace Characters
 			}
 
 			return true;
+		}
+
+		void ToggleSecondaryImage(bool isActive)
+		{
+			if (!isActive)
+			{
+				// Swap the visual containers because the graphic is now in the second one
+				SwapContainers();
+				secondaryCanvasGroup.alpha = primaryCanvasGroup.alpha;
+				secondaryRawImage.transform.localScale = primaryRawImage.transform.localScale;
+				secondaryRawImage.color = primaryRawImage.color;
+
+				modelContainer = primaryModelCamera.transform.GetChild(0);
+				modelAnimator = modelContainer.GetComponentInChildren<Animator>();
+				skinnedMeshRenderer = modelAnimator.GetComponentInChildren<SkinnedMeshRenderer>();
+				expressionDirectory = skinnedMeshRenderer.GetComponent<Model3DExpressionDirectory>();	
+			}
+
+			secondaryModelCamera.gameObject.SetActive(isActive);
+			secondaryImageContainer.SetActive(isActive);
+		}
+
+		void SwapContainers()
+		{
+			Camera tempCamera = primaryModelCamera;
+			GameObject tempImageContainer = primaryImageContainer;
+			RawImage tempRawImage = primaryRawImage;
+			CanvasGroup tempCanvasGroup = primaryCanvasGroup;
+
+			primaryModelCamera = secondaryModelCamera;
+			primaryImageContainer = secondaryImageContainer;
+			primaryRawImage = secondaryRawImage;
+			primaryCanvasGroup = secondaryCanvasGroup;
+
+			secondaryModelCamera = tempCamera;
+			secondaryImageContainer = tempImageContainer;
+			secondaryRawImage = tempRawImage;
+			secondaryCanvasGroup = tempCanvasGroup;
 		}
 	}
 }

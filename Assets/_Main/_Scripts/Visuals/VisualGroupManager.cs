@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace Graphics
 {
-	public class GraphicsGroupManager : MonoBehaviour
+	public class VisualGroupManager : MonoBehaviour
 	{
-		[SerializeField] GraphicsLayerGroup[] layerGroups;
+		[SerializeField] VisualLayerGroup[] layerGroups;
 		[SerializeField] FileManagerSO fileManager;
 		[SerializeField] GameOptionsSO gameOptions;
 
@@ -13,21 +13,21 @@ namespace Graphics
 		public static string ForegroundName = "Foreground";
 		public static string CinematicName = "Cinematic";
 
-		Dictionary<string, GraphicsLayerGroup> layerGroupDirectory = new Dictionary<string, GraphicsLayerGroup>();
+		Dictionary<string, VisualLayerGroup> layerGroupDirectory = new Dictionary<string, VisualLayerGroup>();
 
 		public FileManagerSO FileManager => fileManager;
 		public GameOptionsSO GameOptions => gameOptions;
 
 		void Awake()
 		{
-			foreach (GraphicsLayerGroup group in layerGroups)
+			foreach (VisualLayerGroup group in layerGroups)
 			{
 				group.Init(this);
 				layerGroupDirectory.Add(group.Name, group);
 			}
 		}
 
-		public GraphicsLayerGroup GetLayerGroup(string name)
+		public VisualLayerGroup GetLayerGroup(string name)
 		{
 			if (!layerGroupDirectory.ContainsKey(name)) return null;
 

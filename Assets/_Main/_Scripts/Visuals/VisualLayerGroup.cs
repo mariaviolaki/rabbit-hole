@@ -6,30 +6,30 @@ using UnityEngine;
 namespace Graphics
 {
 	[System.Serializable]
-	public class GraphicsLayerGroup
+	public class VisualLayerGroup
 	{
 		[SerializeField] string name;
 		[SerializeField] RectTransform root;
 
-		GraphicsGroupManager manager;
-		Dictionary<int, GraphicsLayer> layers = new();
+		readonly Dictionary<int, VisualLayer> layers = new();
+		VisualGroupManager manager;
 		Coroutine clearCoroutine;
 
 		public string Name => name;
 		public RectTransform Root => root;
-		public GraphicsGroupManager Manager => manager;
+		public VisualGroupManager Manager => manager;
 
-		public void Init(GraphicsGroupManager manager)
+		public void Init(VisualGroupManager manager)
 		{
 			this.manager = manager;
 		}
 
 		public void ClearInstant(int depth = -1)
 		{
-			GraphicsLayer[] layersToClear = GetLayersFromDepth(depth);
+			VisualLayer[] layersToClear = GetLayersFromDepth(depth);
 			if (layersToClear == null) return;
 
-			foreach (GraphicsLayer layer in layersToClear)
+			foreach (VisualLayer layer in layersToClear)
 			{
 				layer.ClearInstant();
 			}
@@ -37,11 +37,11 @@ namespace Graphics
 
 		public Coroutine Clear(int depth = -1, float speed = 0)
 		{
-			GraphicsLayer[] layersToClear = GetLayersFromDepth(depth);
+			VisualLayer[] layersToClear = GetLayersFromDepth(depth);
 			if (layersToClear == null) return null;
 
 			bool isAnyProcessStopped = false;
-			foreach (GraphicsLayer layer in layersToClear)
+			foreach (VisualLayer layer in layersToClear)
 			{
 				if (layer.StopTransition())
 					isAnyProcessStopped = true;
@@ -54,7 +54,7 @@ namespace Graphics
 			return clearCoroutine;
 		}
 
-		public GraphicsLayer GetLayer(int depth)
+		public VisualLayer GetLayer(int depth)
 		{
 			if (!layers.ContainsKey(depth))
 			{
@@ -89,27 +89,27 @@ namespace Graphics
 			}
 
 			GameObject layerObject = new GameObject($"Layer {clampedIndex}", typeof(RectTransform));
-			GraphicsLayer layer = new GraphicsLayer(this, layerObject, clampedIndex);
+			VisualLayer layer = new VisualLayer(this, layerObject, clampedIndex);
 			layers[clampedIndex] = layer;
 
 			if (depth != clampedIndex)
 				Debug.LogWarning($"'Layer {depth}' was created as 'Layer {clampedIndex}' in {name} layer group because it was out of bounds.");
 		}
 
-		GraphicsLayer[] GetLayersFromDepth(int depth)
+		VisualLayer[] GetLayersFromDepth(int depth)
 		{
 			if (depth < 0)
 				return layers.Values.ToArray();
 
-			GraphicsLayer layer = GetLayer(depth);
+			VisualLayer layer = GetLayer(depth);
 			if (layer == null) return null;
 
-			return new GraphicsLayer[] { GetLayer(depth) };
+			return new VisualLayer[] { GetLayer(depth) };
 		}
 
-		IEnumerator ClearLayers(GraphicsLayer[] layersToClear, float speed)
+		IEnumerator ClearLayers(VisualLayer[] layersToClear, float speed)
 		{
-			foreach (GraphicsLayer layer in layersToClear)
+			foreach (VisualLayer layer in layersToClear)
 			{
 				layer.Clear(speed);
 			}

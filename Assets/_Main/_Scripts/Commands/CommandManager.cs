@@ -40,7 +40,7 @@ namespace Commands
 		const char CommandDirectoryIdentifier = '.';
 
 		CharacterManager characterManager;
-		GraphicsGroupManager graphicsGroupManager;
+		VisualGroupManager graphicsGroupManager;
 		AudioManager audioManager;
 		DialogueSystem dialogueSystem;
 
@@ -53,14 +53,14 @@ namespace Commands
 
 		public bool IsIdle => processes.Count == 0;
 		public CharacterManager GetCharacterManager() => characterManager;
-		public GraphicsGroupManager GetGraphicsGroupManager() => graphicsGroupManager;
+		public VisualGroupManager GetGraphicsGroupManager() => graphicsGroupManager;
 		public AudioManager GetAudioManager() => audioManager;
 		public DialogueSystem GetDialogueSystem() => dialogueSystem;
 
 		void Start()
 		{
 			characterManager = FindObjectOfType<CharacterManager>();
-			graphicsGroupManager = FindObjectOfType<GraphicsGroupManager>();
+			graphicsGroupManager = FindObjectOfType<VisualGroupManager>();
 			audioManager = FindObjectOfType<AudioManager>();
 			dialogueSystem = FindObjectOfType<DialogueSystem>();
 			InitDirectory();

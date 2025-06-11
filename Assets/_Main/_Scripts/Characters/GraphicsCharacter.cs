@@ -1,14 +1,11 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Characters
 {
 	public abstract class GraphicsCharacter : Character
 	{
 		const float MoveSpeedMultiplier = 100f;
-		const float FadeSpeedMultiplier = 5f;
-		const float ColorSpeedMultiplier = 5f;
 
 		Coroutine moveCoroutine;
 		protected Coroutine directionCoroutine;
@@ -16,7 +13,7 @@ namespace Characters
 		protected Coroutine colorCoroutine;
 		protected Coroutine brightnessCoroutine;
 
-		protected CanvasGroup canvasGroup;
+		protected CanvasGroup rootCanvasGroup;
 		protected Animator animator;
 		protected bool isFacingRight;
 		protected bool isHighlighted = true;
@@ -44,11 +41,11 @@ namespace Characters
 
 			GameObject rootGameObject = Object.Instantiate(prefab, manager.Container);
 			root = rootGameObject.GetComponent<RectTransform>();
-			canvasGroup = root.GetComponent<CanvasGroup>();
+			rootCanvasGroup = root.GetComponent<CanvasGroup>();
 			animator = root.GetComponentInChildren<Animator>();
 
 			root.name = data.Name;
-			canvasGroup.alpha = 0f;
+			rootCanvasGroup.alpha = 0f;
 			isFacingRight = manager.GameOptions.Characters.AreSpritesFacingRight;
 		}
 
@@ -166,69 +163,6 @@ namespace Characters
 			animator.SetBool(animationName, isPlaying);
 		}
 
-		protected virtual IEnumerator FadeImage(CanvasGroup canvasGroup, bool isFadeIn, float speed, bool isSkipped)
-		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
-
-			float startAlpha = canvasGroup.alpha;
-			float targetAlpha = isFadeIn ? 1f : 0f;
-
-			float timeElapsed = 0;
-			float duration = (1f / speed) * FadeSpeedMultiplier * Mathf.Abs(targetAlpha - startAlpha);
-			while (timeElapsed < duration)
-			{
-				timeElapsed += Time.deltaTime;
-				float smoothPercentage = Mathf.SmoothStep(0, 1, Mathf.Clamp01(timeElapsed / duration));
-
-				canvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, smoothPercentage);
-				yield return null;
-			}
-
-			canvasGroup.alpha = targetAlpha;
-		}
-
-		protected virtual IEnumerator SetImageBrightness(Graphic image, bool isHighlighted, float speed, bool isSkipped)
-		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.BrightnessTransitionSpeed, isSkipped);
-
-			Color startColor = image.color;
-			Color targetColor = isHighlighted ? LightColor : DarkColor;
-			float duration = (1 / speed) * ColorSpeedMultiplier * Vector4.Distance(startColor, targetColor);
-
-			float timeElapsed = 0;
-			while (timeElapsed < duration)
-			{
-				timeElapsed += Time.deltaTime;
-				float smoothPercentage = Mathf.SmoothStep(0, 1, Mathf.Clamp01(timeElapsed / duration));
-
-				image.color = Color.Lerp(startColor, targetColor, smoothPercentage);
-				yield return null;
-			}
-
-			image.color = targetColor;
-		}
-
-		protected virtual IEnumerator ColorImage(Graphic image, Color color, float speed, bool isSkipped)
-		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.ColorTransitionSpeed, isSkipped);
-
-			Color startColor = image.color;
-			Color targetColor = isHighlighted ? color : GetDarkColor(color);
-			float duration = (1 / speed) * ColorSpeedMultiplier * Vector4.Distance(startColor, targetColor);
-
-			float timeElapsed = 0;
-			while (timeElapsed < duration)
-			{
-				timeElapsed += Time.deltaTime;
-				float smoothPercentage = Mathf.SmoothStep(0, 1, Mathf.Clamp01(timeElapsed / duration));
-
-				image.color = Color.Lerp(startColor, targetColor, smoothPercentage);
-				yield return null;
-			}
-
-			image.color = targetColor;
-		}
-
 		protected float GetTransitionSpeed(float speedInput, float defaultSpeed, bool isTransitionSkipped)
 		{
 			if (isTransitionSkipped)
@@ -239,16 +173,28 @@ namespace Characters
 				return speedInput;
 		}
 
+		protected Color GetDarkColor(Color lightColor)
+		{
+			return new Color(
+				lightColor.r * manager.GameOptions.Characters.DarkenBrightness,
+				lightColor.g * manager.GameOptions.Characters.DarkenBrightness,
+				lightColor.b * manager.GameOptions.Characters.DarkenBrightness,
+				lightColor.a
+			);
+		}
+
 		void ChangeVisibilityInstant(bool isVisible)
 		{
 			manager.StopProcess(ref visibilityCoroutine);
 
-			canvasGroup.alpha = isVisible ? 1f : 0f;
+			rootCanvasGroup.alpha = isVisible ? 1f : 0f;
 			this.isVisible = isVisible;
 		}
 		IEnumerator ChangeVisibility(bool isVisible, float speed, bool isSkipped)
 		{
-			yield return FadeImage(canvasGroup, isVisible, speed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
+
+			yield return Utils.TransitionUtils.SetImageVisibility(rootCanvasGroup, isVisible, speed);
 
 			this.isVisible = isVisible;
 			visibilityCoroutine = null;
@@ -302,16 +248,6 @@ namespace Characters
 
 			// Return position relative to anchor center
 			return clampedTargetPos - anchorOffset;
-		}
-
-		Color GetDarkColor(Color lightColor)
-		{
-			return new Color(
-				lightColor.r * manager.GameOptions.Characters.DarkenBrightness,
-				lightColor.g * manager.GameOptions.Characters.DarkenBrightness,
-				lightColor.b * manager.GameOptions.Characters.DarkenBrightness,
-				lightColor.a
-			);
 		}
 	}
 }
