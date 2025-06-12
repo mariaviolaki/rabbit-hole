@@ -26,6 +26,9 @@ MonoBehaviour:
     dialogueFontSize: 40
     fadeTransitionSpeed: 10
     sceneFadeTransitionSpeed: 10
+    stopAutoOnClick: 1
+    autoDialogueSpeed: 10
+    skipDialogueSpeed: 10
   characters:
     moveSpeed: 10
     fadeTransitionSpeed: 10

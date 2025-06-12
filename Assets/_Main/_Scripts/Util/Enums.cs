@@ -17,6 +17,11 @@ namespace Dialogue
 	{
 		EndOfText, TextboxBottomRight
 	}
+
+	public enum DialogueReadMode
+	{
+		Wait, Auto, Skip
+	}
 }
 
 namespace Audio
@@ -29,6 +34,16 @@ namespace Audio
 
 namespace GameIO
 {
+	public enum InputActionType
+	{
+		Advance, Auto, Skip, SkipHold, SkipHoldEnd
+	}
+
+	public enum InputActionDuration
+	{
+		Toggle, Hold, End
+	}
+
 	public enum FileExtension
 	{
 		None, mp4, mp3, ogg

@@ -165,7 +165,7 @@ namespace Characters
 
 		protected float GetTransitionSpeed(float speedInput, float defaultSpeed, bool isTransitionSkipped)
 		{
-			if (isTransitionSkipped)
+			if (isTransitionSkipped || manager.Dialogue.ReadMode == Dialogue.DialogueReadMode.Skip)
 				return manager.GameOptions.General.SkipTransitionSpeed;
 			else if (speedInput <= 0)
 				return defaultSpeed;

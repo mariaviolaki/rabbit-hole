@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7527613438382136175}
   - component: {fileID: 480008916241184934}
   m_Layer: 0
-  m_Name: Graphics Group Manager
+  m_Name: Visual Group Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -51,3 +51,4 @@ MonoBehaviour:
     root: {fileID: 0}
   fileManager: {fileID: 11400000, guid: 527643bfa3cac48449467bd17611abdd, type: 2}
   gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
+  dialogueSystem: {fileID: 0}

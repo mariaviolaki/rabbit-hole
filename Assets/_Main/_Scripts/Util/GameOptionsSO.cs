@@ -50,6 +50,9 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField][Range(1, 100)] float dialogueFontSize;
 		[SerializeField] float fadeTransitionSpeed;
 		[SerializeField] float sceneFadeTransitionSpeed;
+		[SerializeField] bool stopAutoOnClick;
+		[SerializeField] float autoDialogueSpeed;
+		[SerializeField] float skipDialogueSpeed;
 
 		public Color DefaultTextColor { get { return defaultTextColor; } }
 		public TMP_FontAsset DefaultFont { get { return defaultFont; } }
@@ -59,6 +62,9 @@ public class GameOptionsSO : ScriptableObject
 		public float DialogueFontSize { get { return dialogueFontSize; } }
 		public float FadeTransitionSpeed { get { return fadeTransitionSpeed; } }
 		public float SceneFadeTransitionSpeed { get { return sceneFadeTransitionSpeed; } }
+		public bool StopAutoOnClick { get { return stopAutoOnClick; } }
+		public float AutoDialogueSpeed { get { return autoDialogueSpeed; } }
+		public float SkipDialogueSpeed { get { return skipDialogueSpeed; } }
 	}
 
 	[System.Serializable]

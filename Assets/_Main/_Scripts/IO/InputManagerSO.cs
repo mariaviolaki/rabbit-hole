@@ -1,13 +1,19 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Interactions;
 
 [CreateAssetMenu(fileName = "InputManager", menuName = "Scriptable Objects/Input Manager")]
 public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 {
 	public Action OnAdvance;
+	public Action OnAuto;
+	public Action OnSkip;
+	public Action OnSkipHold;
+	public Action OnSkipHoldEnd;
 
 	InputActions inputActions;
+	bool isHoldPerformed = false;
 	
 	void OnEnable()
 	{
@@ -23,5 +29,37 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 		if (context.phase != InputActionPhase.Performed) return;
 
 		OnAdvance?.Invoke();
+	}
+
+	public void OnAutoAction(InputAction.CallbackContext context)
+	{
+		if (context.phase != InputActionPhase.Performed) return;
+
+		OnAuto?.Invoke();
+	}
+
+	public void OnSkipAction(InputAction.CallbackContext context)
+	{
+		// Only trigger successful button presses
+		if (context.interaction is not PressInteraction || context.phase != InputActionPhase.Performed) return;
+
+		OnSkip?.Invoke();
+	}
+
+	public void OnSkipHoldAction(InputAction.CallbackContext context)
+	{
+		// Only proceed if the player is holding down the button
+		if (context.interaction is not HoldInteraction) return;
+
+		if (context.phase == InputActionPhase.Performed)
+		{
+			isHoldPerformed = true;
+			OnSkipHold?.Invoke();
+		}
+		else if (context.phase == InputActionPhase.Canceled && isHoldPerformed)
+		{
+			isHoldPerformed = false;
+			OnSkipHoldEnd?.Invoke();
+		}
 	}
 }

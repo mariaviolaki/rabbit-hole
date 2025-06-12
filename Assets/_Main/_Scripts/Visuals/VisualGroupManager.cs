@@ -1,3 +1,4 @@
+using Dialogue;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +9,7 @@ namespace Graphics
 		[SerializeField] VisualLayerGroup[] layerGroups;
 		[SerializeField] FileManagerSO fileManager;
 		[SerializeField] GameOptionsSO gameOptions;
+		[SerializeField] DialogueSystem dialogueSystem;
 
 		public static string BackgroundName = "Background";
 		public static string ForegroundName = "Foreground";
@@ -36,7 +38,7 @@ namespace Graphics
 
 		public float GetTransitionSpeed(float speedInput, bool isTransitionSkipped)
 		{
-			if (isTransitionSkipped)
+			if (isTransitionSkipped || dialogueSystem.ReadMode == DialogueReadMode.Skip)
 				return gameOptions.General.SkipTransitionSpeed;
 			else if (speedInput <= 0)
 				return gameOptions.BackgroundLayers.TransitionSpeed;

@@ -2,6 +2,7 @@ using Characters;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UI
 {
@@ -13,11 +14,17 @@ namespace UI
 		[SerializeField] FadeableUI spritesUI;
 		[SerializeField] FadeableUI foregroundUI;
 		[SerializeField] FadeableUI gameplayControlsUI;
+		[SerializeField] Canvas overlayControlsCanvas;
 
 		const float fadeMultiplier = 0.1f;
 		Coroutine fadeCoroutine;
 
-		public TextMeshProUGUI DialogueText { get { return dialogueUI.DialogueText; } }
+		public TextMeshProUGUI DialogueText => dialogueUI.DialogueText;
+
+		void Start()
+		{
+			ToggleOverlayControls(false);
+		}
 
 		public void ShowInstant()
 		{
@@ -94,6 +101,12 @@ namespace UI
 				if (isShowing) canvasUI.ShowInstant();
 				else canvasUI.HideInstant();
 			}
+			ToggleOverlayControls(!isShowing);
+		}
+
+		void ToggleOverlayControls(bool isActive)
+		{
+			overlayControlsCanvas.gameObject.SetActive(isActive);
 		}
 
 		IEnumerator FadeVisualNovelUI(bool isFadeIn, float fadeSpeed = 0)
@@ -122,6 +135,7 @@ namespace UI
 
 			yield return new WaitUntil(() => fadedCount == canvases.Length);
 			fadeCoroutine = null;
+			ToggleOverlayControls(!isFadeIn);
 		}
 	}
 }

@@ -55,7 +55,6 @@ GameObject:
   - component: {fileID: 4482671083381755381}
   - component: {fileID: 4396620932819315121}
   - component: {fileID: 1705725282800888029}
-  - component: {fileID: 7780398494765464953}
   - component: {fileID: 9063272865687722960}
   - component: {fileID: 4621657439432679724}
   m_Layer: 5
@@ -131,23 +130,6 @@ MonoBehaviour:
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
   m_PresetInfoIsWorld: 0
---- !u!114 &7780398494765464953
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3021973267809027940}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!225 &9063272865687722960
 CanvasGroup:
   m_ObjectHideFlags: 0

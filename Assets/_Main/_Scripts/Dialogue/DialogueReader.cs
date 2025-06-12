@@ -11,7 +11,16 @@ namespace Dialogue
 	public class DialogueReader
 	{
 		const string CommentLineDelimiter = "//";
+		const float MinAutoTime = 0.5f;
+		const float MaxAutoTime = 100f;
+		const float MinSkipTime = 0.001f;
+		const float MaxSkipTime = 2f;
+		const float BaseAutoTime = 0.8f;
+		const float AutoTimePerCharacter = 0.8f;
+		const float SkipSpeedMultiplier = 0.1f;
+
 		readonly DialogueSystem dialogueSystem;
+		readonly GameOptionsSO gameOptions;
 		readonly TextBuilder textBuilder;
 		readonly CharacterManager characterManager;
 		readonly CommandManager commandManager;
@@ -21,13 +30,18 @@ namespace Dialogue
 
 		Coroutine readProcess;
 
-		public bool IsRunning { get; set; }
+		TextBuilder.TextMode textMode;
+		bool isRunning = false;
+
+		public void AdvanceDialogue() => isRunning = true;
+		public void PauseDialogue() => isRunning = false;
 
 		bool IsValidDialogueLine(string line) => !string.IsNullOrEmpty(line) && !line.StartsWith(CommentLineDelimiter);
 
 		public DialogueReader(DialogueSystem dialogueSystem)
 		{
 			this.dialogueSystem = dialogueSystem;
+			gameOptions = dialogueSystem.GetGameOptions();
 			characterManager = dialogueSystem.GetCharacterManager();
 			commandManager = dialogueSystem.GetCommandManager();
 			visualNovelUI = dialogueSystem.GetVisualNovelUI();
@@ -35,6 +49,15 @@ namespace Dialogue
 
 			textBuilder = new TextBuilder(visualNovelUI.DialogueText);
 			tagManager = new DialogueTagManager(dialogueSystem.GetTagDirectory());
+			textMode = gameOptions.Dialogue.TextMode;
+		}
+
+		public void UpdateReadMode(DialogueReadMode readMode)
+		{
+			if (readMode == DialogueReadMode.Skip)
+				textBuilder.Speed = textBuilder.MaxSpeed;
+			else
+				textBuilder.Speed = gameOptions.Dialogue.TextSpeed;
 		}
 
 		public Coroutine StartReading(List<string> lines)
@@ -63,10 +86,8 @@ namespace Dialogue
 			if (readProcess != null)
 				dialogueSystem.StopCoroutine(readProcess);
 
-			textBuilder.Speed = dialogueSystem.GameOptions.Dialogue.TextSpeed;
-
-			// Start paused and wait for player input
-			IsRunning = true;
+			UpdateReadMode(DialogueReadMode.Wait);
+			isRunning = true;
 		}
 
 		// Read lines directly from dialogue files (each line includes: speaker, dialogue, commands)
@@ -118,39 +139,33 @@ namespace Dialogue
 				DialogueTextData.Segment segment = lineSegments[i];
 				DialogueTextData.Segment nextSegment = (i == lineSegments.Count - 1) ? null : lineSegments[i + 1];
 
-				yield return DisplayDialogueSegment(segment);
-				continuePrompt.Show();
-				yield return WaitForNextDialogueSegment(nextSegment);
-				continuePrompt.Hide();
+				yield return DisplayDialogueSegment(segment, nextSegment);
 			}
 		}
 
-		IEnumerator WaitForNextDialogueSegment(DialogueTextData.Segment segment)
-		{
-			if (segment != null && segment.IsAuto)
-			{
-				float startTime = Time.time;
-				yield return new WaitUntil(() => IsRunning || Time.time >= startTime + segment.WaitTime);
-			}
-			else
-			{
-				yield return new WaitUntil(() => IsRunning);
-			}
-		}
-
-		IEnumerator DisplayDialogueSegment(DialogueTextData.Segment segment)
+		IEnumerator DisplayDialogueSegment(DialogueTextData.Segment segment, DialogueTextData.Segment nextSegment)
 		{
 			string dialogueText = tagManager.Parse(segment.Text);
 
 			while (true)
 			{
-				if (segment.IsAppended)
-					textBuilder.Append(dialogueText, dialogueSystem.GameOptions.Dialogue.TextMode);
-				else
-					textBuilder.Write(dialogueText, dialogueSystem.GameOptions.Dialogue.TextMode);
+				float startTime = Time.time;
 
-				IsRunning = false;
-				yield return new WaitUntil(() => IsRunning || !textBuilder.IsBuilding);
+				// Wait for a specified duration before showing the text (unless forced to continue)
+				if (segment != null && segment.IsAuto && dialogueSystem.ReadMode != DialogueReadMode.Skip)
+					yield return new WaitUntil(() => isRunning || Time.time >= startTime + segment.WaitTime);
+
+				continuePrompt.Hide();
+
+				if (segment.IsAppended)
+					textBuilder.Append(dialogueText, textMode);
+				else
+					textBuilder.Write(dialogueText, textMode);
+
+				PauseDialogue();
+				yield return new WaitUntil(() => CanContinueDialogue(nextSegment, dialogueText, startTime, textBuilder.IsBuilding));
+
+				continuePrompt.Show();
 
 				if (!textBuilder.IsBuilding) break;
 			}
@@ -194,12 +209,12 @@ namespace Dialogue
 			// Wait to execute all processes of this line concurrently
 			if (processesToWait.Count > 0)
 			{
-				IsRunning = false;
+				PauseDialogue();
 				while (true)
 				{
 					// Stop when all processes end, or the user clicks to skip them
 					if (processesToWait.All(p => p.IsCompleted)) break;
-					else if (IsRunning)
+					else if (isRunning)
 					{
 						commandManager.SkipCommands();
 						break;
@@ -247,6 +262,41 @@ namespace Dialogue
 				foreach (string expressionName in graphics.Values)
 					((Model3DCharacter)character).SetExpression(expressionName);
 			}
+		}
+
+		bool CanContinueDialogue(DialogueTextData.Segment nextSegment, string text, float startTime, bool isBuildingText)
+		{
+			if (isRunning) return true;
+
+			bool canContinue = false;
+
+			if (nextSegment != null && nextSegment.IsAuto)
+				canContinue = !isBuildingText;
+			else if (dialogueSystem.ReadMode == DialogueReadMode.Wait)
+				canContinue = false;
+			if (dialogueSystem.ReadMode == DialogueReadMode.Auto)
+				canContinue = !isBuildingText && Time.time >= startTime + GetAutoReadDelay(text.Length);
+			else if (dialogueSystem.ReadMode == DialogueReadMode.Skip)
+				canContinue = !isBuildingText && Time.time >= startTime + GetSkipReadDelay();
+
+			if (!canContinue && !isBuildingText && !continuePrompt.IsVisible)
+				continuePrompt.Show();
+
+			return canContinue;
+		}
+
+		float GetAutoReadDelay(int textLength)
+		{
+			float speed = gameOptions.Dialogue.AutoDialogueSpeed;
+			float delay = (BaseAutoTime + AutoTimePerCharacter * textLength) / speed;
+			return Mathf.Clamp(delay, MinAutoTime, MaxAutoTime);
+		}
+
+		float GetSkipReadDelay()
+		{
+			float speed = gameOptions.Dialogue.AutoDialogueSpeed;
+			float delay = (1 / speed) * SkipSpeedMultiplier;
+			return Mathf.Clamp(delay, MinSkipTime, MaxSkipTime);
 		}
 	}
 }

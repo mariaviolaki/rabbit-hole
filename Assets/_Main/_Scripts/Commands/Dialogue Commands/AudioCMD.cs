@@ -26,10 +26,10 @@ namespace Commands
 			directory.AddCommand("PlayVoiceInstant", new Action<string[]>(PlayVoiceInstant));
 
 			// Play and Fade In
-			directory.AddCommand("PlayAmbient", new Action<string[]>(PlayAmbient));
-			directory.AddCommand("PlayMusic", new Action<string[]>(PlayMusic));
-			directory.AddCommand("PlaySFX", new Action<string[]>(PlaySFX));
-			directory.AddCommand("PlayVoice", new Action<string[]>(PlayVoice));
+			directory.AddCommand("PlayAmbient", new Action<string[]>(PlayAmbient), new Action<string[]>(PlayAmbientInstant));
+			directory.AddCommand("PlayMusic", new Action<string[]>(PlayMusic), new Action<string[]>(PlayMusicInstant));
+			directory.AddCommand("PlaySFX", new Action<string[]>(PlaySFX), new Action<string[]>(PlaySFXInstant));
+			directory.AddCommand("PlayVoice", new Action<string[]>(PlayVoice), new Action<string[]>(PlayVoiceInstant));
 
 			// Stop Instantly
 			directory.AddCommand("StopAmbientInstant", new Action<string[]>(StopAmbientInstant));
@@ -38,10 +38,10 @@ namespace Commands
 			directory.AddCommand("StopVoiceInstant", new Action<string[]>(StopVoiceInstant));
 
 			// Fade Out and Stop
-			directory.AddCommand("StopAmbient", new Action<string[]>(StopAmbient));
-			directory.AddCommand("StopMusic", new Action<string[]>(StopMusic));
-			directory.AddCommand("StopSFX", new Action<string[]>(StopSFX));
-			directory.AddCommand("StopVoice", new Action<string[]>(StopVoice));
+			directory.AddCommand("StopAmbient", new Action<string[]>(StopAmbient), new Action<string[]>(StopAmbientInstant));
+			directory.AddCommand("StopMusic", new Action<string[]>(StopMusic), new Action<string[]>(StopMusicInstant));
+			directory.AddCommand("StopSFX", new Action<string[]>(StopSFX), new Action<string[]>(StopSFXInstant));
+			directory.AddCommand("StopVoice", new Action<string[]>(StopVoice), new Action<string[]>(StopVoiceInstant));
 		}
 
 

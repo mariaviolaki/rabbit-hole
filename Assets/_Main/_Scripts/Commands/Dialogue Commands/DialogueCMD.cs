@@ -16,15 +16,15 @@ namespace Commands
 
 			// Show Dialogue UI
 			directory.AddCommand("ShowInstant", new Action<string[]>(ShowInstant));
-			directory.AddCommand("Show", new Func<string[], IEnumerator>(Show));
+			directory.AddCommand("Show", new Func<string[], IEnumerator>(Show), new Action<string[]>(ShowInstant));
 			directory.AddCommand("ShowDialogueInstant", new Action<string[]>(ShowDialogueInstant));
-			directory.AddCommand("ShowDialogue", new Func<string[], IEnumerator>(ShowDialogue));
+			directory.AddCommand("ShowDialogue", new Func<string[], IEnumerator>(ShowDialogue), new Action<string[]>(ShowDialogueInstant));
 
 			// Hide Dialogue UI
 			directory.AddCommand("HideInstant", new Action<string[]>(HideInstant));
-			directory.AddCommand("Hide", new Func<string[], IEnumerator>(Hide));
+			directory.AddCommand("Hide", new Func<string[], IEnumerator>(Hide), new Action<string[]>(HideInstant));
 			directory.AddCommand("HideDialogueInstant", new Action<string[]>(HideDialogueInstant));
-			directory.AddCommand("HideDialogue", new Func<string[], IEnumerator>(HideDialogue));
+			directory.AddCommand("HideDialogue", new Func<string[], IEnumerator>(HideDialogue), new Action<string[]>(HideDialogueInstant));
 		}
 
 

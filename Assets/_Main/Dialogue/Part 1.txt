@@ -10,9 +10,48 @@ Audio.PlayMusic(Day, 0.02, 1, true)
 v.SetPosInstant(0, 0.5), eg.SetPosInstant(1, 0.5), m.SetPosInstant(0.5, 0.5)
 wait v.Show(), wait eg.Show(), wait m.Show()
 
-v "Welcome, welcome~"
+v "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 v.SetSprite(face, Void Face Smug)
-v "Today we test my transitions."
+v "Ut enim ad minim veniam."
+v.SetSprite(face, Void Face Crazy)
+v "Quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+v.SetSprite(face, Void Face Smug)
+v "Duis aute."
+v.SetSprite(face, Void Face Crazy)
+v "Irure."
+v.SetSprite(face, Void Face Smug)
+v "Dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+v.SetSprite(face, Void Face Crazy)
+v "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+v.SetSprite(face, Void Face Smug)
+v "Ut enim ad minim veniam."
+v.SetSprite(face, Void Face Crazy)
+v "Quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+v "Duis aute."
+v "Irure."
+v "Dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+v "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+v "Ut enim ad minim veniam."
+v "Quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+v "Duis aute."
+v "Irure."
+v "Dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+v "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+v "Ut enim ad minim veniam."
+v "Quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+v "Duis aute."
+v "Irure."
+v "Dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+v "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+v "Ut enim ad minim veniam."
+v "Quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+v "Duis aute."
+v "Irure."
+v "Dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+
+v "Welcome, welcome~{a 0.5} <mcName>."
+v.SetSprite(face, Void Face Smug)
+v "More testing for us?{c 1}Sure.{a} Let's begin."
 v.SetSprite(face, Void Face Evil)
 v "Is..."
 v.SetSprite(face, Void Face Flustered)
@@ -21,17 +60,17 @@ v.SetSprite(face, Void Face Crazy)
 v "...good?"
 
 eg "What about the forest?"
-wait Visuals.SetBackgroundImage(Red-Forest-Back)
+Visuals.SetBackgroundImage(Red-Forest-Back)
 eg "Is that right?"
-wait Visuals.SetBackgroundImage(Yellow-Forest-Back)
+Visuals.SetBackgroundImage(Yellow-Forest-Back)
 eg "That's what I thought!"
-wait Visuals.SetBackgroundVideo(Night)
+Visuals.SetBackgroundVideo(Night, 0, true)
 eg "Is that a video?!"
-wait Visuals.SetBackgroundVideo(Night)
+Visuals.SetBackgroundVideo(Night, 0, true)
 eg "Can I play it again?!?!"
-wait Visuals.SetBackgroundVideo(Day)
+Visuals.SetBackgroundVideo(Day, 0, true)
 eg "Aw. How about this?"
-wait Visuals.SetBackgroundImage(Green-Forest-Back)
+Visuals.SetBackgroundImage(Green-Forest-Back)
 eg "Oh, well. Back to the forest then."
 
 m "And me?"
@@ -60,16 +99,10 @@ eg "Whoo!"
 
 v "Okay guys, back to the routine."
 v "Ready?{a 0.1} <i>Go.</i>"
-wait m.Hide(), wait v.Hide(), wait eg.Hide()
-Wait(1)
-wait m.Show(), wait v.Show(), wait eg.Show()
-Wait(1)
-wait m.Unhighlight(), wait v.Unhighlight(), wait eg.Unhighlight()
-Wait(1)
-wait m.SetColor(#32a852), wait v.SetColor(#32a852), wait eg.SetColor(#32a852)
-Wait(1)
-wait m.Highlight(), wait v.Highlight(), wait eg.Highlight()
-Wait(1)
-wait m.SetColor(#FFFFFF), wait v.SetColor(#FFFFFF), wait eg.SetColor(#FFFFFF)
-Wait(1)
-wait m.SetPosX(1), wait v.SetPosX(0.5), wait eg.SetPosX(0)
+m.Hide(), v.Hide(), eg.Hide()
+m.Show(), v.Show(), eg.Show()
+m.Unhighlight(), v.Unhighlight(), eg.Unhighlight()
+m.SetColor(#32a852), v.SetColor(#32a852), eg.SetColor(#32a852)
+m.Highlight(), v.Highlight(), eg.Highlight()
+m.SetColor(#FFFFFF), v.SetColor(#FFFFFF), eg.SetColor(#FFFFFF)
+m.SetPosX(1), v.SetPosX(0.5), eg.SetPosX(0)

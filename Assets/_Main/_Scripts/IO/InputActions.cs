@@ -35,6 +35,33 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""AutoAction"",
+                    ""type"": ""Button"",
+                    ""id"": ""1074b929-f3d5-4707-8a5f-2dd37a9b7005"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SkipAction"",
+                    ""type"": ""Button"",
+                    ""id"": ""a21e172e-7e8a-4f26-a487-ef588f11ac6e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SkipHoldAction"",
+                    ""type"": ""Button"",
+                    ""id"": ""761eeb8b-f975-4309-a817-158bc9d5a34e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -59,6 +86,39 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""action"": ""AdvanceAction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8f75381d-b44c-4d25-a018-09c191bdc11d"",
+                    ""path"": ""<Keyboard>/a"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""AutoAction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""06c7aecb-feb6-46cf-a71a-90fbc0dde8bd"",
+                    ""path"": ""<Keyboard>/ctrl"",
+                    ""interactions"": ""Press"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SkipAction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""49480f45-3fd7-4395-812c-528558e6c5d9"",
+                    ""path"": ""<Keyboard>/ctrl"",
+                    ""interactions"": ""Hold(duration=0.5,pressPoint=0.5)"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SkipHoldAction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -68,6 +128,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         // Game
         m_Game = asset.FindActionMap("Game", throwIfNotFound: true);
         m_Game_AdvanceAction = m_Game.FindAction("AdvanceAction", throwIfNotFound: true);
+        m_Game_AutoAction = m_Game.FindAction("AutoAction", throwIfNotFound: true);
+        m_Game_SkipAction = m_Game.FindAction("SkipAction", throwIfNotFound: true);
+        m_Game_SkipHoldAction = m_Game.FindAction("SkipHoldAction", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -130,11 +193,17 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Game;
     private List<IGameActions> m_GameActionsCallbackInterfaces = new List<IGameActions>();
     private readonly InputAction m_Game_AdvanceAction;
+    private readonly InputAction m_Game_AutoAction;
+    private readonly InputAction m_Game_SkipAction;
+    private readonly InputAction m_Game_SkipHoldAction;
     public struct GameActions
     {
         private @InputActions m_Wrapper;
         public GameActions(@InputActions wrapper) { m_Wrapper = wrapper; }
         public InputAction @AdvanceAction => m_Wrapper.m_Game_AdvanceAction;
+        public InputAction @AutoAction => m_Wrapper.m_Game_AutoAction;
+        public InputAction @SkipAction => m_Wrapper.m_Game_SkipAction;
+        public InputAction @SkipHoldAction => m_Wrapper.m_Game_SkipHoldAction;
         public InputActionMap Get() { return m_Wrapper.m_Game; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -147,6 +216,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @AdvanceAction.started += instance.OnAdvanceAction;
             @AdvanceAction.performed += instance.OnAdvanceAction;
             @AdvanceAction.canceled += instance.OnAdvanceAction;
+            @AutoAction.started += instance.OnAutoAction;
+            @AutoAction.performed += instance.OnAutoAction;
+            @AutoAction.canceled += instance.OnAutoAction;
+            @SkipAction.started += instance.OnSkipAction;
+            @SkipAction.performed += instance.OnSkipAction;
+            @SkipAction.canceled += instance.OnSkipAction;
+            @SkipHoldAction.started += instance.OnSkipHoldAction;
+            @SkipHoldAction.performed += instance.OnSkipHoldAction;
+            @SkipHoldAction.canceled += instance.OnSkipHoldAction;
         }
 
         private void UnregisterCallbacks(IGameActions instance)
@@ -154,6 +232,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @AdvanceAction.started -= instance.OnAdvanceAction;
             @AdvanceAction.performed -= instance.OnAdvanceAction;
             @AdvanceAction.canceled -= instance.OnAdvanceAction;
+            @AutoAction.started -= instance.OnAutoAction;
+            @AutoAction.performed -= instance.OnAutoAction;
+            @AutoAction.canceled -= instance.OnAutoAction;
+            @SkipAction.started -= instance.OnSkipAction;
+            @SkipAction.performed -= instance.OnSkipAction;
+            @SkipAction.canceled -= instance.OnSkipAction;
+            @SkipHoldAction.started -= instance.OnSkipHoldAction;
+            @SkipHoldAction.performed -= instance.OnSkipHoldAction;
+            @SkipHoldAction.canceled -= instance.OnSkipHoldAction;
         }
 
         public void RemoveCallbacks(IGameActions instance)
@@ -174,5 +261,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     public interface IGameActions
     {
         void OnAdvanceAction(InputAction.CallbackContext context);
+        void OnAutoAction(InputAction.CallbackContext context);
+        void OnSkipAction(InputAction.CallbackContext context);
+        void OnSkipHoldAction(InputAction.CallbackContext context);
     }
 }
