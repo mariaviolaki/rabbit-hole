@@ -41,7 +41,7 @@ m.SetExpression(Surprised)
 m "Are you sure?"
 m.SetExpression(Happy)
 m "Huh. That makes sense."
-
+m.SetMotion(Kiss)
 m "And how about flipping?"
 m.FlipInstant()
 m "Again."

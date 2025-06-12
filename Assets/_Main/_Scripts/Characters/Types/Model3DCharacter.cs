@@ -12,20 +12,23 @@ namespace Characters
 		const float expressionTransitionMultiplier = 5f;
 
 		Transform modelRoot;
-		Transform modelContainer;
-		Animator modelAnimator;
-		SkinnedMeshRenderer skinnedMeshRenderer;
 		Model3DExpressionDirectory expressionDirectory;
 
-		Camera primaryModelCamera;
 		GameObject primaryImageContainer;
 		RawImage primaryRawImage;
 		CanvasGroup primaryCanvasGroup;
-
-		Camera secondaryModelCamera;
+		Camera primaryModelCamera;
+		Transform primaryModelContainer;
+		Animator primaryModelAnimator;
+		SkinnedMeshRenderer primaryMeshRenderer;
+		
 		GameObject secondaryImageContainer;
 		RawImage secondaryRawImage;
 		CanvasGroup secondaryCanvasGroup;
+		Camera secondaryModelCamera;
+		Transform secondaryModelContainer;
+		Animator secondaryModelAnimator;
+		SkinnedMeshRenderer secondaryMeshRenderer;
 
 		string currentExpression = string.Empty;
 		Coroutine expressionCoroutine;
@@ -42,42 +45,48 @@ namespace Characters
 			GameObject modelRootGameObject = Object.Instantiate(modelPrefab, manager.Model3DContainer);
 			int model3DCount = manager.GetCharacterCount(CharacterType.Model3D);
 			modelRoot = modelRootGameObject.GetComponent<Transform>();
-
-			// Setup how the 3D model is displayed in the UI
-			RenderTexture renderTexture = new RenderTexture(manager.GameOptions.Model3D.RenderTexture3D);
-			primaryImageContainer = animator.transform.GetChild(0).gameObject;
-			primaryModelCamera = modelRoot.GetComponentInChildren<Camera>();
-			primaryCanvasGroup = primaryImageContainer.GetComponent<CanvasGroup>();
-			primaryRawImage = primaryImageContainer.GetComponent<RawImage>();
-			primaryModelCamera.targetTexture = renderTexture;
-			primaryRawImage.texture = renderTexture;
-			primaryImageContainer.name = primaryContainerName;
-
-			modelContainer = primaryModelCamera.transform.GetChild(0);
-			modelAnimator = modelContainer.GetComponentInChildren<Animator>();
-			skinnedMeshRenderer = modelAnimator.GetComponentInChildren<SkinnedMeshRenderer>();
-			expressionDirectory = skinnedMeshRenderer.GetComponent<Model3DExpressionDirectory>();
-
-			// Initialize 3D model position and rotation
 			modelRoot.localPosition = new Vector3(0, model3DCount * ModelHeightOffset, 0);
-			modelContainer.localEulerAngles = new Vector3(0, manager.GameOptions.Model3D.DefaultAngle, 0);
 			modelRoot.name = data.Name;
 
+			// Create a primary image to swap with the secondary for smooth transitions
+			RenderTexture renderTexture = new RenderTexture(manager.GameOptions.Model3D.RenderTexture3D);
+			primaryImageContainer = animator.transform.GetChild(0).gameObject;
+			primaryCanvasGroup = primaryImageContainer.GetComponent<CanvasGroup>();
+			primaryRawImage = primaryImageContainer.GetComponent<RawImage>();
+			primaryModelCamera = modelRoot.GetComponentInChildren<Camera>();
+			primaryModelContainer = primaryModelCamera.transform.GetChild(0);
+			primaryModelAnimator = primaryModelContainer.GetComponentInChildren<Animator>();
+			primaryMeshRenderer = primaryModelAnimator.GetComponentInChildren<SkinnedMeshRenderer>();
+			expressionDirectory = primaryMeshRenderer.GetComponent<Model3DExpressionDirectory>();
+
+			// Setup how the 3D model is displayed in the UI
+			primaryRawImage.texture = renderTexture;
+			primaryImageContainer.name = primaryContainerName;
+			primaryModelCamera.targetTexture = renderTexture;
+			primaryModelContainer.localEulerAngles = new Vector3(0, manager.GameOptions.Model3D.DefaultAngle, 0);
+
 			// Create a secondary image for smooth transitions
-			RenderTexture oldRenderTexture = new RenderTexture(manager.GameOptions.Model3D.RenderTexture3D);
+			RenderTexture secondaryRenderTexture = new RenderTexture(manager.GameOptions.Model3D.RenderTexture3D);
 			secondaryImageContainer = Object.Instantiate(primaryImageContainer, primaryImageContainer.transform.parent);
-			secondaryModelCamera = Object.Instantiate(primaryModelCamera, primaryModelCamera.transform.parent);
 			secondaryCanvasGroup = secondaryImageContainer.GetComponent<CanvasGroup>();
 			secondaryRawImage = secondaryImageContainer.GetComponent<RawImage>();
+			secondaryModelCamera = Object.Instantiate(primaryModelCamera, primaryModelCamera.transform.parent);
+			secondaryModelContainer = secondaryModelCamera.transform.GetChild(0);
+			secondaryModelAnimator = secondaryModelContainer.GetComponentInChildren<Animator>();
+			secondaryMeshRenderer = secondaryModelAnimator.GetComponentInChildren<SkinnedMeshRenderer>();
+
+			// Setup how the secondary 3D model is displayed in the UI (but hide it on startup)
 			ToggleSecondaryImage(false);
-			secondaryModelCamera.targetTexture = oldRenderTexture;
-			secondaryRawImage.texture = oldRenderTexture;
-			secondaryImageContainer.name = secondaryContainerName;		
+			secondaryRawImage.texture = secondaryRenderTexture;
+			secondaryImageContainer.name = secondaryContainerName;
+			secondaryModelCamera.targetTexture = secondaryRenderTexture;
+			secondaryModelContainer.localEulerAngles = new Vector3(0, manager.GameOptions.Model3D.DefaultAngle, 0);
 		}
 
 		public void SetMotion(string motionName)
 		{
-			modelAnimator.SetTrigger(motionName);
+			primaryModelAnimator.SetTrigger(motionName);
+			secondaryModelAnimator.SetTrigger(motionName);
 		}
 
 		public void SetExpressionInstant(string expressionName)
@@ -223,7 +232,8 @@ namespace Characters
 			foreach (SubExpression subExpression in currentSubExpressions)
 			{
 				float expressionWeight = isNewExpression ? subExpression.Weight : 0f;
-				skinnedMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
+				primaryMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
+				secondaryMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
 			}
 		}
 
@@ -245,7 +255,8 @@ namespace Characters
 					float endWeight = isNewExpression ? subExpression.Weight : 0f;
 					float expressionWeight = Mathf.Lerp(startWeight, endWeight, smoothProgress);
 
-					skinnedMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
+					primaryMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
+					secondaryMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
 				}
 
 				yield return null;
@@ -272,12 +283,7 @@ namespace Characters
 				SwapContainers();
 				secondaryCanvasGroup.alpha = primaryCanvasGroup.alpha;
 				secondaryRawImage.transform.localScale = primaryRawImage.transform.localScale;
-				secondaryRawImage.color = primaryRawImage.color;
-
-				modelContainer = primaryModelCamera.transform.GetChild(0);
-				modelAnimator = modelContainer.GetComponentInChildren<Animator>();
-				skinnedMeshRenderer = modelAnimator.GetComponentInChildren<SkinnedMeshRenderer>();
-				expressionDirectory = skinnedMeshRenderer.GetComponent<Model3DExpressionDirectory>();	
+				secondaryRawImage.color = primaryRawImage.color;	
 			}
 
 			secondaryModelCamera.gameObject.SetActive(isActive);
@@ -286,20 +292,29 @@ namespace Characters
 
 		void SwapContainers()
 		{
-			Camera tempCamera = primaryModelCamera;
 			GameObject tempImageContainer = primaryImageContainer;
 			RawImage tempRawImage = primaryRawImage;
 			CanvasGroup tempCanvasGroup = primaryCanvasGroup;
-
-			primaryModelCamera = secondaryModelCamera;
+			Camera tempCamera = primaryModelCamera;
+			Transform tempModelContainer = primaryModelContainer;
+			Animator tempModelAnimator = primaryModelAnimator;
+			SkinnedMeshRenderer tempMeshRenderer = primaryMeshRenderer;
+			
 			primaryImageContainer = secondaryImageContainer;
 			primaryRawImage = secondaryRawImage;
 			primaryCanvasGroup = secondaryCanvasGroup;
-
-			secondaryModelCamera = tempCamera;
+			primaryModelCamera = secondaryModelCamera;
+			primaryModelContainer = secondaryModelContainer;
+			primaryModelAnimator = secondaryModelAnimator;
+			primaryMeshRenderer = secondaryMeshRenderer;
+			
 			secondaryImageContainer = tempImageContainer;
 			secondaryRawImage = tempRawImage;
 			secondaryCanvasGroup = tempCanvasGroup;
+			secondaryModelCamera = tempCamera;
+			secondaryModelContainer = tempModelContainer;
+			secondaryModelAnimator = tempModelAnimator;
+			secondaryMeshRenderer = tempMeshRenderer;
 		}
 	}
 }
