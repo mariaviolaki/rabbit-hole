@@ -20,6 +20,7 @@ namespace Characters
 
 		private Vector2 currentPos = Vector2.zero;
 
+		protected UITransitionHandler TransitionHandler { get; private set; }
 		protected Color DisplayColor { get { return isHighlighted ? LightColor : DarkColor; } }
 		protected Color LightColor { get; set; } = Color.white;
 		protected Color DarkColor { get { return GetDarkColor(LightColor); } }
@@ -39,6 +40,7 @@ namespace Characters
 			GameObject prefab = manager.FileManager.GetCharacterPrefab(data.CastName);
 			if (prefab == null) yield break;
 
+			TransitionHandler = new UITransitionHandler(manager.GameOptions);
 			GameObject rootGameObject = Object.Instantiate(prefab, manager.Container);
 			root = rootGameObject.GetComponent<RectTransform>();
 			rootCanvasGroup = root.GetComponent<CanvasGroup>();
@@ -194,7 +196,7 @@ namespace Characters
 		{
 			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
 
-			yield return Utils.TransitionUtils.SetImageVisibility(rootCanvasGroup, isVisible, speed);
+			yield return TransitionHandler.SetVisibility(rootCanvasGroup, isVisible, speed);
 
 			this.isVisible = isVisible;
 			visibilityCoroutine = null;

@@ -11,6 +11,8 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 	public Action OnSkip;
 	public Action OnSkipHold;
 	public Action OnSkipHoldEnd;
+	public Action OnClearInput;
+	public Action<string> OnSubmitInput;
 
 	InputActions inputActions;
 	bool isHoldPerformed = false;

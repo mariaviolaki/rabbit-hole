@@ -114,7 +114,8 @@ namespace Graphics
 				layer.Clear(speed);
 			}
 
-			yield return new WaitUntil(() => layersToClear.All(l => l.IsIdle));
+			while (!layersToClear.All(l => l.IsIdle)) yield return null;
+
 			clearCoroutine = null;
 		}
 	}

@@ -124,7 +124,7 @@ namespace Characters
 			secondaryCanvasGroup.transform.localScale = new Vector3(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
 
 			speed = GetTransitionSpeed(speed, manager.GameOptions.Model3D.ExpressionTransitionSpeed, isSkipped);
-			yield return Utils.TransitionUtils.SetNewImage(primaryCanvasGroup, secondaryCanvasGroup, speed);
+			yield return TransitionHandler.Replace(primaryCanvasGroup, secondaryCanvasGroup, speed);
 
 			ToggleSecondaryImage(false);
 			isFacingRight = !isFacingRight;
@@ -164,7 +164,7 @@ namespace Characters
 			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.ColorTransitionSpeed, isSkipped);
 			Color targetColor = isHighlighted ? color : GetDarkColor(color);
 
-			yield return Utils.TransitionUtils.SetImageColor(image, targetColor, speed);
+			yield return TransitionHandler.SetColor(image, targetColor, speed);
 
 			LightColor = color;
 		}
@@ -174,7 +174,7 @@ namespace Characters
 			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.BrightnessTransitionSpeed, isSkipped);
 			Color targetColor = isHighlighted ? LightColor : DarkColor;
 
-			yield return Utils.TransitionUtils.SetImageColor(image, targetColor, speed);
+			yield return TransitionHandler.SetColor(image, targetColor, speed);
 
 			this.isHighlighted = isHighlighted;
 		}

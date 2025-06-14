@@ -2,24 +2,23 @@ using Characters;
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UI
 {
 	public class VisualNovelUI : MonoBehaviour
 	{
 		[SerializeField] GameOptionsSO gameOptions;
-		[SerializeField] DialogueUI dialogueUI;
-		[SerializeField] FadeableUI backgroundUI;
-		[SerializeField] FadeableUI spritesUI;
-		[SerializeField] FadeableUI foregroundUI;
-		[SerializeField] FadeableUI gameplayControlsUI;
+		[SerializeField] DialogueUI dialogue;
+		[SerializeField] FadeableUI background;
+		[SerializeField] FadeableUI sprites;
+		[SerializeField] FadeableUI foreground;
+		[SerializeField] GameplayControlsUI gameplayControls;
 		[SerializeField] Canvas overlayControlsCanvas;
 
 		const float fadeMultiplier = 0.1f;
 		Coroutine fadeCoroutine;
 
-		public TextMeshProUGUI DialogueText => dialogueUI.DialogueText;
+		public TextMeshProUGUI DialogueText => dialogue.DialogueText;
 
 		void Start()
 		{
@@ -31,10 +30,11 @@ namespace UI
 			ToggleVisualNovelUI(true);
 		}
 
-		public Coroutine Show(float fadeSpeed)
+		public Coroutine Show(float fadeSpeed = 0)
 		{
 			StopFadeCoroutine();
 
+			fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
 			fadeCoroutine = StartCoroutine(FadeVisualNovelUI(true, fadeSpeed));
 			return fadeCoroutine;
 		}
@@ -44,43 +44,25 @@ namespace UI
 			ToggleVisualNovelUI(false);
 		}
 
-		public Coroutine Hide(float fadeSpeed)
+		public Coroutine Hide(float fadeSpeed = 0)
 		{
 			StopFadeCoroutine();
 
+			fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
 			fadeCoroutine = StartCoroutine(FadeVisualNovelUI(false, fadeSpeed));
 			return fadeCoroutine;
 		}
 
-		public void ShowDialogueInstant()
-		{
-			dialogueUI.ShowInstant();
-		}
+		public Coroutine ShowSpeaker(CharacterData characterData, float fadeSpeed = 0) => dialogue.ShowSpeaker(characterData, fadeSpeed);
+		public Coroutine HideSpeaker(float fadeSpeed = 0) => dialogue.HideSpeaker(fadeSpeed);
 
-		public Coroutine ShowDialogue(float fadeSpeed = 0)
-		{
-			return dialogueUI.Show(fadeSpeed);
-		}
+		public void ShowDialogueInstant() => dialogue.ShowInstant();
+		public Coroutine ShowDialogue(float fadeSpeed = 0) => dialogue.Show(fadeSpeed);
+		public void HideDialogueInstant() => dialogue.HideInstant();
+		public Coroutine HideDialogue(float fadeSpeed = 0) => dialogue.Hide(fadeSpeed);
 
-		public void HideDialogueInstant()
-		{
-			dialogueUI.HideInstant();
-		}
-
-		public Coroutine HideDialogue(float fadeSpeed = 0)
-		{
-			return dialogueUI.Hide(fadeSpeed);
-		}
-
-		public Coroutine ShowSpeaker(CharacterData characterData, float fadeSpeed = 0)
-		{
-			return dialogueUI.ShowSpeaker(characterData, fadeSpeed);
-		}
-
-		public Coroutine HideSpeaker(float fadeSpeed = 0)
-		{
-			return dialogueUI.HideSpeaker(fadeSpeed);
-		}
+		public void ShowInputInstant(string title) => gameplayControls.ShowInputInstant(title);
+		public Coroutine ShowInput(string title, float fadeSpeed = 0) => gameplayControls.ShowInput(title, fadeSpeed);
 
 		void StopFadeCoroutine()
 		{
@@ -92,7 +74,7 @@ namespace UI
 
 		void ToggleVisualNovelUI(bool isShowing)
 		{
-			FadeableUI[] canvases = new[] { dialogueUI, backgroundUI, spritesUI, foregroundUI, gameplayControlsUI };
+			FadeableUI[] canvases = new[] { dialogue, background, sprites, foreground, gameplayControls };
 
 			for (int i = 0; i < canvases.Length; i++)
 			{
@@ -113,8 +95,8 @@ namespace UI
 		{
 			// When showing all visual novel canvases, don't include the dialogue box
 			FadeableUI[] canvases = isFadeIn
-				? new[] { backgroundUI, spritesUI, foregroundUI, gameplayControlsUI }
-				: new[] { dialogueUI, backgroundUI, spritesUI, foregroundUI, gameplayControlsUI };
+				? new[] { background, sprites, foreground, gameplayControls }
+				: new[] { dialogue, background, sprites, foreground, gameplayControls };
 
 			float speed = fadeSpeed < Mathf.Epsilon ? gameOptions.Dialogue.SceneFadeTransitionSpeed : fadeSpeed;
 			speed *= fadeMultiplier;
@@ -133,7 +115,7 @@ namespace UI
 				StartCoroutine(MarkFadeCompletion(i));
 			}
 
-			yield return new WaitUntil(() => fadedCount == canvases.Length);
+			while (fadedCount != canvases.Length) yield return null;
 			fadeCoroutine = null;
 			ToggleOverlayControls(!isFadeIn);
 		}

@@ -52,7 +52,7 @@ namespace Characters
 				StartCoroutine(MarkCharacterCompletion(shortName, castShortName));
 			}
 
-			yield return new WaitUntil(() => completedCharacterCount == names.Length);
+			while (completedCharacterCount != names.Length) yield return null;
 		}
 
 		public IEnumerator CreateCharacter(string shortName) => CreateCharacter(shortName, shortName);

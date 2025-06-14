@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Game Options
   m_EditorClassIdentifier: 
   general:
+    transitionSpeed: 10
     skipTransitionSpeed: 100
   inputOutput:
     audioExtension: 2

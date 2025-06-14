@@ -1,23 +1,30 @@
+using Dialogue;
 using TMPro;
-using UI;
 using UnityEngine;
 
-namespace Dialogue
+namespace UI
 {
-	public class ReadModeIndicatorUI : FadeableUI
+	[RequireComponent(typeof(CanvasGroup))]
+	public class ReadModeIndicatorUI : BaseFadeableUI
 	{
 		[SerializeField] TextMeshProUGUI autoReadText;
 
-		public Coroutine Show(DialogueReadMode readMode, float fadeSpeed = 0f)
-		{
-			autoReadText.text = readMode.ToString();
-			return base.Show(fadeSpeed);
-		}
-
+		public void HideInstant() => SetHidden();
 		public void ShowInstant(DialogueReadMode readMode)
 		{
+			if (IsVisible) return;
+
 			autoReadText.text = readMode.ToString();
-			base.ShowInstant();
+			SetVisible();
+		}
+
+		public Coroutine Hide(float fadeSpeed = 0f) => FadeOut(fadeSpeed);
+		public Coroutine Show(DialogueReadMode readMode, float fadeSpeed = 0f)
+		{
+			if (IsVisible) return null;
+
+			autoReadText.text = readMode.ToString();
+			return FadeIn(fadeSpeed);
 		}
 	}
 }

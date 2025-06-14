@@ -33,7 +33,7 @@ namespace Characters
 			{
 				string layerName = layerParent.name;
 				if (Enum.TryParse(layerName, true, out SpriteLayerType layerType))
-					spriteLayers[layerType] = new CharacterSpriteLayer(manager, layerType, layerParent);
+					spriteLayers[layerType] = new CharacterSpriteLayer(manager, TransitionHandler, layerType, layerParent);
 			}
 		}
 

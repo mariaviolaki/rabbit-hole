@@ -10,6 +10,7 @@ namespace Characters
 		const string secondaryContainerName = "Secondary";
 
 		readonly CharacterManager characterManager;
+		readonly UITransitionHandler transitionHandler;
 		readonly SpriteLayerType layerType;
 
 		GameObject primaryImageContainer;
@@ -31,9 +32,10 @@ namespace Characters
 		public bool IsChangingBrightness => brightnessCoroutine != null;
 		public bool IsChangingColor => colorCoroutine != null;
 
-		public CharacterSpriteLayer(CharacterManager characterManager, SpriteLayerType layerType, Transform root)
+		public CharacterSpriteLayer(CharacterManager characterManager, UITransitionHandler transitionHandler, SpriteLayerType layerType, Transform root)
 		{
 			this.characterManager = characterManager;
+			this.transitionHandler = transitionHandler;
 			this.layerType = layerType;
 
 			primaryImageContainer = root.GetChild(0).gameObject;
@@ -106,7 +108,7 @@ namespace Characters
 			secondaryCanvasGroup.alpha = 0f;
 			secondaryImage.sprite = sprite;
 
-			yield return Utils.TransitionUtils.SetNewImage(primaryCanvasGroup, secondaryCanvasGroup, speed);
+			yield return transitionHandler.Replace(primaryCanvasGroup, secondaryCanvasGroup, speed);
 
 			ToggleSecondaryImage(false);
 
@@ -121,7 +123,7 @@ namespace Characters
 			secondaryCanvasGroup.alpha = 0f;
 			secondaryImage.transform.localScale = new Vector3(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
 
-			yield return Utils.TransitionUtils.SetNewImage(primaryCanvasGroup, secondaryCanvasGroup, speed);
+			yield return transitionHandler.Replace(primaryCanvasGroup, secondaryCanvasGroup, speed);
 
 			ToggleSecondaryImage(false);
 			directionCoroutine = null;
@@ -129,13 +131,13 @@ namespace Characters
 
 		IEnumerator ChangeBrightness(Color color, float speed)
 		{
-			yield return Utils.TransitionUtils.SetImageColor(primaryImage, color, speed);
+			yield return transitionHandler.SetColor(primaryImage, color, speed);
 			brightnessCoroutine = null;
 		}
 
 		IEnumerator ChangeColor(Color color, float speed)
 		{
-			yield return Utils.TransitionUtils.SetImageColor(primaryImage, color, speed);
+			yield return transitionHandler.SetColor(primaryImage, color, speed);
 			colorCoroutine = null;
 		}
 

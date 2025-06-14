@@ -1,9 +1,10 @@
+using Dialogue;
 using TMPro;
 using UnityEngine;
 
-namespace Dialogue
+namespace UI
 {
-	public class DialogueContinuePrompt : MonoBehaviour
+	public class DialogueContinuePromptUI : MonoBehaviour
 	{
 		[SerializeField] Canvas dialogueCanvas;
 		[SerializeField] TextMeshProUGUI dialogueText;

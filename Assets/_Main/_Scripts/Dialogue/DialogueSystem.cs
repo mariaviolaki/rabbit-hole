@@ -17,13 +17,14 @@ namespace Dialogue
 		[SerializeField] CommandManager commandManager;
 		[SerializeField] CharacterManager characterManager;
 		[SerializeField] VisualNovelUI visualNovelUI;
-		[SerializeField] DialogueContinuePrompt continuePrompt;
+		[SerializeField] DialogueContinuePromptUI continuePrompt;
 		[SerializeField] ReadModeIndicatorUI readModeIndicator;
 		[SerializeField] string dialogueFileName; // TODO get dynamically
 
 		DialogueReader dialogueReader;
 		DialogueFile dialogueFile;
 		DialogueReadMode readMode = DialogueReadMode.Wait;
+		string lastInput = "";
 
 		public DialogueReadMode ReadMode => readMode;
 
@@ -31,14 +32,8 @@ namespace Dialogue
 		public VisualNovelUI GetVisualNovelUI() => visualNovelUI;
 		public CharacterManager GetCharacterManager() => characterManager;
 		public CommandManager GetCommandManager() => commandManager;
-		public DialogueContinuePrompt GetContinuePrompt() => continuePrompt;
+		public DialogueContinuePromptUI GetContinuePrompt() => continuePrompt;
 		public DialogueTagDirectorySO GetTagDirectory() => tagDirectory;
-
-		void HandleOnAdvanceInput() => HandleInputEvent(DialogueReadMode.Wait, InputActionDuration.Toggle);
-		void HandleOnAutoInput() => HandleInputEvent(DialogueReadMode.Auto, InputActionDuration.Toggle);
-		void HandleOnSkipInput() => HandleInputEvent(DialogueReadMode.Skip, InputActionDuration.Toggle);
-		void HandleOnSkipHoldInput() => HandleInputEvent(DialogueReadMode.Skip, InputActionDuration.Hold);
-		void HandleOnSkipHoldEndInput() => HandleInputEvent(DialogueReadMode.Skip, InputActionDuration.End);
 
 		void Start()
 		{
@@ -57,7 +52,9 @@ namespace Dialogue
 			// TODO start dialogue using other triggers
 			if (Input.GetKeyDown(KeyCode.Return))
 			{
-				StartCoroutine(StartDialogueFromFile());
+				StartCoroutine(RunTest());
+
+				//StartCoroutine(StartDialogueFromFile());
 			}
 		}
 
@@ -81,7 +78,12 @@ namespace Dialogue
 			yield return dialogueReader.StartReading(dialogueFile.Lines);
 		}
 
-		void HandleInputEvent(DialogueReadMode newReadMode, InputActionDuration inputDuration)
+		void HandleOnAdvanceEvent() => HandleReadModeEvent(DialogueReadMode.Wait, InputActionDuration.Toggle);
+		void HandleOnAutoEvent() => HandleReadModeEvent(DialogueReadMode.Auto, InputActionDuration.Toggle);
+		void HandleOnSkipEvent() => HandleReadModeEvent(DialogueReadMode.Skip, InputActionDuration.Toggle);
+		void HandleOnSkipHoldEvent() => HandleReadModeEvent(DialogueReadMode.Skip, InputActionDuration.Hold);
+		void HandleOnSkipHoldEndEvent() => HandleReadModeEvent(DialogueReadMode.Skip, InputActionDuration.End);
+		void HandleReadModeEvent(DialogueReadMode newReadMode, InputActionDuration inputDuration)
 		{
 			DialogueReadMode currentReadMode = readMode;
 
@@ -101,6 +103,13 @@ namespace Dialogue
 				else
 					readModeIndicator.Hide();
 			}
+		}
+
+		void HandleOnClearInputEvent() => HandleInputEvent("");
+		void HandleOnSubmitInputEvent(string input) => HandleInputEvent(input);
+		void HandleInputEvent(string input)
+		{
+			lastInput = input;
 		}
 
 		void HandleWaitModeInput()
@@ -134,20 +143,44 @@ namespace Dialogue
 
 		void SubscribeEvents()
 		{
-			inputManager.OnAdvance += HandleOnAdvanceInput;
-			inputManager.OnAuto += HandleOnAutoInput;
-			inputManager.OnSkip += HandleOnSkipInput;
-			inputManager.OnSkipHold += HandleOnSkipHoldInput;
-			inputManager.OnSkipHoldEnd += HandleOnSkipHoldEndInput;
+			inputManager.OnAdvance += HandleOnAdvanceEvent;
+			inputManager.OnAuto += HandleOnAutoEvent;
+			inputManager.OnSkip += HandleOnSkipEvent;
+			inputManager.OnSkipHold += HandleOnSkipHoldEvent;
+			inputManager.OnSkipHoldEnd += HandleOnSkipHoldEndEvent;
+			inputManager.OnClearInput += HandleOnClearInputEvent;
+			inputManager.OnSubmitInput += HandleOnSubmitInputEvent;
 		}
 
 		void UnsubscribeEvents()
 		{
-			inputManager.OnAdvance -= HandleOnAdvanceInput;
-			inputManager.OnAuto -= HandleOnAutoInput;
-			inputManager.OnSkip -= HandleOnSkipInput;
-			inputManager.OnSkipHold -= HandleOnSkipHoldInput;
-			inputManager.OnSkipHoldEnd -= HandleOnSkipHoldEndInput;
+			inputManager.OnAdvance -= HandleOnAdvanceEvent;
+			inputManager.OnAuto -= HandleOnAutoEvent;
+			inputManager.OnSkip -= HandleOnSkipEvent;
+			inputManager.OnSkipHold -= HandleOnSkipHoldEvent;
+			inputManager.OnSkipHoldEnd -= HandleOnSkipHoldEndEvent;
+			inputManager.OnClearInput -= HandleOnClearInputEvent;
+			inputManager.OnSubmitInput -= HandleOnSubmitInputEvent;
+		}
+
+		// TODO Remove test function
+		IEnumerator RunTest()
+		{
+			yield return characterManager.CreateCharacter("v");
+
+			SpriteCharacter v = characterManager.GetCharacter("v") as SpriteCharacter;
+
+			yield return visualNovelUI.Show();
+
+			yield return v.Show();
+			yield return v.Say("Let me test the input for you~");
+			yield return v.Say("Tell me...");
+
+			yield return visualNovelUI.ShowInput("What's your name...?");
+
+			while (lastInput == string.Empty) yield return null;
+
+			v.Say($"I knew it was you, {lastInput}.");
 		}
 	}
 }

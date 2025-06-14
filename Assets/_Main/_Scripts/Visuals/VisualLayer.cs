@@ -106,7 +106,7 @@ namespace Graphics
 			secondaryContainer.SetImage(name, speed);
 			primaryContainer.Clear(speed);
 
-			yield return new WaitUntil(() => secondaryContainer.IsIdle && primaryContainer.IsIdle);
+			while (!secondaryContainer.IsIdle || !primaryContainer.IsIdle) yield return null;
 
 			ToggleSecondaryVisual(false);
 			swapCoroutine = null;
@@ -119,7 +119,7 @@ namespace Graphics
 			secondaryContainer.SetVideo(name, isMuted, speed);
 			primaryContainer.Clear(speed);
 
-			yield return new WaitUntil(() => secondaryContainer.IsIdle && primaryContainer.IsIdle);
+			while (!secondaryContainer.IsIdle || !primaryContainer.IsIdle) yield return null;
 
 			ToggleSecondaryVisual(false);
 			swapCoroutine = null;

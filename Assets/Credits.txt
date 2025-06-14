@@ -14,3 +14,9 @@ Character sprites made by:
 Music made by:
 - cynicmusic (https://opengameart.org/content/crystal-cave-song18)
 - cynicmusic (https://opengameart.org/content/a-new-town-rpg-theme)
+
+SFX & Ambients made by:
+- p0ss (https://opengameart.org/content/spell-sounds-starter-pack)
+
+Voices made by:
+- wolfwoot (https://opengameart.org/content/voice-clip-pack-male-adventurer-rpg)

@@ -24,8 +24,10 @@ public class GameOptionsSO : ScriptableObject
 	[System.Serializable]
 	public class GeneralOptions
 	{
+		[SerializeField] float transitionSpeed;
 		[SerializeField] float skipTransitionSpeed;
-
+		
+		public float TransitionSpeed { get { return transitionSpeed; } }
 		public float SkipTransitionSpeed { get { return skipTransitionSpeed; } }
 	}
 

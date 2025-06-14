@@ -25,7 +25,7 @@ namespace Dialogue
 		readonly CharacterManager characterManager;
 		readonly CommandManager commandManager;
 		readonly VisualNovelUI visualNovelUI;
-		readonly DialogueContinuePrompt continuePrompt;
+		readonly DialogueContinuePromptUI continuePrompt;
 		readonly DialogueTagManager tagManager;
 
 		Coroutine readProcess;
@@ -98,7 +98,7 @@ namespace Dialogue
 				if (!IsValidDialogueLine(line)) continue;
 
 				// Wait for any previous skipped transitions to complete smoothly
-				yield return new WaitUntil(() => commandManager.IsIdle);
+				while (!commandManager.IsIdle) yield return null;
 
 				DialogueLine dialogueLine = DialogueParser.Parse(line);
 
@@ -153,7 +153,7 @@ namespace Dialogue
 
 				// Wait for a specified duration before showing the text (unless forced to continue)
 				if (segment != null && segment.IsAuto && dialogueSystem.ReadMode != DialogueReadMode.Skip)
-					yield return new WaitUntil(() => isRunning || Time.time >= startTime + segment.WaitTime);
+					while (!isRunning && Time.time < startTime + segment.WaitTime) yield return null;
 
 				continuePrompt.Hide();
 
@@ -163,7 +163,7 @@ namespace Dialogue
 					textBuilder.Write(dialogueText, textMode);
 
 				PauseDialogue();
-				yield return new WaitUntil(() => CanContinueDialogue(nextSegment, dialogueText, startTime, textBuilder.IsBuilding));
+				while (!CanContinueDialogue(nextSegment, dialogueText, startTime, textBuilder.IsBuilding)) yield return null;
 
 				continuePrompt.Show();
 
@@ -201,7 +201,7 @@ namespace Dialogue
 				if (process == null) continue;
 
 				if (process.IsTask)
-					yield return new WaitUntil(() => process.IsCompleted);
+					while (!process.IsCompleted) yield return null;
 				else if (command.IsWaiting || command.Name == "Wait")
 					processesToWait.Add(process);						
 			}

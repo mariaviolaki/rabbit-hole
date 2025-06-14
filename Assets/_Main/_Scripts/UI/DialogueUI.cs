@@ -11,11 +11,10 @@ namespace UI
 		[SerializeField] DialogueNameUI dialogueNameUI;
 		[SerializeField] TextMeshProUGUI dialogueText;
 
-		public TextMeshProUGUI DialogueText { get { return dialogueText; } }
+		public TextMeshProUGUI DialogueText => dialogueText;
 
-		override protected void Start()
+		protected override void Start()
 		{
-			base.Start();
 			UpdateFontSize(gameOptions.Dialogue.DefaultFont);
 		}
 
