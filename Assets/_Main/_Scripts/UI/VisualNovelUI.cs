@@ -19,6 +19,7 @@ namespace UI
 		Coroutine fadeCoroutine;
 
 		public TextMeshProUGUI DialogueText => dialogue.DialogueText;
+		public InputPanelUI InputUI => gameplayControls.InputPanel;
 
 		void Start()
 		{

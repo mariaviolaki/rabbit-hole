@@ -1,14 +1,19 @@
-Visuals.CreateBackground(2), Visuals.CreateForeground(), Visuals.CreateCinematic()
-Audio.CreateAmbient(2), Audio.CreateMusic(2), Audio.CreateSFX(2), Audio.CreateVoice(2)
+CreateBackground(2), CreateForeground(), CreateCinematic()
+CreateAmbient(2), CreateMusic(2), CreateSFX(2), CreateVoice(2)
 
-Dialogue.Show(immediate=true);
+ShowVN(immediate=true);
 
 wait CreateCharacters(v, eg, v1:v, m, mc)
-wait Visuals.SetBackgroundImage(Green-Forest-Back, 1, immediate=true), wait Visuals.SetBackgroundImage(Green-Forest-Front, immediate=true)
-Audio.PlayMusic(Day, 0.02, 1, true, immediate=true)
+SetBackgroundImage(Green-Forest-Back, 1, immediate=true), SetBackgroundImage(Green-Forest-Front, immediate=true)
+PlayMusic(Day, 0.02, 1, true, immediate=true)
 
 v.Setposition(0, 0.5, immediate=true), eg.setPosition(1, 0.5, immediate=true), m.setposition(0.5, 0.5, immediate=true)
-wait v.show(immediate=true), wait eg.show(immediate=true), wait m.show(immediate=true)
+v.show(immediate=true), eg.show(immediate=true), m.show(immediate=true)
+
+v "Answer me something."
+
+input "What is your name...?"
+v "Well, it's very nice to meet you again, <input>."
 
 v "Okay guys, back to the routine."
 v "Ready?{a 0.1} <i>Go.</i>"

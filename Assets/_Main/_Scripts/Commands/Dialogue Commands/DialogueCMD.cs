@@ -13,21 +13,21 @@ namespace Commands
 		{
 			visualNovelUI = commandManager.GetDialogueSystem().GetVisualNovelUI();
 
-			CommandDirectory directory = commandManager.GetDirectory(CommandManager.DialogueDirectoryName);
+			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
 
-			// Show Dialogue UI
-			directory.AddCommand("Show", new Func<DialogueCommandArguments, IEnumerator>(Show), CommandSkipType.Transition);
+			// Show UI
+			directory.AddCommand("ShowVN", new Func<DialogueCommandArguments, IEnumerator>(ShowVN), CommandSkipType.Transition);
 			directory.AddCommand("ShowDialogue", new Func<DialogueCommandArguments, IEnumerator>(ShowDialogue), CommandSkipType.Transition);
 
-			// Hide Dialogue UI
-			directory.AddCommand("Hide", new Func<DialogueCommandArguments, IEnumerator>(Hide), CommandSkipType.Transition);
+			// Hide UI
+			directory.AddCommand("HideVN", new Func<DialogueCommandArguments, IEnumerator>(HideVN), CommandSkipType.Transition);
 			directory.AddCommand("HideDialogue", new Func<DialogueCommandArguments, IEnumerator>(HideDialogue), CommandSkipType.Transition);
 		}
 
 
 		/***** Show Dialogue UI *****/
 
-		static IEnumerator Show(DialogueCommandArguments args)
+		static IEnumerator ShowVN(DialogueCommandArguments args)
 		{
 			bool isImmediate = args.Get(0, "immediate", false);
 			float fadeSpeed = args.Get(1, "speed", 0f);
@@ -46,7 +46,7 @@ namespace Commands
 
 		/***** Hide Dialogue UI *****/
 
-		static IEnumerator Hide(DialogueCommandArguments args)
+		static IEnumerator HideVN(DialogueCommandArguments args)
 		{
 			bool isImmediate = args.Get(0, "immediate", false);
 			float fadeSpeed = args.Get(1, "speed", 0f);

@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Dialogue Tag Directory
   m_EditorClassIdentifier: 
   dialogueTags:
+  - name: input
+    defaultValue: 
   - name: mcName
     defaultValue: Rabbit
   - name: playerLevel

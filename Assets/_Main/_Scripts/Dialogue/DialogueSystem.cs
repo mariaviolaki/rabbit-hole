@@ -24,7 +24,6 @@ namespace Dialogue
 		DialogueReader dialogueReader;
 		DialogueFile dialogueFile;
 		DialogueReadMode readMode = DialogueReadMode.Wait;
-		string lastInput = "";
 
 		public DialogueReadMode ReadMode => readMode;
 
@@ -34,6 +33,7 @@ namespace Dialogue
 		public CommandManager GetCommandManager() => commandManager;
 		public DialogueContinuePromptUI GetContinuePrompt() => continuePrompt;
 		public DialogueTagDirectorySO GetTagDirectory() => tagDirectory;
+		public InputManagerSO GetInputManager() => inputManager;
 
 		void Start()
 		{
@@ -50,7 +50,7 @@ namespace Dialogue
 		void Update()
 		{
 			// TODO start dialogue using other triggers
-			if (Input.GetKeyDown(KeyCode.Return))
+			if (Input.GetKeyDown(KeyCode.KeypadEnter))
 			{
 				//StartCoroutine(RunTest());
 
@@ -105,13 +105,6 @@ namespace Dialogue
 			}
 		}
 
-		void HandleOnClearInputEvent() => HandleInputEvent("");
-		void HandleOnSubmitInputEvent(string input) => HandleInputEvent(input);
-		void HandleInputEvent(string input)
-		{
-			lastInput = input;
-		}
-
 		void HandleWaitModeInput()
 		{
 			if (readMode == DialogueReadMode.Wait)
@@ -148,8 +141,6 @@ namespace Dialogue
 			inputManager.OnSkip += HandleOnSkipEvent;
 			inputManager.OnSkipHold += HandleOnSkipHoldEvent;
 			inputManager.OnSkipHoldEnd += HandleOnSkipHoldEndEvent;
-			inputManager.OnClearInput += HandleOnClearInputEvent;
-			inputManager.OnSubmitInput += HandleOnSubmitInputEvent;
 		}
 
 		void UnsubscribeEvents()
@@ -159,28 +150,12 @@ namespace Dialogue
 			inputManager.OnSkip -= HandleOnSkipEvent;
 			inputManager.OnSkipHold -= HandleOnSkipHoldEvent;
 			inputManager.OnSkipHoldEnd -= HandleOnSkipHoldEndEvent;
-			inputManager.OnClearInput -= HandleOnClearInputEvent;
-			inputManager.OnSubmitInput -= HandleOnSubmitInputEvent;
 		}
 
 		// TODO Remove test function
 		IEnumerator RunTest()
 		{
-			yield return characterManager.CreateCharacter("v");
-
-			SpriteCharacter v = characterManager.GetCharacter("v") as SpriteCharacter;
-
-			yield return visualNovelUI.Show();
-
-			yield return v.Show();
-			yield return v.Say("Let me test the input for you~");
-			yield return v.Say("Tell me...");
-
-			yield return visualNovelUI.ShowInput("What's your name...?");
-
-			while (lastInput == string.Empty) yield return null;
-
-			v.Say($"I knew it was you, {lastInput}.");
+			yield return null;
 		}
 	}
 }

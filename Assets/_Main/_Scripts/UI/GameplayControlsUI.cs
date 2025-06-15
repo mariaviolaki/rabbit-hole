@@ -6,6 +6,8 @@ namespace UI
 	{
 		[SerializeField] InputPanelUI inputPanel;
 
+		public InputPanelUI InputPanel => inputPanel;
+
 		protected override void Awake()
 		{
 			base.Awake();

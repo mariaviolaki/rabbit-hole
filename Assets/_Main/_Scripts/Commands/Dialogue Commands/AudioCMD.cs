@@ -12,7 +12,7 @@ namespace Commands
 		{
 			audioManager = commandManager.GetAudioManager();
 
-			CommandDirectory directory = commandManager.GetDirectory(CommandManager.AudioDirectoryName);
+			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
 
 			// Initialize Layers
 			directory.AddCommand("CreateAmbient", new Action<DialogueCommandArguments>(CreateAmbient));

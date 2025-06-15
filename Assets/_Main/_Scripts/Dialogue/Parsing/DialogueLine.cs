@@ -2,9 +2,15 @@ namespace Dialogue
 {
 	public class DialogueLine
 	{
-		public DialogueSpeakerData Speaker { get; private set; }
-		public DialogueTextData Dialogue { get; private set; }
-		public DialogueCommandData Commands { get; private set; }
+		public LogicSegmentBase Logic { get; private set; } = null;
+		public DialogueSpeakerData Speaker { get; private set; } = null;
+		public DialogueTextData Dialogue { get; private set; } = null;
+		public DialogueCommandData Commands { get; private set; } = null;
+		
+		public DialogueLine(LogicSegmentBase logicSegment)
+		{
+			Logic = logicSegment;
+		}
 
 		public DialogueLine(string speaker, string dialogue, string commands)
 		{

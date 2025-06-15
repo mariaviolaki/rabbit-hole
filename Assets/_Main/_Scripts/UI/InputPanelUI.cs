@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UI
@@ -14,6 +15,9 @@ namespace UI
 		[SerializeField] Button submitButton;
 
 		bool isImmediate = false;
+		string lastInput = "";
+
+		public string LastInput => lastInput;
 
 		public event Action OnClose;
 
@@ -35,7 +39,7 @@ namespace UI
 
 			base.fadeSpeed = fadeSpeed;
 			this.isImmediate = isImmediate;
-			ResetInput(title);
+			PrepareInputPanel(title);
 
 			return SetVisible(isImmediate, fadeSpeed);
 		}
@@ -51,7 +55,10 @@ namespace UI
 		{
 			if (string.IsNullOrWhiteSpace(inputField.text)) return;
 
-			inputManager.OnSubmitInput?.Invoke(inputField.text.Trim());
+			lastInput = inputField.text.Trim();
+
+			inputManager.IsInputPanelOpen = false;
+			inputManager.OnSubmitInput?.Invoke(lastInput);
 			Hide();
 		}
 
@@ -66,14 +73,17 @@ namespace UI
 				submitButton.gameObject.SetActive(false);
 		}
 
-		void ResetInput(string title)
+		void PrepareInputPanel(string title)
 		{
 			titleText.text = title;
 			inputField.text = string.Empty;
+			inputField.Select();
+			inputField.ActivateInputField();
 
 			if (submitButton.gameObject.activeSelf)
 				submitButton.gameObject.SetActive(false);
 
+			inputManager.IsInputPanelOpen = true;
 			inputManager.OnClearInput?.Invoke();
 		}
 

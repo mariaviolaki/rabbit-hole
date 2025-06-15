@@ -1,4 +1,7 @@
+using System;
 using System.Text.RegularExpressions;
+using UI;
+using UnityEngine;
 
 namespace Dialogue
 {
@@ -8,10 +11,14 @@ namespace Dialogue
 		static readonly Regex regex = new Regex(tagPattern);
 
 		readonly DialogueTagDirectorySO tagDirectory;
+		readonly InputPanelUI inputUI;
 
-		public DialogueTagManager(DialogueTagDirectorySO tagDirectory)
+		public DialogueTagManager(DialogueSystem dialogueSystem)
 		{
-			this.tagDirectory = tagDirectory;
+			tagDirectory = dialogueSystem.GetTagDirectory();
+			inputUI = dialogueSystem.GetVisualNovelUI().InputUI;
+
+			InitTags();
 		}
 
 		public string Parse(string text)
@@ -29,11 +36,28 @@ namespace Dialogue
 			return text;
 		}
 
-		public string GetTagValue(string text)
+		public string GetTagValue(string tagName)
 		{
-			if (!tagDirectory.Tags.TryGetValue(text, out DialogueTag dialogueTag)) return null;
+			if (!tagDirectory.Tags.TryGetValue(tagName, out DialogueTag dialogueTag)) return null;
 
 			return dialogueTag.CurrentValue();
+		}
+
+		void InitTags()
+		{
+			SetTagValue("input", () => inputUI.LastInput);
+		}
+
+		void SetTagValue(string tagName, Func<string> value)
+		{
+			string formattedTagName = $"<{tagName}>";
+			if (!tagDirectory.Tags.TryGetValue(formattedTagName, out DialogueTag dialogueTag))
+			{
+				Debug.LogWarning($"Tag '{tagName}' not found in Tag Directory.");
+				return;
+			}
+
+			dialogueTag.CurrentValue = value;
 		}
 
 		string ReplaceFirst(string text, string tag, string tagValue)

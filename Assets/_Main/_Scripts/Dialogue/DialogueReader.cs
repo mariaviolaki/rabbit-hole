@@ -27,6 +27,7 @@ namespace Dialogue
 		readonly VisualNovelUI visualNovelUI;
 		readonly DialogueContinuePromptUI continuePrompt;
 		readonly DialogueTagManager tagManager;
+		readonly LogicSegmentManager logicSegmentManager;
 
 		Coroutine readProcess;
 
@@ -48,7 +49,9 @@ namespace Dialogue
 			continuePrompt = dialogueSystem.GetContinuePrompt();
 
 			textBuilder = new TextBuilder(visualNovelUI.DialogueText);
-			tagManager = new DialogueTagManager(dialogueSystem.GetTagDirectory());
+			tagManager = new DialogueTagManager(dialogueSystem);
+			logicSegmentManager = new LogicSegmentManager(dialogueSystem);
+
 			textMode = gameOptions.Dialogue.TextMode;
 		}
 
@@ -100,7 +103,15 @@ namespace Dialogue
 				// Wait for any previous skipped transitions to complete smoothly
 				while (!commandManager.IsIdle) yield return null;
 
-				DialogueLine dialogueLine = DialogueParser.Parse(line);
+				DialogueLine dialogueLine = DialogueParser.Parse(line, logicSegmentManager);
+
+				if (dialogueLine.Logic != null)
+				{
+					logicSegmentManager.Add(dialogueLine.Logic);
+
+					if (logicSegmentManager.HasPendingLogic)
+						yield return logicSegmentManager.WaitForExecution();
+				}
 
 				if (dialogueLine.Dialogue != null)
 				{
@@ -123,7 +134,7 @@ namespace Dialogue
 			{
 				if (!IsValidDialogueLine(line)) continue;
 
-				DialogueLine dialogueLine = DialogueParser.Parse(line);
+				DialogueLine dialogueLine = DialogueParser.Parse(line, logicSegmentManager);
 
 				if (dialogueLine.Dialogue != null)
 					yield return DisplayDialogue(dialogueLine);

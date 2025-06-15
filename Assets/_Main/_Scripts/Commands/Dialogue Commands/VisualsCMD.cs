@@ -13,7 +13,7 @@ namespace Commands
 		{
 			graphicsGroupManager = commandManager.GetGraphicsGroupManager();
 
-			CommandDirectory directory = commandManager.GetDirectory(CommandManager.VisualsDirectoryName);
+			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
 
 			// Background
 			directory.AddCommand("CreateBackground", new Action<DialogueCommandArguments>(CreateBackground));

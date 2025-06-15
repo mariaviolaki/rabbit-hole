@@ -16,7 +16,9 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 
 	InputActions inputActions;
 	bool isHoldPerformed = false;
-	
+
+	public bool IsInputPanelOpen { get; set; } = false;
+
 	void OnEnable()
 	{
 		if (inputActions != null) return;
@@ -28,6 +30,7 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 
 	public void OnAdvanceAction(InputAction.CallbackContext context)
 	{
+		if (IsInputPanelOpen) return;
 		if (context.phase != InputActionPhase.Performed) return;
 
 		OnAdvance?.Invoke();
@@ -35,6 +38,7 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 
 	public void OnAutoAction(InputAction.CallbackContext context)
 	{
+		if (IsInputPanelOpen) return;
 		if (context.phase != InputActionPhase.Performed) return;
 
 		OnAuto?.Invoke();
@@ -42,6 +46,8 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 
 	public void OnSkipAction(InputAction.CallbackContext context)
 	{
+		if (IsInputPanelOpen) return;
+
 		// Only trigger successful button presses
 		if (context.interaction is not PressInteraction || context.phase != InputActionPhase.Performed) return;
 
@@ -50,6 +56,8 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 
 	public void OnSkipHoldAction(InputAction.CallbackContext context)
 	{
+		if (IsInputPanelOpen) return;
+
 		// Only proceed if the player is holding down the button
 		if (context.interaction is not HoldInteraction) return;
 
