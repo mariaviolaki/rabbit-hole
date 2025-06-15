@@ -18,40 +18,27 @@ namespace Audio
 			this.num = num;
 		}
 
-		public void PlayInstant(string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false)
+		public void Play(string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false, bool isImmediate = false, float fadeSpeed = 0)
 		{
-			PlayTrack(audioName, volume, pitch, isLooping, true);
+			PlayTrack(audioName, volume, pitch, isLooping, isImmediate, fadeSpeed);
 		}
 
-		public void Play(string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false, float fadeSpeed = 0)
+		public void Stop(string audioName = null, bool isImmediate = false, float fadeSpeed = 0)
 		{
-			PlayTrack(audioName, volume, pitch, isLooping, false, fadeSpeed);
+			StopTracks(audioName, isImmediate, fadeSpeed);
 		}
 
-		public void StopInstant(string audioName = null)
-		{
-			StopTracks(audioName, true);
-		}
-
-		public void Stop(string audioName = null, float fadeSpeed = 0)
-		{
-			StopTracks(audioName, false, fadeSpeed);
-		}
-
-		void PlayTrack(string audioName, float volume, float pitch, bool isLooping, bool isInstant, float fadeSpeed = 0)
+		void PlayTrack(string audioName, float volume, float pitch, bool isLooping, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			if (audioGroup.Type != AudioType.SFX)
-				StopTracks(null, isInstant, fadeSpeed);
+				StopTracks(null, isImmediate, fadeSpeed);
 
 			Guid trackId = Guid.NewGuid();
 			AudioTrack track = new AudioTrack(audioGroup, trackId, audioName);
 			track.OnUnloadTrack += ClearTrack;
 			tracks[trackId] = track;
 
-			if (isInstant)
-				track.PlayInstant(volume, pitch, isLooping);
-			else
-				track.Play(volume, pitch, isLooping, fadeSpeed);
+			track.Play(volume, pitch, isLooping, isImmediate, fadeSpeed);
 		}
 
 		void ClearTrack(Guid id)
@@ -60,7 +47,7 @@ namespace Audio
 				tracks.Remove(id);
 		}
 
-		void StopTracks(string audioName, bool isInstant, float fadeSpeed = 0)
+		void StopTracks(string audioName, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			foreach (AudioTrack track in tracks.Values.ToList())
 			{
@@ -69,10 +56,7 @@ namespace Audio
 				bool canBeCleared = !isValidAudioName || !track.IsActive || isSelectedTrack;
 				if (!canBeCleared) continue;
 
-				if (isInstant)
-					track.StopInstant();
-				else
-					track.Stop(fadeSpeed);
+				track.Stop(isImmediate, fadeSpeed);
 			}
 		}
 	}

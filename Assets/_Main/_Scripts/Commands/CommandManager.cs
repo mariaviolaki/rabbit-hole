@@ -18,9 +18,9 @@ namespace Commands
 		{
 			public string Directory { get; private set; }
 			public string Command { get; private set; }
-			public string[] Arguments { get; private set; }
+			public DialogueCommandArguments Arguments { get; private set; }
 
-			public CommandInputData(string directoryName, string commandName, string[] arguments)
+			public CommandInputData(string directoryName, string commandName, DialogueCommandArguments arguments)
 			{
 				Directory = directoryName;
 				Command = commandName;
@@ -45,13 +45,14 @@ namespace Commands
 		DialogueSystem dialogueSystem;
 
 		// The grouping of all dialogue commands available to be run (divided into categories)
-		Dictionary<string, CommandDirectory> commandDirectories = new Dictionary<string, CommandDirectory>();
+		Dictionary<string, CommandDirectory> commandDirectories = new();
 
 		// Keep track of all the processes that may run simultaneously
-		readonly Dictionary<Guid, CommandProcess> processes = new Dictionary<Guid, CommandProcess>();
-		readonly HashSet<string> unskippableProcessNames = new HashSet<string>();
+		readonly Dictionary<Guid, CommandProcess> blockingProcesses = new();
+		readonly Dictionary<Guid, CommandProcess> processes = new();
+		readonly HashSet<string> blockingProcessNames = new();
 
-		public bool IsIdle => processes.Count == 0;
+		public bool IsIdle => blockingProcesses.Count == 0;
 		public CharacterManager GetCharacterManager() => characterManager;
 		public VisualGroupManager GetGraphicsGroupManager() => graphicsGroupManager;
 		public AudioManager GetAudioManager() => audioManager;
@@ -66,7 +67,7 @@ namespace Commands
 			InitDirectory();
 		}
 
-		public CommandProcess Execute(string fullCommandName, params string[] inputArguments)
+		public CommandProcess Execute(string fullCommandName, DialogueCommandArguments inputArguments)
 		{
 			CommandInputData inputData = GetCommandInputData(fullCommandName, inputArguments);
 			if (inputData == null)
@@ -83,17 +84,17 @@ namespace Commands
 			}
 
 			Delegate command = directory.GetCommand(inputData.Command);
-			Delegate skipCommand = directory.GetSkipCommand(inputData.Command);
+			CommandSkipType skipType = directory.GetSkipType(inputData.Command);
 			if (command == null) return null;
 
 			if (command.Method.ReturnType == typeof(void))
 			{
-				ExecuteAction(command, inputData.Arguments);
+				command.DynamicInvoke(inputData.Arguments);
 				return null;
 			}
 			else if (command.Method.ReturnType == typeof(IEnumerator) || command.Method.ReturnType == typeof(Task))
 			{
-				CommandProcess process = ExecuteProcess(command, skipCommand, inputData.Command, inputData.Arguments);
+				CommandProcess process = ExecuteProcess(command, inputData.Command, inputData.Arguments, skipType);
 				return process;
 			}
 
@@ -117,35 +118,32 @@ namespace Commands
 			return commandDirectories[directoryName];
 		}
 
-		void DeleteProcess(Guid processId)
+		void DeleteProcess(Guid processId, bool isBlocking)
 		{
-			processes.Remove(processId);
+			if (isBlocking)
+				blockingProcesses.Remove(processId);
+			else
+				processes.Remove(processId);
 		}
 
-		void ExecuteAction(Delegate command, string[] arguments)
-		{
-			if (command is Action)
-				command.DynamicInvoke();
-			else if (command is Action<string>)
-				command.DynamicInvoke(arguments[0]);
-			else if (command is Action<string[]>)
-				command.DynamicInvoke((object)arguments);
-		}
-
-		CommandProcess ExecuteProcess(Delegate command, Delegate skipCommand, string commandName, string[] arguments)
+		CommandProcess ExecuteProcess(Delegate command, string commandName, DialogueCommandArguments arguments, CommandSkipType skipType)
 		{
 			Guid processId = Guid.NewGuid();
-			bool isUnskippable = unskippableProcessNames.Contains(commandName);
+			bool isBlocking = blockingProcessNames.Contains(commandName);
 
-			CommandProcess commandProcess = new CommandProcess(commandName, arguments, command, skipCommand, this, isUnskippable);
-			commandProcess.OnFullyCompleted += () => DeleteProcess(processId);
+			CommandProcess commandProcess = new CommandProcess(commandName, arguments, command, this, skipType, isBlocking);
+			commandProcess.OnFullyCompleted += () => DeleteProcess(processId, isBlocking);
 			commandProcess.Start();
-			processes.Add(processId, commandProcess);
+
+			if (isBlocking)
+				blockingProcesses.Add(processId, commandProcess);
+			else
+				processes.Add(processId, commandProcess);
 
 			return commandProcess;
 		}
 
-		CommandInputData GetCommandInputData(string fullCommandName, string[] arguments)
+		CommandInputData GetCommandInputData(string fullCommandName, DialogueCommandArguments arguments)
 		{
 			(string directoryName, string commandName) = ParseCommandInput(fullCommandName);
 
@@ -164,11 +162,9 @@ namespace Commands
 			directoryName = GetCharacterDirectoryName(characterShortName, commandName);
 
 			// Inject the character's short name into the arguments so that the command can find the character
-			string[] characterArguments = new string[arguments.Length + 1];
-			characterArguments[0] = characterShortName;
-			Array.Copy(arguments, 0, characterArguments, 1, arguments.Length);
+			arguments.AddIndexedArgument(0, characterShortName);
 
-			return new CommandInputData(directoryName, commandName, characterArguments);
+			return new CommandInputData(directoryName, commandName, arguments);
 		}
 
 		(string, string) ParseCommandInput(string fullCommandName)
@@ -216,13 +212,13 @@ namespace Commands
 					Debug.LogError($"Register function not found in {commandType.Name}!");
 
 				// If any unskippable processes are included, cache them in a hash set
-				FieldInfo unskippableProcessesField = commandType.GetField("unskippableProcesses", BindingFlags.Static | BindingFlags.Public);
-				if (unskippableProcessesField != null)
+				FieldInfo blockingProcessesField = commandType.GetField("blockingProcesses", BindingFlags.Static | BindingFlags.Public);
+				if (blockingProcessesField != null)
 				{
-					string[] unskippableProcessNames = (string[])unskippableProcessesField.GetValue(null);
-					foreach (string processName in unskippableProcessNames)
+					string[] blockingProcessNames = (string[])blockingProcessesField.GetValue(null);
+					foreach (string processName in blockingProcessNames)
 					{
-						this.unskippableProcessNames.Add(processName);
+						this.blockingProcessNames.Add(processName);
 					}
 				}
 			}

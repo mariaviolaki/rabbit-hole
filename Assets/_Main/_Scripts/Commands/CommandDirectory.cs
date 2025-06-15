@@ -7,11 +7,11 @@ namespace Commands
 	public class CommandDirectory
 	{
 		// Command Manager will search our scripts and dynamically populate these with every class inheriting from DialogueCommand
-		readonly Dictionary<string, Delegate> commandDirectory = new Dictionary<string, Delegate>();
-		readonly Dictionary<string, Delegate> skipCommandDirectory = new Dictionary<string, Delegate>();
+		readonly Dictionary<string, Delegate> commandDirectory = new(StringComparer.OrdinalIgnoreCase);
+		readonly Dictionary<string, CommandSkipType> commandSkipTypes = new(StringComparer.OrdinalIgnoreCase);
 
 		public bool HasCommand(string commandName) => commandDirectory.ContainsKey(commandName);
-		public bool HasSkipCommand(string commandName) => skipCommandDirectory.ContainsKey(commandName);
+		public bool HasSkipCommand(string commandName) => commandSkipTypes.ContainsKey(commandName);
 
 		public Delegate GetCommand(string commandName)
 		{
@@ -24,18 +24,18 @@ namespace Commands
 			return commandDirectory[commandName];
 		}
 
-		public Delegate GetSkipCommand(string commandName)
+		public CommandSkipType GetSkipType(string commandName)
 		{
 			if (!HasSkipCommand(commandName))
 			{
 				Debug.LogError($"{commandName} is not registered to the Skip Command Directory!");
-				return null;
+				return CommandSkipType.None;
 			}
 
-			return skipCommandDirectory[commandName];
+			return commandSkipTypes[commandName];
 		}
 
-		public void AddCommand(string commandName, Delegate command, Delegate skipCommand = null)
+		public void AddCommand(string commandName, Delegate command, CommandSkipType skipType = CommandSkipType.None)
 		{
 			if (HasCommand(commandName))
 			{
@@ -44,7 +44,7 @@ namespace Commands
 			}
 
 			commandDirectory[commandName] = command;
-			skipCommandDirectory[commandName] = skipCommand;
+			commandSkipTypes[commandName] = skipType;
 		}
 	}
 }

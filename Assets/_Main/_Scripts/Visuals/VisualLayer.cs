@@ -49,49 +49,46 @@ namespace Graphics
 			secondaryGameObject.SetActive(false);
 		}
 
-		public void ClearInstant()
+		public Coroutine Clear(bool isImmediate = false, float speed = 0)
 		{
 			layerGroup.Manager.StopProcess(ref swapCoroutine);
-			primaryContainer.ClearInstant();
+			return primaryContainer.Clear(isImmediate, speed);
 		}
 
-		public Coroutine Clear(float speed)
-		{
-			layerGroup.Manager.StopProcess(ref swapCoroutine);
-			return primaryContainer.Clear(speed);
-		}
-
-		public void SetImageInstant(string name)
-		{
-			if (primaryContainer.IsImage && primaryContainer.VisualName == name) return;
-
-			layerGroup.Manager.StopProcess(ref swapCoroutine);
-			primaryContainer.SetImageInstant(name);
-		}
-
-		public Coroutine SetImage(string name, float speed = 0)
+		public Coroutine SetImage(string name, bool isImmediate = false, float speed = 0)
 		{
 			if (primaryContainer.IsImage && primaryContainer.VisualName == name) return null;
 
 			layerGroup.Manager.StopProcess(ref swapCoroutine);
-			swapCoroutine = layerGroup.Manager.StartCoroutine(SwapImage(name, speed));
-			return swapCoroutine;
+
+			if (isImmediate)
+			{
+				primaryContainer.SetImage(name, true);
+				return null;
+			}
+			else
+			{
+				swapCoroutine = layerGroup.Manager.StartCoroutine(SwapImage(name, speed));
+				return swapCoroutine;
+			}
 		}
 
-		public void SetVideoInstant(string name, bool isMuted = false)
-		{
-			if (!primaryContainer.IsImage && primaryContainer.VisualName == name) return;
-
-			primaryContainer.SetVideoInstant(name, isMuted);
-		}
-
-		public Coroutine SetVideo(string name, bool isMuted = false, float speed = 0)
+		public Coroutine SetVideo(string name, bool isMuted = false, bool isImmediate = false, float speed = 0)
 		{
 			if (!primaryContainer.IsImage && primaryContainer.VisualName == name) return null;
 
 			layerGroup.Manager.StopProcess(ref swapCoroutine);
-			swapCoroutine = layerGroup.Manager.StartCoroutine(SwapVideo(name, isMuted, speed));
-			return swapCoroutine;
+
+			if (isImmediate)
+			{
+				primaryContainer.SetVideo(name, isMuted, true);
+				return null;
+			}
+			else
+			{
+				swapCoroutine = layerGroup.Manager.StartCoroutine(SwapVideo(name, isMuted, speed));
+				return swapCoroutine;
+			}	
 		}
 
 		public bool StopTransition()
@@ -103,8 +100,8 @@ namespace Graphics
 		{
 			ToggleSecondaryVisual(true);
 
-			secondaryContainer.SetImage(name, speed);
-			primaryContainer.Clear(speed);
+			secondaryContainer.SetImage(name, false, speed);
+			primaryContainer.Clear(false, speed);
 
 			while (!secondaryContainer.IsIdle || !primaryContainer.IsIdle) yield return null;
 
@@ -116,8 +113,8 @@ namespace Graphics
 		{
 			ToggleSecondaryVisual(true);
 
-			secondaryContainer.SetVideo(name, isMuted, speed);
-			primaryContainer.Clear(speed);
+			secondaryContainer.SetVideo(name, isMuted, false, speed);
+			primaryContainer.Clear(false, speed);
 
 			while (!secondaryContainer.IsIdle || !primaryContainer.IsIdle) yield return null;
 
@@ -131,7 +128,7 @@ namespace Graphics
 			{
 				// Swap the visual containers because the graphic is now in the second one
 				SwapContainers();
-				secondaryContainer.ClearInstant();
+				secondaryContainer.Clear(true);
 			}
 
 			secondaryGameObject.SetActive(isActive);

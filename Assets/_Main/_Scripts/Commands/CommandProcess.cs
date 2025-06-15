@@ -1,3 +1,4 @@
+using Dialogue;
 using System;
 using System.Collections;
 using System.Threading.Tasks;
@@ -8,11 +9,11 @@ namespace Commands
 	public class CommandProcess
 	{
 		readonly string name;
-		readonly string[] arguments;
+		readonly DialogueCommandArguments arguments;
 		readonly Delegate command;
-		readonly Delegate skipCommand;
 		readonly CommandManager commandManager;
-		readonly bool isUnskippable;
+		readonly bool isBlocking;
+		readonly CommandSkipType skipType;
 
 		Coroutine commandCoroutine;
 		Coroutine skipCommandCoroutine;
@@ -21,55 +22,62 @@ namespace Commands
 
 		public string Name => name;
 		public bool IsCompleted => commandCoroutine == null;
-		public bool IsTask => command is Func<Task> || command is Func<string, Task> || command is Func<string[], Task>;
 
-		public CommandProcess(string name, string[] arguments, Delegate command, Delegate skipCommand, CommandManager commandManager, bool isUnskippable)
+		public CommandProcess(string name, DialogueCommandArguments arguments, Delegate command, CommandManager commandManager, CommandSkipType skipType, bool isBlocking)
 		{
 			this.name = name;
 			this.arguments = arguments;
 			this.command = command;
-			this.skipCommand = skipCommand;
 			this.commandManager = commandManager;
-			this.isUnskippable = isUnskippable;
+			this.isBlocking = isBlocking;
+			this.skipType = skipType;
 		}
 
 		public void Start()
 		{
-			commandCoroutine = commandManager.StartCoroutine(ExecuteProcess(command));
+			commandCoroutine = commandManager.StartCoroutine(ExecuteProcess());
 		}
 
 		public void Stop()
 		{
-			if (isUnskippable || commandCoroutine == null || IsTask) return;
+			if (isBlocking || commandCoroutine == null) return;
 
 			commandManager.StopCoroutine(commandCoroutine);
 			commandCoroutine = null;
 
-			if (skipCommand == null)
+			skipCommandCoroutine = commandManager.StartCoroutine(ExecuteProcess());
+
+			if (skipType == CommandSkipType.None)
 				OnFullyCompleted?.Invoke();
-			else if (skipCommand.Method.ReturnType == typeof(void))
-				ExecuteAction();
+			else if (skipType == CommandSkipType.Immediate)
+				skipCommandCoroutine = commandManager.StartCoroutine(ExecuteImmediate());
 			else
-				skipCommandCoroutine = commandManager.StartCoroutine(ExecuteProcess(skipCommand));
+				skipCommandCoroutine = commandManager.StartCoroutine(ExecuteProcess());
 		}
 
-		IEnumerator ExecuteProcess(Delegate command)
+		IEnumerator ExecuteProcess()
 		{
-			if (command is Func<IEnumerator>)
-				yield return command.DynamicInvoke();
-			else if (command is Func<string, IEnumerator>)
-				yield return command.DynamicInvoke(arguments[0]);
-			else if (command is Func<string[], IEnumerator>)
-				yield return command.DynamicInvoke((object)arguments);
-			else if (command is Func<Task>)
-				yield return WaitForTask((Task)command.DynamicInvoke());
-			else if (command is Func<string, Task>)
-				yield return WaitForTask((Task)command.DynamicInvoke(arguments[0]));
-			else if (command is Func<string[], Task>)
-				yield return WaitForTask((Task)command.DynamicInvoke((object)arguments));
+			if (command is Func<DialogueCommandArguments, IEnumerator>)
+				yield return command.DynamicInvoke(arguments);
+			else if (command is Func<DialogueCommandArguments, Task>)
+				yield return WaitForTask((Task)command.DynamicInvoke(arguments));
 
 			if (commandCoroutine != null) commandCoroutine = null;
 			else skipCommandCoroutine = null;
+
+			OnFullyCompleted?.Invoke();
+		}
+
+		IEnumerator ExecuteImmediate()
+		{
+			arguments.AddNamedArgument("immediate", "true");
+
+			if (command is Func<DialogueCommandArguments, IEnumerator>)
+				yield return command.DynamicInvoke(arguments);
+			else if (command is Func<DialogueCommandArguments, Task>)
+				yield return WaitForTask((Task)command.DynamicInvoke(arguments));
+
+			skipCommandCoroutine = null;
 
 			OnFullyCompleted?.Invoke();
 		}
@@ -80,18 +88,6 @@ namespace Commands
 
 			if (task.IsFaulted)
 				Debug.LogWarning($"CommandProcess '{name}' error: {task.Exception}");
-		}
-
-		void ExecuteAction()
-		{
-			if (skipCommand is Action)
-				skipCommand.DynamicInvoke();
-			else if (skipCommand is Action<string>)
-				skipCommand.DynamicInvoke(arguments[0]);
-			else if (skipCommand is Action<string[]>)
-				skipCommand.DynamicInvoke((object)arguments);
-
-			OnFullyCompleted?.Invoke();
 		}
 	}
 }

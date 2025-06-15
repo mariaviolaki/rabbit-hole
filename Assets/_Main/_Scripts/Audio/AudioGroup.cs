@@ -28,36 +28,20 @@ namespace Audio
 			root = new GameObject(name).transform;
 		}
 
-		public void PlayInstant(string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false, int layerNum = 0)
+		public void Play(string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false, bool isImmediate = false, float fadeSpeed = 0f, int layerNum = 0)
 		{
 			layerNum = GetValidLayerNum(layerNum);
 			if (layerNum == -1) return;
 
-			layers[layerNum].PlayInstant(audioName, volume, pitch, isLooping);
+			layers[layerNum].Play(audioName, volume, pitch, isLooping, isImmediate, fadeSpeed);
 		}
 
-		public void Play(string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false, float fadeSpeed = 0f, int layerNum = 0)
+		public void Stop(string audioName, bool isImmediate = false, float fadeSpeed = 0f, int layerNum = 0)
 		{
 			layerNum = GetValidLayerNum(layerNum);
 			if (layerNum == -1) return;
 
-			layers[layerNum].Play(audioName, volume, pitch, isLooping, fadeSpeed);
-		}
-
-		public void StopInstant(string audioName, int layerNum = 0)
-		{
-			layerNum = GetValidLayerNum(layerNum);
-			if (layerNum == -1) return;
-
-			layers[layerNum].StopInstant(audioName);
-		}
-
-		public void Stop(string audioName, float fadeSpeed = 0f, int layerNum = 0)
-		{
-			layerNum = GetValidLayerNum(layerNum);
-			if (layerNum == -1) return;
-
-			layers[layerNum].Stop(audioName, fadeSpeed);
+			layers[layerNum].Stop(audioName, isImmediate, fadeSpeed);
 		}
 
 		public AudioLayer GetLayer(int num)

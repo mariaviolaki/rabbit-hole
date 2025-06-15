@@ -27,45 +27,45 @@ namespace UI
 			canvasGroup = GetComponent<CanvasGroup>();
 			transitionHandler = new UITransitionHandler(gameOptions);
 
-			SetHidden();
+			SetHidden(true);
 		}
 
-		protected void SetVisible()
-		{
-			if (IsVisible) return;
-
-			StopFadeCoroutine();
-			canvasGroup.alpha = 1f;
-		}
-
-		protected void SetHidden()
-		{
-			if (IsHidden) return;
-
-			StopFadeCoroutine();
-			canvasGroup.alpha = 0f;
-		}
-
-		protected Coroutine FadeIn(float speed)
+		protected Coroutine SetVisible(bool isImmediate = false, float speed = 0)
 		{
 			if (IsVisible) return null;
 
 			StopFadeCoroutine();
 
-			fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
-			fadeCoroutine = StartCoroutine(FadeInProcess());
-			return fadeCoroutine;
+			if (isImmediate)
+			{
+				canvasGroup.alpha = 1f;
+				return null;
+			}
+			else
+			{
+				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
+				fadeCoroutine = StartCoroutine(FadeIn());
+				return fadeCoroutine;
+			}
 		}
 
-		protected Coroutine FadeOut(float speed)
+		protected Coroutine SetHidden(bool isImmediate = false, float speed = 0)
 		{
 			if (IsHidden) return null;
 
 			StopFadeCoroutine();
 
-			fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
-			fadeCoroutine = StartCoroutine(FadeOutProcess());
-			return fadeCoroutine;
+			if (isImmediate)
+			{
+				canvasGroup.alpha = 0f;
+				return null;
+			}
+			else
+			{
+				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
+				fadeCoroutine = StartCoroutine(FadeOut());
+				return fadeCoroutine;
+			}
 		}
 
 		void StopFadeCoroutine()
@@ -76,12 +76,12 @@ namespace UI
 			fadeCoroutine = null;
 		}
 
-		protected virtual IEnumerator FadeInProcess()
+		protected virtual IEnumerator FadeIn()
 		{
 			yield return transitionHandler.SetVisibility(canvasGroup, true, fadeSpeed);
 		}
 
-		protected virtual IEnumerator FadeOutProcess()
+		protected virtual IEnumerator FadeOut()
 		{
 			yield return transitionHandler.SetVisibility(canvasGroup, false, fadeSpeed);
 		}

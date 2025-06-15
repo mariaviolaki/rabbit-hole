@@ -25,12 +25,10 @@ namespace Characters
 		protected Color LightColor { get; set; } = Color.white;
 		protected Color DarkColor { get { return GetDarkColor(LightColor); } }
 
-		public abstract void FlipInstant();
-		public abstract void ChangeBrightnessInstant(bool isHighlighted);
-		public abstract void ChangeColorInstant(Color color);
-		protected abstract IEnumerator FlipDirection(float speed, bool isSkipped);
-		protected abstract IEnumerator ChangeBrightness(bool isHighlighted, float speed, bool isSkipped);
-		protected abstract IEnumerator ChangeColor(Color color, float speed, bool isSkipped);
+		public abstract Coroutine Flip(bool isImmediate = false, float speed = 0);
+		public abstract Coroutine Highlight(bool isImmediate = false, float speed = 0);
+		public abstract Coroutine Unhighlight(bool isImmediate = false, float speed = 0);
+		public abstract Coroutine SetColor(Color color, bool isImmediate = false, float speed = 0);
 
 		protected override IEnumerator Init()
 		{
@@ -58,101 +56,68 @@ namespace Characters
 			manager.SetPriority(data.ShortName, index);
 		}
 
-		public void ShowInstant() => ChangeVisibilityInstant(true);
-		public Coroutine Show(float speed = 0)
+		public Coroutine Show(bool isImmediate = false, float speed = 0)
 		{
 			bool isSkipped = manager.StopProcess(ref visibilityCoroutine);
 
-			visibilityCoroutine = manager.StartCoroutine(ChangeVisibility(true, speed, isSkipped));
-			return visibilityCoroutine;
+			if (isImmediate)
+			{
+				SetVisibility(true);
+				return null;
+			}
+			else
+			{
+				visibilityCoroutine = manager.StartCoroutine(TransitionVisibility(true, speed, isSkipped));
+				return visibilityCoroutine;
+			}
 		}
 		
-		public void HideInstant() => ChangeVisibilityInstant(false);
-		public Coroutine Hide(float speed = 0)
+		public Coroutine Hide(bool isImmediate = false, float speed = 0)
 		{
 			bool isSkipped = manager.StopProcess(ref visibilityCoroutine);
 
-			visibilityCoroutine = manager.StartCoroutine(ChangeVisibility(false, speed, isSkipped));
-			return visibilityCoroutine;
+			if (isImmediate)
+			{
+				SetVisibility(false);
+				return null;
+			}
+			else
+			{
+				visibilityCoroutine = manager.StartCoroutine(TransitionVisibility(false, speed, isSkipped));
+				return visibilityCoroutine;
+			}
 		}
 
-		public void SetPositionXInstant(float x) => SetPositionInstant(new Vector2(x, currentPos.y));
-		public void SetPositionYInstant(float y) => SetPositionInstant(new Vector2(currentPos.x, y));
-		public void SetPositionInstant(Vector2 normalizedPos)
+		public Coroutine SetPosition(float x, float y, bool isImmediate = false, float speed = 0)
 		{
-			manager.StopProcess(ref moveCoroutine);
-
-			currentPos = normalizedPos;
-			root.anchoredPosition = GetTargetPosition(normalizedPos);
-		}
-
-		public Coroutine SetPositionX(float x, float speed = 0) => SetPosition(new Vector2(x, currentPos.y), speed);
-		public Coroutine SetPositionY(float y, float speed = 0) => SetPosition(new Vector2(currentPos.x, y), speed);
-		public Coroutine SetPosition(Vector2 normalizedPos, float speed = 0)
-		{
-			currentPos = normalizedPos;
-
 			bool isSkipped = manager.StopProcess(ref moveCoroutine);
 
-			moveCoroutine = manager.StartCoroutine(MoveCharacter(normalizedPos, speed, isSkipped));
-			return moveCoroutine;
+			if (float.IsNaN(x)) x = currentPos.x;
+			if (float.IsNaN(y)) y = currentPos.y;
+			currentPos = new Vector2(x, y);
+
+			if (isImmediate)
+			{
+				root.anchoredPosition = GetTargetPosition(currentPos);
+				return null;
+			}
+			else
+			{
+				moveCoroutine = manager.StartCoroutine(TransitionPosition(currentPos, speed, isSkipped));
+				return moveCoroutine;
+			}
 		}
 
-		public void FaceLeftInstant()
-		{
-			if (!isFacingRight) return;
-			FlipInstant();
-		}
-		public Coroutine FaceLeft(float speed = 0)
+		public Coroutine FaceLeft(bool isImmediate = false, float speed = 0)
 		{
 			if (!isFacingRight) return null;
-			return Flip(speed);
+			return Flip(isImmediate, speed);
 		}
 
-		public void FaceRightInstant()
-		{
-			if (isFacingRight) return;
-			FlipInstant();
-		}
-		public Coroutine FaceRight(float speed = 0)
+		public Coroutine FaceRight(bool isImmediate = false, float speed = 0)
 		{
 			if (isFacingRight) return null;
-			return Flip(speed);
-		}
-
-		public Coroutine Flip(float speed = 0)
-		{
-			bool isSkipped = manager.StopProcess(ref directionCoroutine);
-
-			directionCoroutine = manager.StartCoroutine(FlipDirection(speed, isSkipped));
-			return directionCoroutine;
-		}
-
-		public void HighlightInstant() => ChangeBrightnessInstant(true);
-		public Coroutine Highlight(float speed = 0)
-		{
-			bool isSkipped = manager.StopProcess(ref brightnessCoroutine);
-
-			brightnessCoroutine = manager.StartCoroutine(ChangeBrightness(true, speed, isSkipped));
-			return brightnessCoroutine;
-		}
-
-		public void UnhighlightInstant() => ChangeBrightnessInstant(false);
-		public Coroutine Unhighlight(float speed = 0)
-		{
-			bool isSkipped = manager.StopProcess(ref brightnessCoroutine);
-
-			brightnessCoroutine = manager.StartCoroutine(ChangeBrightness(false, speed, isSkipped));
-			return brightnessCoroutine;
-		}
-
-		public void SetColorInstant(Color color) => ChangeColorInstant(color);
-		public Coroutine SetColor(Color color, float speed = 0)
-		{
-			bool isSkipped = manager.StopProcess(ref colorCoroutine);
-
-			colorCoroutine = manager.StartCoroutine(ChangeColor(color, speed, isSkipped));
-			return colorCoroutine;
+			return Flip(isImmediate, speed);
 		}
 
 		public void SetAnimation(string animationName)
@@ -185,14 +150,13 @@ namespace Characters
 			);
 		}
 
-		void ChangeVisibilityInstant(bool isVisible)
+		void SetVisibility(bool isVisible)
 		{
-			manager.StopProcess(ref visibilityCoroutine);
-
 			rootCanvasGroup.alpha = isVisible ? 1f : 0f;
 			this.isVisible = isVisible;
 		}
-		IEnumerator ChangeVisibility(bool isVisible, float speed, bool isSkipped)
+
+		IEnumerator TransitionVisibility(bool isVisible, float speed, bool isSkipped)
 		{
 			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
 
@@ -202,7 +166,7 @@ namespace Characters
 			visibilityCoroutine = null;
 		}
 
-		IEnumerator MoveCharacter(Vector2 normalizedPos, float speed, bool isSkipped)
+		IEnumerator TransitionPosition(Vector2 normalizedPos, float speed, bool isSkipped)
 		{
 			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.MoveSpeed, isSkipped);
 

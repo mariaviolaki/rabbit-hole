@@ -35,24 +35,14 @@ namespace Audio
 			audioGroups[audioType].CreateLayers(layerCount);
 		}
 
-		public void PlayInstant(AudioType audioType, string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false, int layerNum = 0)
+		public void Play(AudioType audioType, string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false, bool isImmediate = false, float fadeSpeed = 0f, int layerNum = 0)
 		{
-			audioGroups[audioType].PlayInstant(audioName, volume, pitch, isLooping, layerNum);
+			audioGroups[audioType].Play(audioName, volume, pitch, isLooping, isImmediate, fadeSpeed, layerNum);
 		}
 
-		public void Play(AudioType audioType, string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false, float fadeSpeed = 0f, int layerNum = 0)
+		public void Stop(AudioType audioType, string audioName, bool isImmediate = false, float fadeSpeed = 0f, int layerNum = 0)
 		{
-			audioGroups[audioType].Play(audioName, volume, pitch, isLooping, fadeSpeed, layerNum);
-		}
-
-		public void StopInstant(AudioType audioType, string audioName, int layerNum = 0)
-		{
-			audioGroups[audioType].StopInstant(audioName, layerNum);
-		}
-
-		public void Stop(AudioType audioType, string audioName, float fadeSpeed = 0f, int layerNum = 0)
-		{
-			audioGroups[audioType].Stop(audioName, fadeSpeed, layerNum);
+			audioGroups[audioType].Stop(audioName, isImmediate, fadeSpeed, layerNum);
 		}
 	}
 }

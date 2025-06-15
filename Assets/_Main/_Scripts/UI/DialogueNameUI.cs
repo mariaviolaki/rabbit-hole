@@ -8,16 +8,15 @@ namespace UI
 	{
 		[SerializeField] TextMeshProUGUI nameText;
 
-		public Coroutine ShowSpeaker(CharacterData characterData, float fadeSpeed = 0)
+		public Coroutine ShowSpeaker(CharacterData characterData, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			UpdateNameText(characterData);
-
-			return Show(fadeSpeed);
+			return Show(isImmediate, fadeSpeed);
 		}
 
-		public Coroutine HideSpeaker(float fadeSpeed = 0)
+		public Coroutine HideSpeaker(bool isImmediate = false, float fadeSpeed = 0)
 		{
-			return Hide(fadeSpeed);
+			return Hide(isImmediate, fadeSpeed);
 		}
 
 		void UpdateNameText(CharacterData characterData)

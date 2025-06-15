@@ -18,22 +18,22 @@ namespace UI
 			UpdateFontSize(gameOptions.Dialogue.DefaultFont);
 		}
 
-		public Coroutine ShowSpeaker(CharacterData characterData, float fadeSpeed = 0)
+		public Coroutine ShowSpeaker(CharacterData characterData, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			UpdateDialogueText(characterData);
 
-			dialogueNameUI.ShowSpeaker(characterData, fadeSpeed);
+			dialogueNameUI.ShowSpeaker(characterData, isImmediate, fadeSpeed);
 
 			// Ensure that the dialogue box is visible when a character speaks
-			return Show(fadeSpeed);
+			return Show(isImmediate, fadeSpeed);
 		}
 
-		public Coroutine HideSpeaker(float fadeSpeed = 0)
+		public Coroutine HideSpeaker(bool isImmediate = false, float fadeSpeed = 0)
 		{
 			// When there is no speaker specified, revert to default text as dialogue
 			UpdateDialogueText(null);
 
-			return dialogueNameUI.HideSpeaker(fadeSpeed);
+			return dialogueNameUI.HideSpeaker(isImmediate, fadeSpeed);
 		}
 
 		void UpdateDialogueText(CharacterData characterData)

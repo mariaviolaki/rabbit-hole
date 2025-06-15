@@ -49,3 +49,11 @@ namespace GameIO
 		None, mp4, mp3, ogg
 	}
 }
+
+namespace Commands
+{
+	public enum CommandSkipType
+	{
+		None, Immediate, Transition
+	}
+}

@@ -52,9 +52,9 @@ namespace Dialogue
 			// TODO start dialogue using other triggers
 			if (Input.GetKeyDown(KeyCode.Return))
 			{
-				StartCoroutine(RunTest());
+				//StartCoroutine(RunTest());
 
-				//StartCoroutine(StartDialogueFromFile());
+				StartCoroutine(StartDialogueFromFile());
 			}
 		}
 

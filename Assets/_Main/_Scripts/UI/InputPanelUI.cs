@@ -13,7 +13,7 @@ namespace UI
 		[SerializeField] TMP_InputField inputField;
 		[SerializeField] Button submitButton;
 
-		bool hasFadeTransition = true;
+		bool isImmediate = false;
 
 		public event Action OnClose;
 
@@ -29,38 +29,22 @@ namespace UI
 			UnsubscribeListeners();
 		}
 
-		public void ShowInstant(string title)
-		{
-			if (IsVisible) return;
-
-			hasFadeTransition = false;
-			ResetInput(title);
-			SetVisible();
-		}
-
-		public Coroutine Show(string title, float speed = 0)
+		public Coroutine Show(string title, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			if (IsVisible) return null;
 
-			fadeSpeed = speed;
-			hasFadeTransition = true;
+			base.fadeSpeed = fadeSpeed;
+			this.isImmediate = isImmediate;
 			ResetInput(title);
-			return FadeIn(speed);
-		}
 
-		void HideInstant()
-		{
-			if (IsHidden) return;
-
-			SetHidden();
-			OnClose?.Invoke();
+			return SetVisible(isImmediate, fadeSpeed);
 		}
 
 		Coroutine Hide()
 		{
 			if (IsHidden) return null;
 
-			return FadeOut(fadeSpeed);
+			return SetHidden(isImmediate, fadeSpeed);
 		}
 
 		void SubmitInput()
@@ -68,9 +52,7 @@ namespace UI
 			if (string.IsNullOrWhiteSpace(inputField.text)) return;
 
 			inputManager.OnSubmitInput?.Invoke(inputField.text.Trim());
-
-			if (hasFadeTransition) Hide();
-			else HideInstant();
+			Hide();
 		}
 
 		void SetButtonVisibility(string input)
@@ -88,8 +70,6 @@ namespace UI
 		{
 			titleText.text = title;
 			inputField.text = string.Empty;
-			//inputField.Select();
-			//inputField.ActivateInputField();
 
 			if (submitButton.gameObject.activeSelf)
 				submitButton.gameObject.SetActive(false);
@@ -109,9 +89,9 @@ namespace UI
 			submitButton.onClick.RemoveListener(SubmitInput);
 		}
 
-		protected override IEnumerator FadeOutProcess()
+		protected override IEnumerator FadeOut()
 		{
-			yield return base.FadeOutProcess();
+			yield return base.FadeOut();
 			OnClose?.Invoke();
 		}
 	}

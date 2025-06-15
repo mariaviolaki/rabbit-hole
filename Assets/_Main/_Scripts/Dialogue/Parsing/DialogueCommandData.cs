@@ -9,10 +9,10 @@ namespace Dialogue
 		public class Command
 		{
 			public string Name { get; private set; }
-			public string[] Arguments { get; private set; }
+			public DialogueCommandArguments Arguments { get; private set; }
 			public bool IsWaiting { get; private set; }
 
-			public Command(string name, string[] arguments, bool isWaiting)
+			public Command(string name, DialogueCommandArguments arguments, bool isWaiting)
 			{
 				Name = name;
 				Arguments = arguments;
@@ -137,7 +137,8 @@ namespace Dialogue
 
 			if (string.IsNullOrWhiteSpace(name)) return;
 
-			Command command = new Command(name, arguments.ToArray(), isWaiting);
+			DialogueCommandArguments commandArguments = new DialogueCommandArguments(arguments);
+			Command command = new Command(name, commandArguments, isWaiting);
 			CommandList.Add(command);
 		}
 

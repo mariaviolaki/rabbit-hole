@@ -24,34 +24,34 @@ namespace Graphics
 			this.manager = manager;
 		}
 
-		public void ClearInstant(int depth = -1)
-		{
-			VisualLayer[] layersToClear = GetLayersFromDepth(depth);
-			if (layersToClear == null) return;
-
-			foreach (VisualLayer layer in layersToClear)
-			{
-				layer.ClearInstant();
-			}
-		}
-
-		public Coroutine Clear(int depth = -1, float speed = 0)
+		public Coroutine Clear(int depth = -1, bool isImmediate = false, float speed = 0)
 		{
 			VisualLayer[] layersToClear = GetLayersFromDepth(depth);
 			if (layersToClear == null) return null;
 
-			bool isAnyProcessStopped = false;
-			foreach (VisualLayer layer in layersToClear)
+			if (isImmediate)
 			{
-				if (layer.StopTransition())
-					isAnyProcessStopped = true;
+				foreach (VisualLayer layer in layersToClear)
+				{
+					layer.Clear(true);
+				}
+				return null;
 			}
+			else
+			{
+				bool isAnyProcessStopped = false;
+				foreach (VisualLayer layer in layersToClear)
+				{
+					if (layer.StopTransition())
+						isAnyProcessStopped = true;
+				}
 
-			bool isClearStopped = manager.StopProcess(ref clearCoroutine);
-			speed = manager.GetTransitionSpeed(speed, isClearStopped || isAnyProcessStopped);
+				bool isClearStopped = manager.StopProcess(ref clearCoroutine);
+				speed = manager.GetTransitionSpeed(speed, isClearStopped || isAnyProcessStopped);
 
-			clearCoroutine = manager.StartCoroutine(ClearLayers(layersToClear, speed));
-			return clearCoroutine;
+				clearCoroutine = manager.StartCoroutine(ClearLayers(layersToClear, speed));
+				return clearCoroutine;
+			}
 		}
 
 		public VisualLayer GetLayer(int depth)
@@ -111,7 +111,7 @@ namespace Graphics
 		{
 			foreach (VisualLayer layer in layersToClear)
 			{
-				layer.Clear(speed);
+				layer.Clear(false, speed);
 			}
 
 			while (!layersToClear.All(l => l.IsIdle)) yield return null;

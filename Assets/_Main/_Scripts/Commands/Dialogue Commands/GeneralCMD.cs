@@ -1,3 +1,4 @@
+using Dialogue;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -10,12 +11,13 @@ namespace Commands
 		{
 			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
 
-			directory.AddCommand("Wait", new Func<string, IEnumerator>(Wait));
+			directory.AddCommand("Wait", new Func<DialogueCommandArguments, IEnumerator>(Wait));
 		}
 
-		static IEnumerator Wait(string arg)
+		static IEnumerator Wait(DialogueCommandArguments args)
 		{
-			float time = ParseArgument<float>(arg);
+			float time = args.Get(0, "time", 1f);
+
 			yield return new WaitForSeconds(time);
 		}
 	}

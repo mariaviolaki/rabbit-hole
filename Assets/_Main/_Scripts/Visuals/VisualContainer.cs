@@ -49,49 +49,55 @@ namespace Graphics
 			rectTransform.offsetMax = Vector2.zero;
 		}
 
-		public void ClearInstant()
-		{
-			layerGroup.Manager.StopProcess(ref transitionCoroutine);
-			UnloadVisual();
-			canvasGroup.alpha = 0;
-		}
-
-		public Coroutine Clear(float speed)
+		public Coroutine Clear(bool isImmediate = false, float speed = 0)
 		{
 			bool isSkipped = layerGroup.Manager.StopProcess(ref transitionCoroutine);
-			transitionCoroutine = layerGroup.Manager.StartCoroutine(ClearVisual(speed, isSkipped));
-			return transitionCoroutine;
+
+			if (isImmediate)
+			{
+				UnloadVisual();
+				canvasGroup.alpha = 0;
+				return null;
+			}
+			else
+			{
+				transitionCoroutine = layerGroup.Manager.StartCoroutine(ClearVisual(speed, isSkipped));
+				return transitionCoroutine;
+			}
 		}
 
-		public void SetImageInstant(string name)
-		{
-			if (isImage && visualName == name) return;
-
-			layerGroup.Manager.StartCoroutine(LoadImage(name));
-		}
-
-		public Coroutine SetImage(string name, float speed = 0)
+		public Coroutine SetImage(string name, bool isImmediate = false, float speed = 0)
 		{
 			if (isImage && visualName == name) return null;
 
 			bool isSkipped = layerGroup.Manager.StopProcess(ref transitionCoroutine);
 
-			transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeVisual(name, speed, isSkipped, true, true));
-			return transitionCoroutine;
+			if (isImmediate)
+			{
+				layerGroup.Manager.StartCoroutine(LoadImage(name));
+				return null;
+			}
+			else
+			{
+				transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeVisual(name, speed, isSkipped, true, true));
+				return transitionCoroutine;
+			}
 		}
 
-		public void SetVideoInstant(string name, bool isMuted = false)
-		{
-			layerGroup.Manager.StopProcess(ref transitionCoroutine);
-			ApplyVideo(name, isMuted);
-		}
-
-		public Coroutine SetVideo(string name, bool isMuted = false, float speed = 0)
+		public Coroutine SetVideo(string name, bool isMuted = false, bool isImmediate = false, float speed = 0)
 		{
 			bool isSkipped = layerGroup.Manager.StopProcess(ref transitionCoroutine);
 
-			transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeVisual(name, speed, isSkipped, false, isMuted));
-			return transitionCoroutine;
+			if (isImmediate)
+			{
+				ApplyVideo(name, isMuted);
+				return null;
+			}
+			else
+			{
+				transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeVisual(name, speed, isSkipped, false, isMuted));
+				return transitionCoroutine;
+			}
 		}
 
 		public bool StopTransition()

@@ -25,44 +25,52 @@ namespace UI
 			ToggleOverlayControls(false);
 		}
 
-		public void ShowInstant()
-		{
-			ToggleVisualNovelUI(true);
-		}
-
-		public Coroutine Show(float fadeSpeed = 0)
+		public Coroutine Show(bool isImmediate = false, float fadeSpeed = 0)
 		{
 			StopFadeCoroutine();
 
-			fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
-			fadeCoroutine = StartCoroutine(FadeVisualNovelUI(true, fadeSpeed));
-			return fadeCoroutine;
+			if (isImmediate)
+			{
+				ToggleVisualNovelUI(true);
+				return null;
+			}
+			else
+			{
+				fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
+				fadeCoroutine = StartCoroutine(FadeVisualNovelUI(true, fadeSpeed));
+				return fadeCoroutine;
+			}
 		}
 
-		public void HideInstant()
-		{
-			ToggleVisualNovelUI(false);
-		}
-
-		public Coroutine Hide(float fadeSpeed = 0)
+		public Coroutine Hide(bool isImmediate = false, float fadeSpeed = 0)
 		{
 			StopFadeCoroutine();
 
-			fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
-			fadeCoroutine = StartCoroutine(FadeVisualNovelUI(false, fadeSpeed));
-			return fadeCoroutine;
+			if (isImmediate)
+			{
+				ToggleVisualNovelUI(false);
+				return null;
+			}
+			else
+			{
+				fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
+				fadeCoroutine = StartCoroutine(FadeVisualNovelUI(false, fadeSpeed));
+				return fadeCoroutine;
+			}
 		}
 
-		public Coroutine ShowSpeaker(CharacterData characterData, float fadeSpeed = 0) => dialogue.ShowSpeaker(characterData, fadeSpeed);
-		public Coroutine HideSpeaker(float fadeSpeed = 0) => dialogue.HideSpeaker(fadeSpeed);
+		public Coroutine ShowSpeaker(CharacterData characterData, bool isImmediate = false, float fadeSpeed = 0)
+			=> dialogue.ShowSpeaker(characterData, isImmediate, fadeSpeed);
+		public Coroutine HideSpeaker(bool isImmediate = false, float fadeSpeed = 0)
+			=> dialogue.HideSpeaker(isImmediate, fadeSpeed);
 
-		public void ShowDialogueInstant() => dialogue.ShowInstant();
-		public Coroutine ShowDialogue(float fadeSpeed = 0) => dialogue.Show(fadeSpeed);
-		public void HideDialogueInstant() => dialogue.HideInstant();
-		public Coroutine HideDialogue(float fadeSpeed = 0) => dialogue.Hide(fadeSpeed);
+		public Coroutine ShowDialogue(bool isImmediate = false, float fadeSpeed = 0)
+			=> dialogue.Show(isImmediate, fadeSpeed);
+		public Coroutine HideDialogue(bool isImmediate = false, float fadeSpeed = 0)
+			=> dialogue.Hide(isImmediate, fadeSpeed);
 
-		public void ShowInputInstant(string title) => gameplayControls.ShowInputInstant(title);
-		public Coroutine ShowInput(string title, float fadeSpeed = 0) => gameplayControls.ShowInput(title, fadeSpeed);
+		public Coroutine ShowInput(string title, bool isImmediate = false, float fadeSpeed = 0)
+			=> gameplayControls.ShowInput(title, isImmediate, fadeSpeed);
 
 		void StopFadeCoroutine()
 		{
@@ -80,8 +88,8 @@ namespace UI
 			{
 				FadeableUI canvasUI = canvases[i];
 
-				if (isShowing) canvasUI.ShowInstant();
-				else canvasUI.HideInstant();
+				if (isShowing) canvasUI.Show(true);
+				else canvasUI.Hide(true);
 			}
 			ToggleOverlayControls(!isShowing);
 		}
@@ -106,7 +114,7 @@ namespace UI
 			IEnumerator MarkFadeCompletion(int canvasIndex)
 			{
 				FadeableUI canvasUI = canvases[canvasIndex];
-				yield return isFadeIn ? canvasUI.Show(fadeSpeed) : canvasUI.Hide(fadeSpeed);
+				yield return isFadeIn ? canvasUI.Show(false, fadeSpeed) : canvasUI.Hide(false, fadeSpeed);
 				fadedCount++;
 			}
 

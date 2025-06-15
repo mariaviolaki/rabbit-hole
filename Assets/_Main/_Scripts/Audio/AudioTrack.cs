@@ -30,33 +30,30 @@ namespace Audio
 			this.name = name;
 		}
 
-		public void PlayInstant(float volume, float pitch, bool isLooping)
+		public void Play(float volume, float pitch, bool isLooping, bool isImmediate, float fadeSpeed)
 		{
 			if (playCoroutine != null) return;
-			playCoroutine = audioGroup.Manager.StartCoroutine(LoadTrack(volume, pitch, isLooping, volume));
+
+			if (isImmediate)
+				playCoroutine = audioGroup.Manager.StartCoroutine(LoadTrack(volume, pitch, isLooping, volume));
+			else
+				playCoroutine = audioGroup.Manager.StartCoroutine(PlayAndFadeIn(volume, pitch, isLooping, fadeSpeed));			
 		}
 
-		public void Play(float volume, float pitch, bool isLooping, float fadeSpeed)
-		{
-			if (playCoroutine != null) return;
-			playCoroutine = audioGroup.Manager.StartCoroutine(PlayAndFadeIn(volume, pitch, isLooping, fadeSpeed));
-		}
-
-		public void StopInstant()
+		public void Stop(bool isImmediate, float fadeSpeed)
 		{
 			if (stopCoroutine != null) return;
 
-			StopAudioCoroutine(ref playCoroutine);
-			StopAudioCoroutine(ref autoStopCoroutine);
-
-			UnloadTrack();
-		}
-
-		public void Stop(float fadeSpeed)
-		{
-			if (stopCoroutine != null) return;
-
-			stopCoroutine = audioGroup.Manager.StartCoroutine(FadeOutAndStop(fadeSpeed));
+			if (isImmediate)
+			{
+				StopAudioCoroutine(ref playCoroutine);
+				StopAudioCoroutine(ref autoStopCoroutine);
+				UnloadTrack();
+			}
+			else
+			{
+				stopCoroutine = audioGroup.Manager.StartCoroutine(FadeOutAndStop(fadeSpeed));
+			}
 		}
 
 		IEnumerator LoadTrack(float volume, float pitch, bool isLooping, float startVolume)

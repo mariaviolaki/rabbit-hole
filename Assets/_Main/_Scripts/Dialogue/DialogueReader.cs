@@ -200,9 +200,7 @@ namespace Dialogue
 				CommandProcess process = commandManager.Execute(command.Name, command.Arguments);
 				if (process == null) continue;
 
-				if (process.IsTask)
-					while (!process.IsCompleted) yield return null;
-				else if (command.IsWaiting || command.Name == "Wait")
+				if (command.IsWaiting || command.Name.ToLower() == "wait")
 					processesToWait.Add(process);						
 			}
 
@@ -238,14 +236,9 @@ namespace Dialogue
 
 		void ChangeSpeakerPosition(Character character, float xPos, float yPos)
 		{
-			if (character is not GraphicsCharacter) return;
+			if (character is not GraphicsCharacter || (float.IsNaN(xPos) && float.IsNaN(yPos))) return;
 
-			if (!float.IsNaN(xPos) && !float.IsNaN(yPos))
-				((GraphicsCharacter)character).SetPosition(new Vector2(xPos, yPos));
-			else if (!float.IsNaN(xPos))
-				((GraphicsCharacter)character).SetPositionX(xPos);
-			else if (!float.IsNaN(yPos))
-				((GraphicsCharacter)character).SetPositionY(yPos);
+			((GraphicsCharacter)character).SetPosition(xPos, yPos, false);
 		}
 
 		void ChangeSpeakerGraphics(Character character, Dictionary<SpriteLayerType, string> graphics)

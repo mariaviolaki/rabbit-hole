@@ -1,4 +1,5 @@
 using Audio;
+using Dialogue;
 using System;
 
 namespace Commands
@@ -14,231 +15,147 @@ namespace Commands
 			CommandDirectory directory = commandManager.GetDirectory(CommandManager.AudioDirectoryName);
 
 			// Initialize Layers
-			directory.AddCommand("CreateAmbient", new Action<string[]>(CreateAmbient));
-			directory.AddCommand("CreateMusic", new Action<string[]>(CreateMusic));
-			directory.AddCommand("CreateSFX", new Action<string[]>(CreateSFX));
-			directory.AddCommand("CreateVoice", new Action<string[]>(CreateVoice));
+			directory.AddCommand("CreateAmbient", new Action<DialogueCommandArguments>(CreateAmbient));
+			directory.AddCommand("CreateMusic", new Action<DialogueCommandArguments>(CreateMusic));
+			directory.AddCommand("CreateSFX", new Action<DialogueCommandArguments>(CreateSFX));
+			directory.AddCommand("CreateVoice", new Action<DialogueCommandArguments>(CreateVoice));
 
-			// Play Instantly
-			directory.AddCommand("PlayAmbientInstant", new Action<string[]>(PlayAmbientInstant));
-			directory.AddCommand("PlayMusicInstant", new Action<string[]>(PlayMusicInstant));
-			directory.AddCommand("PlaySFXInstant", new Action<string[]>(PlaySFXInstant));
-			directory.AddCommand("PlayVoiceInstant", new Action<string[]>(PlayVoiceInstant));
+			// Play Audio
+			directory.AddCommand("PlayAmbient", new Action<DialogueCommandArguments>(PlayAmbient));
+			directory.AddCommand("PlayMusic", new Action<DialogueCommandArguments>(PlayMusic));
+			directory.AddCommand("PlaySFX", new Action<DialogueCommandArguments>(PlaySFX));
+			directory.AddCommand("PlayVoice", new Action<DialogueCommandArguments>(PlayVoice));
 
-			// Play and Fade In
-			directory.AddCommand("PlayAmbient", new Action<string[]>(PlayAmbient), new Action<string[]>(PlayAmbientInstant));
-			directory.AddCommand("PlayMusic", new Action<string[]>(PlayMusic), new Action<string[]>(PlayMusicInstant));
-			directory.AddCommand("PlaySFX", new Action<string[]>(PlaySFX), new Action<string[]>(PlaySFXInstant));
-			directory.AddCommand("PlayVoice", new Action<string[]>(PlayVoice), new Action<string[]>(PlayVoiceInstant));
-
-			// Stop Instantly
-			directory.AddCommand("StopAmbientInstant", new Action<string[]>(StopAmbientInstant));
-			directory.AddCommand("StopMusicInstant", new Action<string[]>(StopMusicInstant));
-			directory.AddCommand("StopSFXInstant", new Action<string[]>(StopSFXInstant));
-			directory.AddCommand("StopVoiceInstant", new Action<string[]>(StopVoiceInstant));
-
-			// Fade Out and Stop
-			directory.AddCommand("StopAmbient", new Action<string[]>(StopAmbient), new Action<string[]>(StopAmbientInstant));
-			directory.AddCommand("StopMusic", new Action<string[]>(StopMusic), new Action<string[]>(StopMusicInstant));
-			directory.AddCommand("StopSFX", new Action<string[]>(StopSFX), new Action<string[]>(StopSFXInstant));
-			directory.AddCommand("StopVoice", new Action<string[]>(StopVoice), new Action<string[]>(StopVoiceInstant));
+			// Stop Audio
+			directory.AddCommand("StopAmbient", new Action<DialogueCommandArguments>(StopAmbient));
+			directory.AddCommand("StopMusic", new Action<DialogueCommandArguments>(StopMusic));
+			directory.AddCommand("StopSFX", new Action<DialogueCommandArguments>(StopSFX));
+			directory.AddCommand("StopVoice", new Action<DialogueCommandArguments>(StopVoice));
 		}
 
 
 		/***** Initialize Layers *****/
 
-		static void CreateAmbient(string[] args)
+		static void CreateAmbient(DialogueCommandArguments args)
 		{
-			int layerCount = args.Length > 0 ? ParseArgument<int>(args[0]) : 1;
-
-			audioManager.Create(Audio.AudioType.Ambient, layerCount);
+			int layerCount = args.Get(0, "layers", 1);
+			
+			audioManager.Create(AudioType.Ambient, layerCount);
 		}
 
-		static void CreateMusic(string[] args)
+		static void CreateMusic(DialogueCommandArguments args)
 		{
-			int layerCount = args.Length > 0 ? ParseArgument<int>(args[0]) : 1;
+			int layerCount = args.Get(0, "layers", 1);
 
-			audioManager.Create(Audio.AudioType.Music, layerCount);
+			audioManager.Create(AudioType.Music, layerCount);
 		}
 
-		static void CreateSFX(string[] args)
+		static void CreateSFX(DialogueCommandArguments args)
 		{
-			audioManager.Create(Audio.AudioType.SFX, 1);
+			audioManager.Create(AudioType.SFX, 1);
 		}
 
-		static void CreateVoice(string[] args)
+		static void CreateVoice(DialogueCommandArguments args)
 		{
-			int layerCount = args.Length > 0 ? ParseArgument<int>(args[0]) : 1;
+			int layerCount = args.Get(0, "layers", 1);
 
-			audioManager.Create(Audio.AudioType.Voice, layerCount);
-		}
-
-
-		/***** Play Instantly *****/
-
-		static void PlayAmbientInstant(string[] args)
-		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float volume = args.Length > 1 ? ParseArgument<float>(args[1]) : 0.5f;
-			float pitch = args.Length > 2 ? ParseArgument<float>(args[2]) : 1f;
-			bool isLooping = args.Length > 3 ? ParseArgument<bool>(args[3]) : true;
-			int layerNum = args.Length > 4 ? ParseArgument<int>(args[4]) : 0;
-
-			audioManager.PlayInstant(Audio.AudioType.Ambient, fileName, volume, pitch, isLooping, layerNum);
-		}
-
-		static void PlayMusicInstant(string[] args)
-		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float volume = args.Length > 1 ? ParseArgument<float>(args[1]) : 0.5f;
-			float pitch = args.Length > 2 ? ParseArgument<float>(args[2]) : 1f;
-			bool isLooping = args.Length > 3 ? ParseArgument<bool>(args[3]) : true;
-			int layerNum = args.Length > 4 ? ParseArgument<int>(args[4]) : 0;
-
-			audioManager.PlayInstant(Audio.AudioType.Music, fileName, volume, pitch, isLooping, layerNum);
-		}
-
-		static void PlaySFXInstant(string[] args)
-		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float volume = args.Length > 1 ? ParseArgument<float>(args[1]) : 0.5f;
-			float pitch = args.Length > 2 ? ParseArgument<float>(args[2]) : 1f;
-			bool isLooping = args.Length > 3 ? ParseArgument<bool>(args[3]) : false;
-
-			audioManager.PlayInstant(Audio.AudioType.SFX, fileName, volume, pitch, isLooping, 0);
-		}
-
-		static void PlayVoiceInstant(string[] args)
-		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float volume = args.Length > 1 ? ParseArgument<float>(args[1]) : 0.5f;
-			float pitch = args.Length > 2 ? ParseArgument<float>(args[2]) : 1f;
-			bool isLooping = args.Length > 3 ? ParseArgument<bool>(args[3]) : false;
-			int layerNum = args.Length > 4 ? ParseArgument<int>(args[4]) : 0;
-
-			audioManager.PlayInstant(Audio.AudioType.Voice, fileName, volume, pitch, isLooping, layerNum);
+			audioManager.Create(AudioType.Voice, layerCount);
 		}
 
 
-		/***** Play and Fade In *****/
+		/***** Play Audio *****/
 
-		static void PlayAmbient(string[] args)
+		static void PlayAmbient(DialogueCommandArguments args)
 		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float volume = args.Length > 1 ? ParseArgument<float>(args[1]) : 0.5f;
-			float pitch = args.Length > 2 ? ParseArgument<float>(args[2]) : 1f;
-			bool isLooping = args.Length > 3 ? ParseArgument<bool>(args[3]) : true;
-			float fadeSpeed = args.Length > 4 ? ParseArgument<float>(args[4]) : 0;
-			int layerNum = args.Length > 5 ? ParseArgument<int>(args[5]) : 0;
+			string fileName = args.Get(0, "name", "");
+			float volume = args.Get(1, "volume", 0.5f);
+			float pitch = args.Get(2, "pitch", 1f);
+			bool isLooping = args.Get(3, "loop", true);
+			bool isImmediate = args.Get(4, "immediate", false);
+			float fadeSpeed = args.Get(5, "speed", 0f);
+			int layerNum = args.Get(6, "layer", 0);
 
-			audioManager.Play(Audio.AudioType.Ambient, fileName, volume, pitch, isLooping, fadeSpeed, layerNum);
+			audioManager.Play(AudioType.Ambient, fileName, volume, pitch, isLooping, isImmediate, fadeSpeed, layerNum);
 		}
 
-		static void PlayMusic(string[] args)
+		static void PlayMusic(DialogueCommandArguments args)
 		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float volume = args.Length > 1 ? ParseArgument<float>(args[1]) : 0.5f;
-			float pitch = args.Length > 2 ? ParseArgument<float>(args[2]) : 1f;
-			bool isLooping = args.Length > 3 ? ParseArgument<bool>(args[3]) : true;
-			float fadeSpeed = args.Length > 4 ? ParseArgument<float>(args[4]) : 0;
-			int layerNum = args.Length > 5 ? ParseArgument<int>(args[5]) : 0;
+			string fileName = args.Get(0, "name", "");
+			float volume = args.Get(1, "volume", 0.5f);
+			float pitch = args.Get(2, "pitch", 1f);
+			bool isLooping = args.Get(3, "loop", true);
+			bool isImmediate = args.Get(4, "immediate", false);
+			float fadeSpeed = args.Get(5, "speed", 0f);
+			int layerNum = args.Get(6, "layer", 0);
 
-			audioManager.Play(Audio.AudioType.Music, fileName, volume, pitch, isLooping, fadeSpeed, layerNum);
+			audioManager.Play(AudioType.Music, fileName, volume, pitch, isLooping, isImmediate, fadeSpeed, layerNum);
 		}
 
-		static void PlaySFX(string[] args)
+		static void PlaySFX(DialogueCommandArguments args)
 		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float volume = args.Length > 1 ? ParseArgument<float>(args[1]) : 0.5f;
-			float pitch = args.Length > 2 ? ParseArgument<float>(args[2]) : 1f;
-			bool isLooping = args.Length > 3 ? ParseArgument<bool>(args[3]) : false;
-			float fadeSpeed = args.Length > 4 ? ParseArgument<float>(args[4]) : -1;
+			string fileName = args.Get(0, "name", "");
+			float volume = args.Get(1, "volume", 0.5f);
+			float pitch = args.Get(2, "pitch", 1f);
+			bool isLooping = args.Get(3, "loop", false);
+			bool isImmediate = args.Get(4, "immediate", true);
+			float fadeSpeed = args.Get(5, "speed", 0f);
 
-			audioManager.Play(Audio.AudioType.SFX, fileName, volume, pitch, isLooping, fadeSpeed, 0);
+			audioManager.Play(AudioType.SFX, fileName, volume, pitch, isLooping, isImmediate, fadeSpeed, 0);
 		}
 
-		static void PlayVoice(string[] args)
+		static void PlayVoice(DialogueCommandArguments args)
 		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float volume = args.Length > 1 ? ParseArgument<float>(args[1]) : 0.5f;
-			float pitch = args.Length > 2 ? ParseArgument<float>(args[2]) : 1f;
-			bool isLooping = args.Length > 3 ? ParseArgument<bool>(args[3]) : false;
-			float fadeSpeed = args.Length > 4 ? ParseArgument<float>(args[4]) : -1;
-			int layerNum = args.Length > 5 ? ParseArgument<int>(args[5]) : 0;
+			string fileName = args.Get(0, "name", "");
+			float volume = args.Get(1, "volume", 0.5f);
+			float pitch = args.Get(2, "pitch", 1f);
+			bool isLooping = args.Get(3, "loop", false);
+			bool isImmediate = args.Get(4, "immediate", true);
+			float fadeSpeed = args.Get(5, "speed", 0f);
+			int layerNum = args.Get(6, "layer", 0);
 
-			audioManager.Play(Audio.AudioType.Voice, fileName, volume, pitch, isLooping, fadeSpeed, layerNum);
-		}
-
-
-		/***** Stop Instantly *****/
-
-		static void StopAmbientInstant(string[] args)
-		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			int layerNum = args.Length > 1 ? ParseArgument<int>(args[1]) : 0;
-
-			audioManager.StopInstant(Audio.AudioType.Ambient, fileName, layerNum);
-		}
-
-		static void StopMusicInstant(string[] args)
-		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			int layerNum = args.Length > 1 ? ParseArgument<int>(args[1]) : 0;
-
-			audioManager.StopInstant(Audio.AudioType.Music, fileName, layerNum);
-		}
-
-		static void StopSFXInstant(string[] args)
-		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-
-			audioManager.StopInstant(Audio.AudioType.SFX, fileName, 0);
-		}
-
-		static void StopVoiceInstant(string[] args)
-		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			int layerNum = args.Length > 1 ? ParseArgument<int>(args[1]) : 0;
-
-			audioManager.StopInstant(Audio.AudioType.Voice, fileName, layerNum);
+			audioManager.Play(AudioType.Voice, fileName, volume, pitch, isLooping, isImmediate, fadeSpeed, layerNum);
 		}
 
 
-		/***** Fade Out and Stop *****/
+		/***** Stop Audio *****/
 
-		static void StopAmbient(string[] args)
+		static void StopAmbient(DialogueCommandArguments args)
 		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float fadeSpeed = args.Length > 1 ? ParseArgument<float>(args[1]) : 0;
-			int layerNum = args.Length > 2 ? ParseArgument<int>(args[2]) : 0;
+			string fileName = args.Get(0, "name", "");
+			bool isImmediate = args.Get(1, "immediate", false);
+			float fadeSpeed = args.Get(2, "speed", 0f);
+			int layerNum = args.Get(3, "layer", 0);
 
-			audioManager.Stop(Audio.AudioType.Ambient, fileName, fadeSpeed, layerNum);
+			audioManager.Stop(AudioType.Ambient, fileName, isImmediate, fadeSpeed, layerNum);
 		}
 
-		static void StopMusic(string[] args)
+		static void StopMusic(DialogueCommandArguments args)
 		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float fadeSpeed = args.Length > 1 ? ParseArgument<float>(args[1]) : 0;
-			int layerNum = args.Length > 2 ? ParseArgument<int>(args[2]) : 0;
+			string fileName = args.Get(0, "name", "");
+			bool isImmediate = args.Get(1, "immediate", false);
+			float fadeSpeed = args.Get(2, "speed", 0f);
+			int layerNum = args.Get(3, "layer", 0);
 
-			audioManager.Stop(Audio.AudioType.Music, fileName, fadeSpeed, layerNum);
+			audioManager.Stop(AudioType.Music, fileName, isImmediate, fadeSpeed, layerNum);
 		}
 
-		static void StopSFX(string[] args)
+		static void StopSFX(DialogueCommandArguments args)
 		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float fadeSpeed = args.Length > 1 ? ParseArgument<float>(args[1]) : 0;
+			string fileName = args.Get(0, "name", "");
+			bool isImmediate = args.Get(1, "immediate", false);
+			float fadeSpeed = args.Get(2, "speed", 0f);
 
-			audioManager.Stop(Audio.AudioType.SFX, fileName, fadeSpeed, 0);
+			audioManager.Stop(AudioType.SFX, fileName, isImmediate, fadeSpeed, 0);
 		}
 
-		static void StopVoice(string[] args)
+		static void StopVoice(DialogueCommandArguments args)
 		{
-			string fileName = args.Length > 0 ? ParseArgument<string>(args[0]) : null;
-			float fadeSpeed = args.Length > 1 ? ParseArgument<float>(args[1]) : 0;
-			int layerNum = args.Length > 2 ? ParseArgument<int>(args[2]) : 0;
+			string fileName = args.Get(0, "name", "");
+			bool isImmediate = args.Get(1, "immediate", false);
+			float fadeSpeed = args.Get(2, "speed", 0f);
+			int layerNum = args.Get(3, "layer", 0);
 
-			audioManager.Stop(Audio.AudioType.Voice, fileName, fadeSpeed, layerNum);
+			audioManager.Stop(AudioType.Voice, fileName, isImmediate, fadeSpeed, layerNum);
 		}
 	}
 }

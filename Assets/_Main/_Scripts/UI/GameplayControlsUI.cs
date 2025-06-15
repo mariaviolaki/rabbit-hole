@@ -22,18 +22,11 @@ namespace UI
 			inputPanel.OnClose -= CloseInput;
 		}
 
-		public Coroutine ShowInput(string title, float fadeSpeed = 0)
+		public Coroutine ShowInput(string title, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			inputPanel.gameObject.SetActive(true);
 
-			return inputPanel.Show(title, fadeSpeed);
-		}
-
-		public void ShowInputInstant(string title)
-		{
-			inputPanel.gameObject.SetActive(true);
-
-			inputPanel.ShowInstant(title);
+			return inputPanel.Show(title, isImmediate, fadeSpeed);
 		}
 
 		void CloseInput()

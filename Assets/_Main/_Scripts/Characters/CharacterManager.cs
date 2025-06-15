@@ -33,7 +33,7 @@ namespace Characters
 
 		public bool HasCharacter(string shortName) => characters.ContainsKey(shortName);
 
-		public IEnumerator CreateCharacters(string[] names)
+		public IEnumerator CreateCharacters(List<string> names)
 		{
 			int completedCharacterCount = 0;
 
@@ -43,7 +43,7 @@ namespace Characters
 				completedCharacterCount++;
 			}
 
-			for (int i = 0; i < names.Length; i++)
+			for (int i = 0; i < names.Count; i++)
 			{
 				string[] nameParts = names[i].Split(CharacterCastDelimiter);
 				string shortName = nameParts[0].Trim();
@@ -52,7 +52,7 @@ namespace Characters
 				StartCoroutine(MarkCharacterCompletion(shortName, castShortName));
 			}
 
-			while (completedCharacterCount != names.Length) yield return null;
+			while (completedCharacterCount != names.Count) yield return null;
 		}
 
 		public IEnumerator CreateCharacter(string shortName) => CreateCharacter(shortName, shortName);
@@ -69,7 +69,7 @@ namespace Characters
 				yield break;
 			}
 
-			castShortName = castShortName ?? shortName;
+			castShortName = string.IsNullOrWhiteSpace(castShortName) ? shortName : castShortName;
 			CharacterData data = characterDirectory.GetCharacterData(shortName, castShortName, gameOptions);
 
 			switch (data.Type)

@@ -89,101 +89,107 @@ namespace Characters
 			secondaryModelAnimator.SetTrigger(motionName);
 		}
 
-		public void SetExpressionInstant(string expressionName)
-		{
-			if (!IsValidExpression(expressionName)) return;
-
-			manager.StopProcess(ref expressionCoroutine);
-			ChangeExpressionInstant(expressionName);
-		}
-
-		public Coroutine SetExpression(string expressionName, float speed = 0)
+		public Coroutine SetExpression(string expressionName, bool isImmediate = false, float speed = 0)
 		{
 			if (!IsValidExpression(expressionName)) return null;
 
 			bool isSkipped = manager.StopProcess(ref expressionCoroutine);
 
-			expressionCoroutine = manager.StartCoroutine(ChangeExpression(expressionName, speed, isSkipped));
-			return expressionCoroutine;
+			if (isImmediate)
+			{
+				SetExpressionImmediate(expressionName);
+				return null;
+			}
+			else
+			{
+				expressionCoroutine = manager.StartCoroutine(TransitionExpression(expressionName, speed, isSkipped));
+				return expressionCoroutine;
+			}
 		}
 
-		public override void FlipInstant()
+		public override Coroutine Flip(bool isImmediate = false, float speed = 0)
 		{
-			manager.StopProcess(ref directionCoroutine);
+			bool isSkipped = manager.StopProcess(ref directionCoroutine);
 
-			Vector3 currentLocalScale = primaryRawImage.transform.localScale;
-			primaryRawImage.transform.localScale = new Vector3(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
-			isFacingRight = !isFacingRight;
-		}
-		protected override IEnumerator FlipDirection(float speed, bool isSkipped)
-		{
-			ToggleSecondaryImage(true);
-
-			Vector3 currentLocalScale = primaryRawImage.transform.localScale;
-			secondaryCanvasGroup.alpha = 0f;
-			secondaryCanvasGroup.transform.localScale = new Vector3(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
-
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Model3D.ExpressionTransitionSpeed, isSkipped);
-			yield return TransitionHandler.Replace(primaryCanvasGroup, secondaryCanvasGroup, speed);
-
-			ToggleSecondaryImage(false);
-			isFacingRight = !isFacingRight;
-			directionCoroutine = null;
+			if (isImmediate)
+			{
+				Vector3 currentLocalScale = primaryRawImage.transform.localScale;
+				primaryRawImage.transform.localScale = new Vector3(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
+				isFacingRight = !isFacingRight;
+				return null;
+			}
+			else
+			{
+				directionCoroutine = manager.StartCoroutine(TransitionDirection(speed, isSkipped));
+				return directionCoroutine;
+			}
 		}
 
-		public override void ChangeBrightnessInstant(bool isHighlighted)
+		public override Coroutine Highlight(bool isImmediate = false, float speed = 0)
 		{
-			manager.StopProcess(ref brightnessCoroutine);
+			bool isSkipped = manager.StopProcess(ref brightnessCoroutine);
 
+			if (isImmediate)
+			{
+				SetBrightnessImmediate(true);
+				return null;
+			}
+			else
+			{
+				brightnessCoroutine = manager.StartCoroutine(TransitionBrightness(primaryRawImage, true, speed, isSkipped));
+				return brightnessCoroutine;
+			}
+		}
+
+		public override Coroutine Unhighlight(bool isImmediate = false, float speed = 0)
+		{
+			bool isSkipped = manager.StopProcess(ref brightnessCoroutine);
+
+			if (isImmediate)
+			{
+				SetBrightnessImmediate(false);
+				return null;
+			}
+			else
+			{
+				brightnessCoroutine = manager.StartCoroutine(TransitionBrightness(primaryRawImage, false, speed, isSkipped));
+				return brightnessCoroutine;
+			}
+		}
+
+		public override Coroutine SetColor(Color color, bool isImmediate = false, float speed = 0)
+		{
+			bool isSkipped = manager.StopProcess(ref colorCoroutine);
+
+			if (isImmediate)
+			{
+				SetColorImmediate(color);
+				return null;
+			}
+			else
+			{
+				colorCoroutine = manager.StartCoroutine(TransitionColor(primaryRawImage, color, speed, isSkipped));
+				return colorCoroutine;
+			}
+		}
+
+		void SetBrightnessImmediate(bool isHighlighted)
+		{
 			primaryRawImage.color = isHighlighted ? LightColor : DarkColor;
 			this.isHighlighted = isHighlighted;
 		}
-		protected override IEnumerator ChangeBrightness(bool isHighlighted, float speed, bool isSkipped)
+
+		void SetColorImmediate(Color color)
 		{
-			yield return SetImageBrightness(primaryRawImage, isHighlighted, speed, isSkipped);
-
-			brightnessCoroutine = null;
-		}
-
-		public override void ChangeColorInstant(Color color)
-		{
-			manager.StopProcess(ref colorCoroutine);
-
 			primaryRawImage.color = color;
 			LightColor = color;
 		}
-		protected override IEnumerator ChangeColor(Color color, float speed, bool isSkipped)
-		{
-			yield return ColorImage(primaryRawImage, color, speed, isSkipped);
 
-			colorCoroutine = null;
-		}
-
-		IEnumerator ColorImage(Graphic image, Color color, float speed, bool isSkipped)
-		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.ColorTransitionSpeed, isSkipped);
-			Color targetColor = isHighlighted ? color : GetDarkColor(color);
-
-			yield return TransitionHandler.SetColor(image, targetColor, speed);
-
-			LightColor = color;
-		}
-
-		IEnumerator SetImageBrightness(Graphic image, bool isHighlighted, float speed, bool isSkipped)
-		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.BrightnessTransitionSpeed, isSkipped);
-			Color targetColor = isHighlighted ? LightColor : DarkColor;
-
-			yield return TransitionHandler.SetColor(image, targetColor, speed);
-
-			this.isHighlighted = isHighlighted;
-		}
-
-		void ChangeExpressionInstant(string expressionName)
+		void SetExpressionImmediate(string expressionName)
 		{
 			// Clear the old expression
 			if (currentExpression != string.Empty)
-				ChangeSubExpressionsInstant(currentExpression);
+				SetSubExpressionsImmediate(currentExpression);
 
 			// If a new expression was specified, change into this - and cache the new expression
 			if (expressionName == string.Empty)
@@ -192,38 +198,12 @@ namespace Characters
 			}
 			else
 			{
-				ChangeSubExpressionsInstant(expressionName);
+				SetSubExpressionsImmediate(expressionName);
 				currentExpression = expressionName;
 			}
 		}
 
-		IEnumerator ChangeExpression(string expressionName, float speed, bool isSkipped)
-		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Model3D.ExpressionTransitionSpeed, isSkipped);
-			float transitionDuration = (1 / speed) * expressionTransitionMultiplier;
-
-			// Fade off the old expression
-			if (currentExpression != string.Empty)
-			{
-				float fadeOffDuration = expressionName == null ? transitionDuration : (transitionDuration / 2);
-				yield return ChangeSubExpressions(currentExpression, fadeOffDuration);
-			}
-
-			// If a new expression was specified, transition into this - and cache the new expression
-			if (expressionName == string.Empty)
-			{
-				currentExpression = string.Empty;
-			}
-			else
-			{
-				yield return ChangeSubExpressions(expressionName, transitionDuration);
-				currentExpression = expressionName;
-			}
-
-			expressionCoroutine = null;
-		}
-
-		void ChangeSubExpressionsInstant(string expressionName)
+		void SetSubExpressionsImmediate(string expressionName)
 		{
 			bool isNewExpression = expressionName != currentExpression;
 			SubExpression[] currentSubExpressions = expressionDirectory.Expressions[expressionName];
@@ -234,32 +214,6 @@ namespace Characters
 				float expressionWeight = isNewExpression ? subExpression.Weight : 0f;
 				primaryMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
 				secondaryMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
-			}
-		}
-
-		IEnumerator ChangeSubExpressions(string expressionName, float transitionDuration)
-		{
-			bool isNewExpression = expressionName != currentExpression;
-			SubExpression[] currentSubExpressions = expressionDirectory.Expressions[expressionName];
-
-			float timeElapsed = 0;
-			while (timeElapsed < transitionDuration)
-			{
-				timeElapsed += Time.deltaTime;
-				float smoothProgress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(timeElapsed / transitionDuration));
-
-				// Smoothly transition all the sub-expressions listed for the main expression
-				foreach (SubExpression subExpression in currentSubExpressions)
-				{
-					float startWeight = isNewExpression ? 0f : subExpression.Weight;
-					float endWeight = isNewExpression ? subExpression.Weight : 0f;
-					float expressionWeight = Mathf.Lerp(startWeight, endWeight, smoothProgress);
-
-					primaryMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
-					secondaryMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
-				}
-
-				yield return null;
 			}
 		}
 
@@ -315,6 +269,96 @@ namespace Characters
 			secondaryModelContainer = tempModelContainer;
 			secondaryModelAnimator = tempModelAnimator;
 			secondaryMeshRenderer = tempMeshRenderer;
+		}
+
+		IEnumerator TransitionExpression(string expressionName, float speed, bool isSkipped)
+		{
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Model3D.ExpressionTransitionSpeed, isSkipped);
+			float transitionDuration = (1 / speed) * expressionTransitionMultiplier;
+
+			// Fade off the old expression
+			if (currentExpression != string.Empty)
+			{
+				float fadeOffDuration = expressionName == null ? transitionDuration : (transitionDuration / 2);
+				yield return ChangeSubExpressions(currentExpression, fadeOffDuration);
+			}
+
+			// If a new expression was specified, transition into this - and cache the new expression
+			if (expressionName == string.Empty)
+			{
+				currentExpression = string.Empty;
+			}
+			else
+			{
+				yield return ChangeSubExpressions(expressionName, transitionDuration);
+				currentExpression = expressionName;
+			}
+
+			expressionCoroutine = null;
+		}
+
+		IEnumerator TransitionDirection(float speed, bool isSkipped)
+		{
+			ToggleSecondaryImage(true);
+
+			Vector3 currentLocalScale = primaryRawImage.transform.localScale;
+			secondaryCanvasGroup.alpha = 0f;
+			secondaryCanvasGroup.transform.localScale = new Vector3(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
+
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Model3D.ExpressionTransitionSpeed, isSkipped);
+			yield return TransitionHandler.Replace(primaryCanvasGroup, secondaryCanvasGroup, speed);
+
+			ToggleSecondaryImage(false);
+			isFacingRight = !isFacingRight;
+			directionCoroutine = null;
+		}
+
+		IEnumerator TransitionColor(Graphic image, Color color, float speed, bool isSkipped)
+		{
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.ColorTransitionSpeed, isSkipped);
+			Color targetColor = isHighlighted ? color : GetDarkColor(color);
+
+			yield return TransitionHandler.SetColor(image, targetColor, speed);
+
+			LightColor = color;
+			colorCoroutine = null;
+		}
+
+		IEnumerator TransitionBrightness(Graphic image, bool isHighlighted, float speed, bool isSkipped)
+		{
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.BrightnessTransitionSpeed, isSkipped);
+			Color targetColor = isHighlighted ? LightColor : DarkColor;
+
+			yield return TransitionHandler.SetColor(image, targetColor, speed);
+
+			this.isHighlighted = isHighlighted;
+			brightnessCoroutine = null;
+		}
+
+		IEnumerator ChangeSubExpressions(string expressionName, float transitionDuration)
+		{
+			bool isNewExpression = expressionName != currentExpression;
+			SubExpression[] currentSubExpressions = expressionDirectory.Expressions[expressionName];
+
+			float timeElapsed = 0;
+			while (timeElapsed < transitionDuration)
+			{
+				timeElapsed += Time.deltaTime;
+				float smoothProgress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(timeElapsed / transitionDuration));
+
+				// Smoothly transition all the sub-expressions listed for the main expression
+				foreach (SubExpression subExpression in currentSubExpressions)
+				{
+					float startWeight = isNewExpression ? 0f : subExpression.Weight;
+					float endWeight = isNewExpression ? subExpression.Weight : 0f;
+					float expressionWeight = Mathf.Lerp(startWeight, endWeight, smoothProgress);
+
+					primaryMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
+					secondaryMeshRenderer.SetBlendShapeWeight(subExpression.Index, expressionWeight);
+				}
+
+				yield return null;
+			}
 		}
 	}
 }
