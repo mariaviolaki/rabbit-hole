@@ -161,8 +161,16 @@ namespace Dialogue
 			SpriteCharacter v = characterManager.GetCharacter("v") as SpriteCharacter;
 			yield return v.Show();
 
-			yield return v.Say("Ok, onto the choice panel now...");
-			yield return v.Say("Rate me.");
+			List<string> lines = new()
+			{
+				"",
+				"Ok, onto the choice panel now...",
+				"",
+				"Rate me.",
+				""
+			};
+
+			yield return v.Say(lines);
 
 			string[] choices =
 			{

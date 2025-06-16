@@ -10,7 +10,6 @@ namespace Dialogue
 {
 	public class DialogueReader
 	{
-		const string CommentLineDelimiter = "//";
 		const float MinAutoTime = 0.5f;
 		const float MaxAutoTime = 100f;
 		const float MinSkipTime = 0.001f;
@@ -28,6 +27,7 @@ namespace Dialogue
 		readonly DialogueContinuePromptUI continuePrompt;
 		readonly DialogueTagManager tagManager;
 		readonly LogicSegmentManager logicSegmentManager;
+		readonly DialogueStack dialogueStack;
 
 		Coroutine readProcess;
 
@@ -36,8 +36,6 @@ namespace Dialogue
 
 		public void AdvanceDialogue() => isRunning = true;
 		public void PauseDialogue() => isRunning = false;
-
-		bool IsValidDialogueLine(string line) => !string.IsNullOrEmpty(line) && !line.StartsWith(CommentLineDelimiter);
 
 		public DialogueReader(DialogueSystem dialogueSystem)
 		{
@@ -51,6 +49,7 @@ namespace Dialogue
 			textBuilder = new TextBuilder(visualNovelUI.DialogueText);
 			tagManager = new DialogueTagManager(dialogueSystem);
 			logicSegmentManager = new LogicSegmentManager(dialogueSystem);
+			dialogueStack = new DialogueStack();
 
 			textMode = gameOptions.Dialogue.TextMode;
 		}
@@ -69,7 +68,8 @@ namespace Dialogue
 
 			PrepareDialogue();
 
-			readProcess = dialogueSystem.StartCoroutine(Read(lines));
+			dialogueStack.Add(lines);
+			readProcess = dialogueSystem.StartCoroutine(Read());
 			return readProcess;
 		}
 
@@ -79,7 +79,8 @@ namespace Dialogue
 
 			PrepareDialogue();
 
-			readProcess = dialogueSystem.StartCoroutine(Read(speakerName, lines));
+			dialogueStack.Add(lines);
+			readProcess = dialogueSystem.StartCoroutine(Read(speakerName));
 			return readProcess;
 		}
 
@@ -94,51 +95,83 @@ namespace Dialogue
 		}
 
 		// Read lines directly from dialogue files (each line includes: speaker, dialogue, commands)
-		IEnumerator Read(List<string> lines)
+		IEnumerator Read()
 		{
-			foreach (string line in lines)
+			while (!dialogueStack.IsEmpty)
 			{
-				if (!IsValidDialogueLine(line)) continue;
+				string rawLine = dialogueStack.Get();
+				if (rawLine == null) break;
 
 				// Wait for any previous skipped transitions to complete smoothly
 				while (!commandManager.IsIdle) yield return null;
 
-				DialogueLine dialogueLine = DialogueParser.Parse(line, logicSegmentManager);
+				DialogueLine dialogueLine = DialogueParser.Parse(rawLine, logicSegmentManager);
+				yield return ProcessDialogueLine(dialogueLine);
 
-				if (dialogueLine.Logic != null)
-				{
-					logicSegmentManager.Add(dialogueLine.Logic);
-
-					if (logicSegmentManager.HasPendingLogic)
-						yield return logicSegmentManager.WaitForExecution();
-				}
-
-				if (dialogueLine.Dialogue != null)
-				{
-					SetSpeaker(dialogueLine.Speaker);
-					yield return DisplayDialogue(dialogueLine);
-				}
-
-				if (dialogueLine.Commands != null)
-					yield return RunCommands(dialogueLine.Commands.CommandList);
+				dialogueStack.Proceed();
 			}
+
+			readProcess = null;
 		}
 
+		// TODO remove test line
+		int tempCounter = 0;
+
 		// Read a list of dialogue lines spoken by a certain character
-		IEnumerator Read(string speakerName, List<string> lines)
+		IEnumerator Read(string speakerName)
 		{
 			Character character = characterManager.GetCharacter(speakerName);
 			SetSpeakerName(character.Data);
 
-			foreach (string line in lines)
+			while (!dialogueStack.IsEmpty)
 			{
-				if (!IsValidDialogueLine(line)) continue;
+				// TODO remove test lines
+				if (tempCounter++ == 1)
+				{
+					List<string> tempLines = new()
+					{
+						"",
+						"v \"Well, before that...\"",
+						"v \"I suppose I should warn you that my questions usually have only <b>one</b> right answer.\"",
+						"       // Just kidding, I'd make an exception for you~",
+						"v \"Now then~\"",
+						""
+					};
+					dialogueStack.Add(tempLines);
+				}
 
-				DialogueLine dialogueLine = DialogueParser.Parse(line, logicSegmentManager);
+				string rawLine = dialogueStack.Get();
+				if (rawLine == null) break;
+
+				DialogueLine dialogueLine = DialogueParser.Parse(rawLine, logicSegmentManager);
 
 				if (dialogueLine.Dialogue != null)
 					yield return DisplayDialogue(dialogueLine);
+
+				dialogueStack.Proceed();
 			}
+
+			readProcess = null;
+		}
+
+		IEnumerator ProcessDialogueLine(DialogueLine line)
+		{
+			if (line.Logic != null)
+			{
+				logicSegmentManager.Add(line.Logic);
+
+				if (logicSegmentManager.HasPendingLogic)
+					yield return logicSegmentManager.WaitForExecution();
+			}
+
+			if (line.Dialogue != null)
+			{
+				SetSpeaker(line.Speaker);
+				yield return DisplayDialogue(line);
+			}
+
+			if (line.Commands != null)
+				yield return RunCommands(line.Commands.CommandList);
 		}
 
 		IEnumerator DisplayDialogue(DialogueLine line)
