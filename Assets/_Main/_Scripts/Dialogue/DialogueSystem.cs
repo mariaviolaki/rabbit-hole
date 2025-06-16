@@ -52,9 +52,9 @@ namespace Dialogue
 			// TODO start dialogue using other triggers
 			if (Input.GetKeyDown(KeyCode.KeypadEnter))
 			{
-				//StartCoroutine(RunTest());
+				StartCoroutine(RunTest());
 
-				StartCoroutine(StartDialogueFromFile());
+				//StartCoroutine(StartDialogueFromFile());
 			}
 		}
 
@@ -155,7 +155,30 @@ namespace Dialogue
 		// TODO Remove test function
 		IEnumerator RunTest()
 		{
-			yield return null;
+			yield return characterManager.CreateCharacter("v");
+
+			yield return visualNovelUI.Show();
+			SpriteCharacter v = characterManager.GetCharacter("v") as SpriteCharacter;
+			yield return v.Show();
+
+			yield return v.Say("Ok, onto the choice panel now...");
+			yield return v.Say("Rate me.");
+
+			string[] choices =
+			{
+				"10/10 would recommend again.",
+				"Pure perfection with a cherry on top.",
+				"OMGOMGOMG 10000000%! An autograph please!"
+			};
+
+			yield return visualNovelUI.ShowChoices(choices);
+
+			while (inputManager.IsChoicePanelOpen) yield return null;
+
+			if (visualNovelUI.ChoiceUI.LastChoice == 2)
+				yield return v.Say("Knew it.{a 1} Now here's your autograph.{a 0.5} You're welcome.");
+			else
+				yield return v.Say("Knew it.");
 		}
 	}
 }

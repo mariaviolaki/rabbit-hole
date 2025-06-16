@@ -13,11 +13,14 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 	public Action OnSkipHoldEnd;
 	public Action OnClearInput;
 	public Action<string> OnSubmitInput;
+	public Action<int, string> OnSelectChoice;
 
 	InputActions inputActions;
 	bool isHoldPerformed = false;
+	bool IsDialoguePaused => IsInputPanelOpen || IsChoicePanelOpen;
 
 	public bool IsInputPanelOpen { get; set; } = false;
+	public bool IsChoicePanelOpen { get; set; } = false;
 
 	void OnEnable()
 	{
@@ -30,7 +33,7 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 
 	public void OnAdvanceAction(InputAction.CallbackContext context)
 	{
-		if (IsInputPanelOpen) return;
+		if (IsDialoguePaused) return;
 		if (context.phase != InputActionPhase.Performed) return;
 
 		OnAdvance?.Invoke();
@@ -38,7 +41,7 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 
 	public void OnAutoAction(InputAction.CallbackContext context)
 	{
-		if (IsInputPanelOpen) return;
+		if (IsDialoguePaused) return;
 		if (context.phase != InputActionPhase.Performed) return;
 
 		OnAuto?.Invoke();
@@ -46,7 +49,7 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 
 	public void OnSkipAction(InputAction.CallbackContext context)
 	{
-		if (IsInputPanelOpen) return;
+		if (IsDialoguePaused) return;
 
 		// Only trigger successful button presses
 		if (context.interaction is not PressInteraction || context.phase != InputActionPhase.Performed) return;
@@ -56,7 +59,7 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 
 	public void OnSkipHoldAction(InputAction.CallbackContext context)
 	{
-		if (IsInputPanelOpen) return;
+		if (IsDialoguePaused) return;
 
 		// Only proceed if the player is holding down the button
 		if (context.interaction is not HoldInteraction) return;

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UI
@@ -48,7 +47,7 @@ namespace UI
 		{
 			if (IsHidden) return null;
 
-			return SetHidden(isImmediate, fadeSpeed);
+			return StartCoroutine(HideAndClose());
 		}
 
 		void SubmitInput()
@@ -99,9 +98,9 @@ namespace UI
 			submitButton.onClick.RemoveListener(SubmitInput);
 		}
 
-		protected override IEnumerator FadeOut()
+		IEnumerator HideAndClose()
 		{
-			yield return base.FadeOut();
+			yield return SetHidden(isImmediate, fadeSpeed);
 			OnClose?.Invoke();
 		}
 	}

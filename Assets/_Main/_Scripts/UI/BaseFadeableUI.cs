@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 namespace UI
@@ -44,7 +43,7 @@ namespace UI
 			else
 			{
 				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
-				fadeCoroutine = StartCoroutine(FadeIn());
+				fadeCoroutine = StartCoroutine(transitionHandler.SetVisibility(canvasGroup, true, fadeSpeed));
 				return fadeCoroutine;
 			}
 		}
@@ -63,7 +62,7 @@ namespace UI
 			else
 			{
 				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
-				fadeCoroutine = StartCoroutine(FadeOut());
+				fadeCoroutine = StartCoroutine(transitionHandler.SetVisibility(canvasGroup, false, fadeSpeed));
 				return fadeCoroutine;
 			}
 		}
@@ -74,16 +73,6 @@ namespace UI
 
 			StopCoroutine(fadeCoroutine);
 			fadeCoroutine = null;
-		}
-
-		protected virtual IEnumerator FadeIn()
-		{
-			yield return transitionHandler.SetVisibility(canvasGroup, true, fadeSpeed);
-		}
-
-		protected virtual IEnumerator FadeOut()
-		{
-			yield return transitionHandler.SetVisibility(canvasGroup, false, fadeSpeed);
 		}
 	}
 }
