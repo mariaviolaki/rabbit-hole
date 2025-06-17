@@ -9,11 +9,11 @@ namespace Dialogue
 {
 	public class LogicSegmentManager
 	{
-		DialogueSystem dialogueSystem;
+		readonly DialogueSystem dialogueSystem;
 		readonly Dictionary<string, Type> segmentTypes = new(StringComparer.OrdinalIgnoreCase);
 		readonly Stack<LogicSegmentBase> segments = new();
 
-		public bool HasPendingLogic => segments.Count > 0 && segments.Peek().IsComplete;
+		public bool HasPendingLogic => segments.Count > 0;
 
 		public LogicSegmentManager(DialogueSystem dialogueSystem)
 		{

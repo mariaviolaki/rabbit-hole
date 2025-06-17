@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ namespace Characters
 	public class Model3DExpressionDirectory : MonoBehaviour
 	{
 		[SerializeField] Model3DExpression[] expressionData;
-		Dictionary<string, SubExpression[]> expressions = new Dictionary<string, SubExpression[]>();
+		readonly Dictionary<string, SubExpression[]> expressions = new(StringComparer.OrdinalIgnoreCase);
 
 		public Dictionary<string, SubExpression[]> Expressions { get { return expressions; } }
 

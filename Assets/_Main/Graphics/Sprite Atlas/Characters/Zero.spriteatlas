@@ -65,12 +65,12 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 297551f82a7a6854d935270f63fb173b, type: 3}
   - {fileID: 21300000, guid: f2c1972a316ddca409898c06cf0e3ecb, type: 3}
   m_PackedSpriteNamesToIndex:
-  - Zero Face Happy
-  - Zero Face Pouty
-  - Zero Face Neutral
-  - Zero Face Crazy
-  - Zero Body Comfy
-  - Zero Body Casual
+  - Face Happy
+  - Face Pouty
+  - Face Neutral
+  - Face Crazy
+  - Body Comfy
+  - Body Casual
   m_RenderDataMap: {}
   m_Tag: Zero
   m_IsVariant: 0

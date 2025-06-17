@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: File Manager
   m_EditorClassIdentifier: 
   gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
+  videoLabel:
+    m_LabelString: StreamingAssets/Videos
   characterPrefabLabel:
     m_LabelString: Prefabs/Characters
   model3DPrefabLabel:

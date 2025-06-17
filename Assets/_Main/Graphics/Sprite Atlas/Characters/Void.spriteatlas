@@ -71,15 +71,15 @@ SpriteAtlas:
   - {fileID: 21300000, guid: ba3d63beaa75a5042985e5a069e383a2, type: 3}
   - {fileID: 21300000, guid: 05c04e4f90ff08944be9a1d50a0ddbfe, type: 3}
   m_PackedSpriteNamesToIndex:
-  - Void Face Evil
-  - Void Face Crazy
-  - Void Face Smug
-  - Void Face Neutral
-  - Void Face Annoyed
-  - Void Body Formal
-  - Void Face Flustered
-  - Void Body Yukata
-  - Void Body Casual
+  - Face Evil
+  - Face Crazy
+  - Face Smug
+  - Face Neutral
+  - Face Annoyed
+  - Body Formal
+  - Face Flustered
+  - Body Yukata
+  - Body Casual
   m_RenderDataMap: {}
   m_Tag: Void
   m_IsVariant: 0

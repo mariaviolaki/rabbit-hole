@@ -1,3 +1,4 @@
+using Dialogue;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,13 +13,13 @@ namespace UI
 		[SerializeField] ChoiceButtonUI choiceButtonPrefab;
 
 		ObjectPool<ChoiceButtonUI> buttonPool;
-		List<ChoiceButtonUI> activeButtons = new();
+		readonly List<ChoiceButtonUI> activeButtons = new();
 
 		const int poolSize = 5;
 		bool isImmediate = false;
-		int lastChoice = -1;
+		DialogueChoice lastChoice;
 
-		public int LastChoice => lastChoice;
+		public DialogueChoice LastChoice => lastChoice;
 
 		public event Action OnClose;
 
@@ -29,7 +30,7 @@ namespace UI
 			buttonPool = new ObjectPool<ChoiceButtonUI>(OnCreateButton, OnGetButton, OnReleaseButton, OnDestroyButton, maxSize: poolSize);
 		}
 
-		public Coroutine Show(string[] choices, bool isImmediate = false, float fadeSpeed = 0)
+		public Coroutine Show(List<DialogueChoice> choices, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			if (IsVisible) return null;
 
@@ -48,29 +49,29 @@ namespace UI
 			return SetHidden(isImmediate, fadeSpeed);
 		}
 
-		void PrepareChoicePanel(string[] choices)
+		void PrepareChoicePanel(List<DialogueChoice> choices)
 		{
+			lastChoice = null;
 			CreateButtons(choices);
 			inputManager.IsChoicePanelOpen = true;
+			inputManager.OnClearChoice?.Invoke();
 		}
 
-		void CreateButtons(string[] choices)
+		void CreateButtons(List<DialogueChoice> choices)
 		{
-			for (int i = 0; i < choices.Length; i++)
+			for (int i = 0; i < choices.Count; i++)
 			{
 				ChoiceButtonUI choiceButton = buttonPool.Get();
-				choiceButton.UpdateData(i, choices[i]);
+				choiceButton.UpdateChoice(choices[i]);
 			}
 		}
 
-		void SelectChoice(int index, string text)
+		void SelectChoice(DialogueChoice choice)
 		{
-			Debug.Log($"Button {index} selected: {text}");
-
-			lastChoice = index;
+			lastChoice = choice;
 
 			inputManager.IsChoicePanelOpen = false;
-			inputManager.OnSelectChoice?.Invoke(index, text);
+			inputManager.OnSelectChoice?.Invoke(choice);
 
 			StartCoroutine(HideAndClear());
 		}

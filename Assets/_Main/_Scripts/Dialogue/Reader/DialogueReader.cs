@@ -34,17 +34,19 @@ namespace Dialogue
 		TextBuilder.TextMode textMode;
 		bool isRunning = false;
 
+		public DialogueStack Stack => dialogueStack;
+
 		public void AdvanceDialogue() => isRunning = true;
 		public void PauseDialogue() => isRunning = false;
 
 		public DialogueReader(DialogueSystem dialogueSystem)
 		{
 			this.dialogueSystem = dialogueSystem;
-			gameOptions = dialogueSystem.GetGameOptions();
-			characterManager = dialogueSystem.GetCharacterManager();
-			commandManager = dialogueSystem.GetCommandManager();
-			visualNovelUI = dialogueSystem.GetVisualNovelUI();
-			continuePrompt = dialogueSystem.GetContinuePrompt();
+			gameOptions = dialogueSystem.Options;
+			characterManager = dialogueSystem.Characters;
+			commandManager = dialogueSystem.Commands;
+			visualNovelUI = dialogueSystem.UI;
+			continuePrompt = dialogueSystem.ContinuePrompt;
 
 			textBuilder = new TextBuilder(visualNovelUI.DialogueText);
 			tagManager = new DialogueTagManager(dialogueSystem);
@@ -68,7 +70,7 @@ namespace Dialogue
 
 			PrepareDialogue();
 
-			dialogueStack.Add(lines);
+			dialogueStack.AddBlock(lines);
 			readProcess = dialogueSystem.StartCoroutine(Read());
 			return readProcess;
 		}
@@ -79,7 +81,7 @@ namespace Dialogue
 
 			PrepareDialogue();
 
-			dialogueStack.Add(lines);
+			dialogueStack.AddBlock(lines);
 			readProcess = dialogueSystem.StartCoroutine(Read(speakerName));
 			return readProcess;
 		}
@@ -99,23 +101,21 @@ namespace Dialogue
 		{
 			while (!dialogueStack.IsEmpty)
 			{
-				string rawLine = dialogueStack.Get();
+				string rawLine = dialogueStack.GetLine();
 				if (rawLine == null) break;
 
 				// Wait for any previous skipped transitions to complete smoothly
 				while (!commandManager.IsIdle) yield return null;
 
 				DialogueLine dialogueLine = DialogueParser.Parse(rawLine, logicSegmentManager);
-				yield return ProcessDialogueLine(dialogueLine);
-
-				dialogueStack.Proceed();
+				if (dialogueLine.Logic == null)
+					yield return ProcessDialogueLine(dialogueLine);
+				else
+					yield return ProcessLogicSegment(dialogueLine);
 			}
 
 			readProcess = null;
 		}
-
-		// TODO remove test line
-		int tempCounter = 0;
 
 		// Read a list of dialogue lines spoken by a certain character
 		IEnumerator Read(string speakerName)
@@ -125,22 +125,7 @@ namespace Dialogue
 
 			while (!dialogueStack.IsEmpty)
 			{
-				// TODO remove test lines
-				if (tempCounter++ == 1)
-				{
-					List<string> tempLines = new()
-					{
-						"",
-						"v \"Well, before that...\"",
-						"v \"I suppose I should warn you that my questions usually have only <b>one</b> right answer.\"",
-						"       // Just kidding, I'd make an exception for you~",
-						"v \"Now then~\"",
-						""
-					};
-					dialogueStack.Add(tempLines);
-				}
-
-				string rawLine = dialogueStack.Get();
+				string rawLine = dialogueStack.GetLine();
 				if (rawLine == null) break;
 
 				DialogueLine dialogueLine = DialogueParser.Parse(rawLine, logicSegmentManager);
@@ -156,14 +141,6 @@ namespace Dialogue
 
 		IEnumerator ProcessDialogueLine(DialogueLine line)
 		{
-			if (line.Logic != null)
-			{
-				logicSegmentManager.Add(line.Logic);
-
-				if (logicSegmentManager.HasPendingLogic)
-					yield return logicSegmentManager.WaitForExecution();
-			}
-
 			if (line.Dialogue != null)
 			{
 				SetSpeaker(line.Speaker);
@@ -172,6 +149,17 @@ namespace Dialogue
 
 			if (line.Commands != null)
 				yield return RunCommands(line.Commands.CommandList);
+
+			dialogueStack.Proceed();
+		}
+
+		IEnumerator ProcessLogicSegment(DialogueLine line)
+		{
+			logicSegmentManager.Add(line.Logic);
+
+			// When execution is finished, the stack will have been updated
+			if (logicSegmentManager.HasPendingLogic)
+				yield return logicSegmentManager.WaitForExecution();
 		}
 
 		IEnumerator DisplayDialogue(DialogueLine line)

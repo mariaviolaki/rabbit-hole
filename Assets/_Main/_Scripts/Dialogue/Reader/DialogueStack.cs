@@ -10,15 +10,15 @@ namespace Dialogue
 
 		public bool IsEmpty => dialogueBlocks.Count == 0;
 
-		public void Add(List<string> lines, int progress = 0)
+		public void AddBlock(List<string> lines, int progress = 0)
 		{
 			DialogueBlock dialogueBlock = new(lines, progress);
 			dialogueBlocks.Push(dialogueBlock);
 		}
 
-		public string Get()
+		public string GetLine()
 		{
-			DialogueBlock dialogueBlock = Peek();
+			DialogueBlock dialogueBlock = GetBlock();
 			if (dialogueBlock == null) return null;
 
 			string rawLine = dialogueBlock.GetLine();
@@ -26,11 +26,18 @@ namespace Dialogue
 			while (!IsEmpty && !IsValidLine(rawLine))
 			{
 				Proceed();
-				dialogueBlock = Peek();
+				dialogueBlock = GetBlock();
 				rawLine = dialogueBlock?.GetLine();
 			}
 
 			return IsValidLine(rawLine) ? rawLine : null;
+		}
+
+		// Try to get the most recent dialogue block added to the stack
+		public DialogueBlock GetBlock()
+		{
+			dialogueBlocks.TryPeek(out DialogueBlock dialogueBlock);
+			return dialogueBlock;
 		}
 
 		// Try to increment the progress on the most recent dialogue block block
@@ -38,7 +45,7 @@ namespace Dialogue
 		{
 			while (!IsEmpty)
 			{
-				DialogueBlock dialogueBlock = Peek();
+				DialogueBlock dialogueBlock = GetBlock();
 				if (dialogueBlock == null) return false;
 
 				bool isIncremented = dialogueBlock.IncrementProgress();
@@ -49,13 +56,6 @@ namespace Dialogue
 			}
 
 			return false;
-		}
-
-		// Try to get the most recent dialogue block added to the stack
-		DialogueBlock Peek()
-		{
-			dialogueBlocks.TryPeek(out DialogueBlock dialogueBlock);
-			return dialogueBlock;
 		}
 
 		// Try to remove the most recent dialogue block added to the stack

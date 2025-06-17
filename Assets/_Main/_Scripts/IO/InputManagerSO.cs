@@ -1,3 +1,4 @@
+using Dialogue;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,7 +14,8 @@ public class InputManagerSO : ScriptableObject, InputActions.IGameActions
 	public Action OnSkipHoldEnd;
 	public Action OnClearInput;
 	public Action<string> OnSubmitInput;
-	public Action<int, string> OnSelectChoice;
+	public Action OnClearChoice;
+	public Action<DialogueChoice> OnSelectChoice;
 
 	InputActions inputActions;
 	bool isHoldPerformed = false;

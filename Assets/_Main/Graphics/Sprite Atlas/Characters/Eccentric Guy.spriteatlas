@@ -61,10 +61,10 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 1e5d6f1cf1388ed42ae82efb2080210e, type: 3}
   - {fileID: 21300000, guid: 835669fc8deaae04bb821c2034a8f68a, type: 3}
   m_PackedSpriteNamesToIndex:
-  - Eccentric Guy Sick
-  - Eccentric Guy Playful
-  - Eccentric Guy Laugh
-  - Eccentric Guy Whiny
+  - Sick
+  - Playful
+  - Laugh
+  - Whiny
   m_RenderDataMap: {}
   m_Tag: Eccentric Guy
   m_IsVariant: 0

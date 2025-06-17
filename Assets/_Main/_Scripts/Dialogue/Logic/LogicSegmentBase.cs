@@ -9,8 +9,6 @@ namespace Dialogue
 		protected string rawData;
 		protected DialogueSystem dialogueSystem;
 
-		public abstract bool IsComplete { get; }
-
 		public LogicSegmentBase(DialogueSystem dialogueSystem, string rawData)
 		{
 			this.dialogueSystem = dialogueSystem;

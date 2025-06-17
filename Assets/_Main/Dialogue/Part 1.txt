@@ -10,8 +10,41 @@ PlayMusic(Day, 0.02, 1, true, immediate=true)
 v.Setposition(0, 0.5, immediate=true), eg.setPosition(1, 0.5, immediate=true), m.setposition(0.5, 0.5, immediate=true)
 v.show(immediate=true), eg.show(immediate=true), m.show(immediate=true)
 
-v "Answer me something."
+v "Well, well... Choices huh. This should be fun."
+v.setsprite(face, face smug)
+m.setexpression(happy)
+setbackgroundvideo(night, mute=true, immediate=true)
+setbackgroundimage(red-forest-back, immediate=true)
 
+v "Let's start then. {a 0.5} Ready?"
+choice
+{
+	-W-Wait! That's too soon!
+		v "Getting anxious already?"
+		v "Okay, I'll give you some more time."
+		v "Come back soon, yeah?"
+	-YES! LETS DO THIS!!
+		v "Hahaha. You have your ups and downs, don't you?"
+		choice
+		{
+			-I guess so...
+				v "It's good that you're honest."
+				v "Especially with me."
+			-Not really.
+				v "Don't lie now."
+				v "Are you not human?"
+				choice
+				{
+					-No?
+						v "Haha, these choices are getting out of hand."
+						v "Let's get out of here."
+				}
+		}
+		v "Well I, for one thing, have LOTS of ups and downs."
+		v "I'm sure you've grasped it by now."
+}
+
+v "Now answer me something."
 input "What is your name...?"
 v "Well, it's very nice to meet you again, <input>."
 

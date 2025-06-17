@@ -9,17 +9,17 @@ namespace Dialogue
 
 		readonly InputManagerSO inputManager;
 		readonly VisualNovelUI visualNovelUI;
+		readonly DialogueStack dialogueStack;
 		string title = "";
 		string input = null;
 
-		public override bool IsComplete => true;
-
 		public InputLogicSegment(DialogueSystem dialogueSystem, string rawData) : base(dialogueSystem, rawData)
 		{
-			ParseTitle();
+			inputManager = dialogueSystem.InputManager;
+			visualNovelUI = dialogueSystem.UI;
+			dialogueStack = dialogueSystem.Reader.Stack;
 
-			inputManager = dialogueSystem.GetInputManager();
-			visualNovelUI = dialogueSystem.GetVisualNovelUI();
+			ParseTitle();
 		}
 
 		public override IEnumerator Execute()
@@ -31,6 +31,7 @@ namespace Dialogue
 			{
 				yield return visualNovelUI.ShowInput(title);
 				while (input == null) yield return null;
+				dialogueStack.Proceed();
 			}
 			finally
 			{

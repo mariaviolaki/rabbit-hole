@@ -5,7 +5,7 @@ namespace Dialogue
 {
 	public class DialogueFile
 	{
-		List<string> lines = new List<string>();
+		readonly List<string> lines = new List<string>();
 
 		public string FileName { get; private set; }
 		public List<string> Lines { get { return lines; } }

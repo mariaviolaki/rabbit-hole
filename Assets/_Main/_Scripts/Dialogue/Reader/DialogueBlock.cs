@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Dialogue
 {
@@ -30,6 +31,11 @@ namespace Dialogue
 
 			progress++;
 			return true;
+		}
+
+		public void SetProgress(int progress)
+		{
+			this.progress = Mathf.Clamp(progress, 0, rawLines.Count);
 		}
 	}
 }

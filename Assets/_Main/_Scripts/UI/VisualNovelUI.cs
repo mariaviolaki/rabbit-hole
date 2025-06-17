@@ -1,5 +1,7 @@
 using Characters;
+using Dialogue;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -74,7 +76,7 @@ namespace UI
 		public Coroutine ShowInput(string title, bool isImmediate = false, float fadeSpeed = 0)
 			=> gameplayControls.ShowInput(title, isImmediate, fadeSpeed);
 
-		public Coroutine ShowChoices(string[] choices, bool isImmediate = false, float fadeSpeed = 0)
+		public Coroutine ShowChoices(List<DialogueChoice> choices, bool isImmediate = false, float fadeSpeed = 0)
 			=> gameplayControls.ShowChoices(choices, isImmediate, fadeSpeed);
 
 		void StopFadeCoroutine()

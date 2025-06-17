@@ -9,14 +9,13 @@ namespace Characters
 {
 	public class SpriteCharacter : GraphicsCharacter
 	{
+		readonly Dictionary<SpriteLayerType, CharacterSpriteLayer> spriteLayers = new();
+		readonly Dictionary<string, Sprite> sprites = new(StringComparer.OrdinalIgnoreCase);
 		SpriteAtlas spriteAtlas;
-		Dictionary<SpriteLayerType, CharacterSpriteLayer> spriteLayers;
 
 		protected override IEnumerator Init()
 		{
 			yield return base.Init();
-
-			spriteLayers = new Dictionary<SpriteLayerType, CharacterSpriteLayer>();
 
 			yield return manager.FileManager.LoadCharacterAtlas(data.CastName);
 			spriteAtlas = manager.FileManager.GetCharacterAtlas(data.CastName);
@@ -34,6 +33,21 @@ namespace Characters
 				string layerName = layerParent.name;
 				if (Enum.TryParse(layerName, true, out SpriteLayerType layerType))
 					spriteLayers[layerType] = new CharacterSpriteLayer(manager, TransitionHandler, layerType, layerParent, isFacingRight);
+			}
+
+			// Cache the sprite in a dictionary for case-insensitive lookup
+			Sprite[] spriteArray = new Sprite[spriteAtlas.spriteCount];
+			spriteAtlas.GetSprites(spriteArray);
+			foreach (Sprite sprite in spriteArray)
+			{
+				string spriteName = sprite.name;
+				if (spriteName.EndsWith("(Clone)"))
+					spriteName = spriteName.Substring(0, spriteName.Length - "(Clone)".Length);
+
+				if (sprites.ContainsKey(spriteName))
+					Debug.LogWarning($"Duplicate sprite name '{spriteName}' found in atlas for {data.CastName}.");
+
+				sprites[spriteName] = sprite;
 			}
 		}
 
@@ -154,8 +168,7 @@ namespace Characters
 				return null;
 			}
 
-			Sprite sprite = spriteAtlas.GetSprite(spriteName);
-			if (sprite == null)
+			if (!sprites.TryGetValue(spriteName, out Sprite sprite))
 			{
 				Debug.LogWarning($"'{spriteName}' was not found in {data.CastName}'s sprites.");
 				return null;

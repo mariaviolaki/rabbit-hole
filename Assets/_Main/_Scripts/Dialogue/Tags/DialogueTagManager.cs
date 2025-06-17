@@ -15,8 +15,8 @@ namespace Dialogue
 
 		public DialogueTagManager(DialogueSystem dialogueSystem)
 		{
-			tagDirectory = dialogueSystem.GetTagDirectory();
-			inputUI = dialogueSystem.GetVisualNovelUI().InputUI;
+			tagDirectory = dialogueSystem.TagDirectory;
+			inputUI = dialogueSystem.UI.InputUI;
 
 			InitTags();
 		}

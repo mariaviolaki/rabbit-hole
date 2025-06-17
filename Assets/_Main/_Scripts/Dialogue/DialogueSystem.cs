@@ -25,15 +25,15 @@ namespace Dialogue
 		DialogueFile dialogueFile;
 		DialogueReadMode readMode = DialogueReadMode.Wait;
 
+		public GameOptionsSO Options => gameOptions;
+		public VisualNovelUI UI => visualNovelUI;
+		public CharacterManager Characters => characterManager;
+		public CommandManager Commands => commandManager;
+		public DialogueContinuePromptUI ContinuePrompt => continuePrompt;
+		public DialogueTagDirectorySO TagDirectory => tagDirectory;
+		public InputManagerSO InputManager => inputManager;
+		public DialogueReader Reader => dialogueReader;
 		public DialogueReadMode ReadMode => readMode;
-
-		public GameOptionsSO GetGameOptions() => gameOptions;
-		public VisualNovelUI GetVisualNovelUI() => visualNovelUI;
-		public CharacterManager GetCharacterManager() => characterManager;
-		public CommandManager GetCommandManager() => commandManager;
-		public DialogueContinuePromptUI GetContinuePrompt() => continuePrompt;
-		public DialogueTagDirectorySO GetTagDirectory() => tagDirectory;
-		public InputManagerSO GetInputManager() => inputManager;
 
 		void Start()
 		{
@@ -52,9 +52,9 @@ namespace Dialogue
 			// TODO start dialogue using other triggers
 			if (Input.GetKeyDown(KeyCode.KeypadEnter))
 			{
-				StartCoroutine(RunTest());
+				//StartCoroutine(RunTest());
 
-				//StartCoroutine(StartDialogueFromFile());
+				StartCoroutine(StartDialogueFromFile());
 			}
 		}
 
@@ -155,38 +155,7 @@ namespace Dialogue
 		// TODO Remove test function
 		IEnumerator RunTest()
 		{
-			yield return characterManager.CreateCharacter("v");
-
-			yield return visualNovelUI.Show();
-			SpriteCharacter v = characterManager.GetCharacter("v") as SpriteCharacter;
-			yield return v.Show();
-
-			List<string> lines = new()
-			{
-				"",
-				"Ok, onto the choice panel now...",
-				"",
-				"Rate me.",
-				""
-			};
-
-			yield return v.Say(lines);
-
-			string[] choices =
-			{
-				"10/10 would recommend again.",
-				"Pure perfection with a cherry on top.",
-				"OMGOMGOMG 10000000%! An autograph please!"
-			};
-
-			yield return visualNovelUI.ShowChoices(choices);
-
-			while (inputManager.IsChoicePanelOpen) yield return null;
-
-			if (visualNovelUI.ChoiceUI.LastChoice == 2)
-				yield return v.Say("Knew it.{a 1} Now here's your autograph.{a 0.5} You're welcome.");
-			else
-				yield return v.Say("Knew it.");
+			yield return null;
 		}
 	}
 }

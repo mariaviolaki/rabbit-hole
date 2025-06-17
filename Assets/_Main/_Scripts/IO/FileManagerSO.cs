@@ -1,7 +1,6 @@
-using GameIO;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -11,9 +10,8 @@ using UnityEngine.U2D;
 [CreateAssetMenu(fileName = "File Manager", menuName = "Scriptable Objects/File Manager")]
 public class FileManagerSO : ScriptableObject
 {
-	static readonly string StreamingAssetsVideoPath = Path.Combine(Application.streamingAssetsPath, "Videos");
-
 	[SerializeField] GameOptionsSO gameOptions;
+	[SerializeField] AssetLabelReference videoLabel;
 	[SerializeField] AssetLabelReference characterPrefabLabel;
 	[SerializeField] AssetLabelReference model3DPrefabLabel;
 	[SerializeField] AssetLabelReference characterAtlasLabel;
@@ -24,29 +22,32 @@ public class FileManagerSO : ScriptableObject
 	[SerializeField] AssetLabelReference sfxAudioLabel;
 	[SerializeField] AssetLabelReference voiceAudioLabel;
 
-	readonly Dictionary<string, string> characterPrefabKeys = new();
-	readonly Dictionary<string, string> model3DPrefabKeys = new();
-	readonly Dictionary<string, string> characterAtlasKeys = new();
-	readonly Dictionary<string, string> dialogueFileKeys = new();
-	readonly Dictionary<string, string> backgroundImageKeys = new();
-	readonly Dictionary<string, string> ambientAudioKeys = new();
-	readonly Dictionary<string, string> musicAudioKeys = new();
-	readonly Dictionary<string, string> sfxAudioKeys = new();
-	readonly Dictionary<string, string> voiceAudioKeys = new();
+	readonly Dictionary<string, string> videoFilePaths = new(StringComparer.OrdinalIgnoreCase);
 
-	readonly Dictionary<string, AsyncOperationHandle<GameObject>> characterPrefabHandles = new();
-	readonly Dictionary<string, AsyncOperationHandle<GameObject>> model3DPrefabHandles = new();
-	readonly Dictionary<string, AsyncOperationHandle<SpriteAtlas>> characterAtlasHandles = new();
-	readonly Dictionary<string, AsyncOperationHandle<TextAsset>> dialogueFileHandles = new();
-	readonly Dictionary<string, AsyncOperationHandle<Sprite>> backgroundImageHandles = new();
-	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> ambientAudioHandles = new();
-	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> musicAudioHandles = new();
-	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> sfxAudioHandles = new();
-	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> voiceAudioHandles = new();
+	readonly Dictionary<string, string> characterPrefabKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> model3DPrefabKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> characterAtlasKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> dialogueFileKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> backgroundImageKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> ambientAudioKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> musicAudioKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> sfxAudioKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> voiceAudioKeys = new(StringComparer.OrdinalIgnoreCase);
+
+	readonly Dictionary<string, AsyncOperationHandle<GameObject>> characterPrefabHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<GameObject>> model3DPrefabHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<SpriteAtlas>> characterAtlasHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<TextAsset>> dialogueFileHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<Sprite>> backgroundImageHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> ambientAudioHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> musicAudioHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> sfxAudioHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> voiceAudioHandles = new(StringComparer.OrdinalIgnoreCase);
 
 	void OnEnable()
 	{
 		// Load the addressables's metadata to easily search and load them later
+		CacheLabeledAssetsIntoDictionary(videoLabel, videoFilePaths);
 		CacheLabeledAssetsIntoDictionary(characterPrefabLabel, characterPrefabKeys);
 		CacheLabeledAssetsIntoDictionary(model3DPrefabLabel, model3DPrefabKeys);
 		CacheLabeledAssetsIntoDictionary(characterAtlasLabel, characterAtlasKeys);
@@ -58,8 +59,8 @@ public class FileManagerSO : ScriptableObject
 		CacheLabeledAssetsIntoDictionary(voiceAudioLabel, voiceAudioKeys);
 	}
 
-	public string GetVideoUrl(string fileName) =>
-		Path.Combine(StreamingAssetsVideoPath, GetFileNameWithExtension(fileName, gameOptions.IO.VideoExtension));
+	// TODO test if this works on other platforms
+	public string GetVideoUrl(string fileName) => videoFilePaths[fileName];
 
 	public IEnumerator LoadCharacterPrefab(string characterName) => LoadAsset(characterName, characterPrefabKeys, characterPrefabHandles);
 	public IEnumerator LoadModel3DPrefab(string characterName) => LoadAsset(characterName, model3DPrefabKeys, model3DPrefabHandles);
@@ -132,18 +133,6 @@ public class FileManagerSO : ScriptableObject
 
 		Addressables.Release(handles[name]);
 		handles.Remove(name);
-	}
-
-	string GetFileNameWithExtension(string fileName, FileExtension defaultExtension)
-	{
-		int extensionIndex = fileName.LastIndexOf('.');
-		string extensionString = extensionIndex == -1 ? null : fileName.Substring(extensionIndex);
-		if (extensionString != null) return fileName;
-
-		if (defaultExtension == FileExtension.None)
-			Debug.LogWarning($"No default extension specified for '{fileName}'.");
-
-		return fileName + "." + defaultExtension.ToString();
 	}
 
 	void CacheLabeledAssetsIntoDictionary(AssetLabelReference assetLabel, Dictionary<string, string> addressableKeys)

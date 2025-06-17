@@ -1,3 +1,5 @@
+using Dialogue;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UI
@@ -36,7 +38,7 @@ namespace UI
 			return inputPanel.Show(title, isImmediate, fadeSpeed);
 		}
 
-		public Coroutine ShowChoices(string[] choices, bool isImmediate = false, float fadeSpeed = 0)
+		public Coroutine ShowChoices(List<DialogueChoice> choices, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			choicePanel.gameObject.SetActive(true);
 

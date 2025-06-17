@@ -1,3 +1,4 @@
+using Dialogue;
 using System;
 using TMPro;
 using UI;
@@ -11,10 +12,9 @@ public class ChoiceButtonUI : FadeableUI
 	[SerializeField] TextMeshProUGUI buttonText;
 
 	ObjectPool<ChoiceButtonUI> buttonPool;
-	int index = -1;
-	string text = "";
+	DialogueChoice choice;
 
-	public event Action<int, string> OnSelect;
+	public event Action<DialogueChoice> OnSelect;
 
 	public void Initialize(ObjectPool<ChoiceButtonUI> buttonPool)
 	{
@@ -23,17 +23,15 @@ public class ChoiceButtonUI : FadeableUI
 
 	public void ClearData()
 	{
-		index = -1;
-		text = "";
-		buttonText.text = text;
+		choice = null;
+		buttonText.text = "";
 	}
 
-	public void UpdateData(int index, string text)
+	public void UpdateChoice(DialogueChoice choice)
 	{
-		this.index = index;
-		this.text = text;
+		this.choice = choice;
 
-		buttonText.text = text;
+		buttonText.text = choice.Text;
 		button.onClick.AddListener(SelectChoice);
 	}
 
@@ -49,6 +47,6 @@ public class ChoiceButtonUI : FadeableUI
 
 	void SelectChoice()
 	{
-		OnSelect?.Invoke(index, text);	
+		OnSelect?.Invoke(choice);	
 	}
 }
