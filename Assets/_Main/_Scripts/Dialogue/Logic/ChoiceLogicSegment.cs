@@ -93,7 +93,7 @@ namespace Dialogue
 			}
 
 			// Continue the main dialogue after the choice block
-			dialogueBlock.SetProgress(progress);
+			dialogueBlock.SetProgress(progress - 1);
 		}
 	}
 }

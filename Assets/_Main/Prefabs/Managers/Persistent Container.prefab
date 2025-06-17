@@ -363,10 +363,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 3773477882016517355}
     - target: {fileID: 6154280304512614437, guid: 2582ee32841d1f543bfc59d570deda1e, type: 3}
-      propertyPath: dialogueFileName
-      value: Part 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6154280304512614437, guid: 2582ee32841d1f543bfc59d570deda1e, type: 3}
       propertyPath: readModeIndicator
       value: 
       objectReference: {fileID: 2862906026229154698}

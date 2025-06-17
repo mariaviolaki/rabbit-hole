@@ -52,4 +52,5 @@ MonoBehaviour:
   characterManager: {fileID: 0}
   visualNovelUI: {fileID: 0}
   continuePrompt: {fileID: 0}
-  dialogueFileName: Test 1
+  readModeIndicator: {fileID: 0}
+  dialogueFileName: Dialogue/Main

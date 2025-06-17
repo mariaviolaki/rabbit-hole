@@ -12,85 +12,72 @@ public class FileManagerSO : ScriptableObject
 {
 	[SerializeField] GameOptionsSO gameOptions;
 	[SerializeField] AssetLabelReference videoLabel;
-	[SerializeField] AssetLabelReference characterPrefabLabel;
-	[SerializeField] AssetLabelReference model3DPrefabLabel;
-	[SerializeField] AssetLabelReference characterAtlasLabel;
-	[SerializeField] AssetLabelReference dialogueFileLabel;
-	[SerializeField] AssetLabelReference backgroundImageLabel;
 	[SerializeField] AssetLabelReference ambientAudioLabel;
 	[SerializeField] AssetLabelReference musicAudioLabel;
 	[SerializeField] AssetLabelReference sfxAudioLabel;
 	[SerializeField] AssetLabelReference voiceAudioLabel;
+	[SerializeField] AssetLabelReference dialogueLabel;
+	[SerializeField] AssetLabelReference dialogueCharactersLabel;
+	[SerializeField] AssetLabelReference dialogueEndingsLabel;
+	[SerializeField] AssetLabelReference backgroundImageLabel;
+	[SerializeField] AssetLabelReference characterAtlasLabel;
+	[SerializeField] AssetLabelReference model3DPrefabLabel;
+	[SerializeField] AssetLabelReference characterPrefabLabel;
 
-	readonly Dictionary<string, string> videoFilePaths = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> videoPaths = new(StringComparer.OrdinalIgnoreCase);
 
-	readonly Dictionary<string, string> characterPrefabKeys = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, string> model3DPrefabKeys = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, string> characterAtlasKeys = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, string> dialogueFileKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> audioKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> dialogueKeys = new(StringComparer.OrdinalIgnoreCase);
 	readonly Dictionary<string, string> backgroundImageKeys = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, string> ambientAudioKeys = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, string> musicAudioKeys = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, string> sfxAudioKeys = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, string> voiceAudioKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> characterAtlasKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> model3DPrefabKeys = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, string> characterPrefabKeys = new(StringComparer.OrdinalIgnoreCase);
 
-	readonly Dictionary<string, AsyncOperationHandle<GameObject>> characterPrefabHandles = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, AsyncOperationHandle<GameObject>> model3DPrefabHandles = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, AsyncOperationHandle<SpriteAtlas>> characterAtlasHandles = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, AsyncOperationHandle<TextAsset>> dialogueFileHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> audioHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<TextAsset>> dialogueHandles = new(StringComparer.OrdinalIgnoreCase);
 	readonly Dictionary<string, AsyncOperationHandle<Sprite>> backgroundImageHandles = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> ambientAudioHandles = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> musicAudioHandles = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> sfxAudioHandles = new(StringComparer.OrdinalIgnoreCase);
-	readonly Dictionary<string, AsyncOperationHandle<AudioClip>> voiceAudioHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<SpriteAtlas>> characterAtlasHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<GameObject>> model3DPrefabHandles = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, AsyncOperationHandle<GameObject>> characterPrefabHandles = new(StringComparer.OrdinalIgnoreCase);
+
 
 	void OnEnable()
 	{
 		// Load the addressables's metadata to easily search and load them later
-		CacheLabeledAssetsIntoDictionary(videoLabel, videoFilePaths);
-		CacheLabeledAssetsIntoDictionary(characterPrefabLabel, characterPrefabKeys);
-		CacheLabeledAssetsIntoDictionary(model3DPrefabLabel, model3DPrefabKeys);
-		CacheLabeledAssetsIntoDictionary(characterAtlasLabel, characterAtlasKeys);
-		CacheLabeledAssetsIntoDictionary(dialogueFileLabel, dialogueFileKeys);
-		CacheLabeledAssetsIntoDictionary(backgroundImageLabel, backgroundImageKeys);
-		CacheLabeledAssetsIntoDictionary(ambientAudioLabel, ambientAudioKeys);
-		CacheLabeledAssetsIntoDictionary(musicAudioLabel, musicAudioKeys);
-		CacheLabeledAssetsIntoDictionary(sfxAudioLabel, sfxAudioKeys);
-		CacheLabeledAssetsIntoDictionary(voiceAudioLabel, voiceAudioKeys);
+		CacheLabeledAssetsIntoDictionary(videoPaths, videoLabel);
+		CacheLabeledAssetsIntoDictionary(audioKeys, ambientAudioLabel, musicAudioLabel, sfxAudioLabel, voiceAudioLabel);
+		CacheLabeledAssetsIntoDictionary(dialogueKeys, dialogueLabel, dialogueCharactersLabel, dialogueEndingsLabel);
+		CacheLabeledAssetsIntoDictionary(backgroundImageKeys, backgroundImageLabel);
+		CacheLabeledAssetsIntoDictionary(characterAtlasKeys, characterAtlasLabel);
+		CacheLabeledAssetsIntoDictionary(model3DPrefabKeys, model3DPrefabLabel);
+		CacheLabeledAssetsIntoDictionary(characterPrefabKeys, characterPrefabLabel);
 	}
 
+	public string GetAddressablePath(string fileName, AssetLabelReference assetLabel) => assetLabel.labelString + "/" + fileName;
+
 	// TODO test if this works on other platforms
-	public string GetVideoUrl(string fileName) => videoFilePaths[fileName];
+	public string GetVideoUrl(string fileName) => videoPaths[GetAddressablePath(fileName, videoLabel)];
 
-	public IEnumerator LoadCharacterPrefab(string characterName) => LoadAsset(characterName, characterPrefabKeys, characterPrefabHandles);
-	public IEnumerator LoadModel3DPrefab(string characterName) => LoadAsset(characterName, model3DPrefabKeys, model3DPrefabHandles);
-	public IEnumerator LoadCharacterAtlas(string characterName) => LoadAsset(characterName, characterAtlasKeys, characterAtlasHandles);
-	public IEnumerator LoadDialogueFile(string fileName) => LoadAsset(fileName, dialogueFileKeys, dialogueFileHandles);
-	public IEnumerator LoadBackgroundImage(string imageName) => LoadAsset(imageName, backgroundImageKeys, backgroundImageHandles);
-	public IEnumerator LoadAmbientAudio(string audioName) => LoadAsset(audioName, ambientAudioKeys, ambientAudioHandles);
-	public IEnumerator LoadMusicAudio(string audioName) => LoadAsset(audioName, musicAudioKeys, musicAudioHandles);
-	public IEnumerator LoadSFXAudio(string audioName) => LoadAsset(audioName, sfxAudioKeys, sfxAudioHandles);
-	public IEnumerator LoadVoiceAudio(string audioName) => LoadAsset(audioName, voiceAudioKeys, voiceAudioHandles);
+	public IEnumerator LoadAudio(string audioName, AssetLabelReference audioLabel) => LoadAsset(GetAddressablePath(audioName, audioLabel), audioKeys, audioHandles);
+	public IEnumerator LoadDialogue(string addressablePath) => LoadAsset(addressablePath, dialogueKeys, dialogueHandles);
+	public IEnumerator LoadBackgroundImage(string imageName) => LoadAsset(GetAddressablePath(imageName, backgroundImageLabel), backgroundImageKeys, backgroundImageHandles);
+	public IEnumerator LoadCharacterAtlas(string characterName) => LoadAsset(GetAddressablePath(characterName, characterAtlasLabel), characterAtlasKeys, characterAtlasHandles);
+	public IEnumerator LoadModel3DPrefab(string characterName) => LoadAsset(GetAddressablePath(characterName, model3DPrefabLabel), model3DPrefabKeys, model3DPrefabHandles);
+	public IEnumerator LoadCharacterPrefab(string characterName) => LoadAsset(GetAddressablePath(characterName, characterPrefabLabel), characterPrefabKeys, characterPrefabHandles);
 
-	public GameObject GetCharacterPrefab(string characterName) => GetAsset(characterName, characterPrefabHandles);
-	public GameObject GetModel3DPrefab(string characterName) => GetAsset(characterName, model3DPrefabHandles);
-	public SpriteAtlas GetCharacterAtlas(string characterName) => GetAsset(characterName, characterAtlasHandles);
-	public TextAsset GetDialogueFile(string fileName) => GetAsset(fileName, dialogueFileHandles);
-	public Sprite GetBackgroundImage(string imageName) => GetAsset(imageName, backgroundImageHandles);
-	public AudioClip GetAmbientAudio(string audioName) => GetAsset(audioName, ambientAudioHandles);
-	public AudioClip GetMusicAudio(string audioName) => GetAsset(audioName, musicAudioHandles);
-	public AudioClip GetSFXAudio(string audioName) => GetAsset(audioName, sfxAudioHandles);
-	public AudioClip GetVoiceAudio(string audioName) => GetAsset(audioName, voiceAudioHandles);
+	public AudioClip GetAudio(string audioName, AssetLabelReference audioLabel) => GetAsset(GetAddressablePath(audioName, audioLabel), audioHandles);
+	public TextAsset GetDialogueFile(string addressablePath) => GetAsset(addressablePath, dialogueHandles);
+	public Sprite GetBackgroundImage(string imageName) => GetAsset(GetAddressablePath(imageName, backgroundImageLabel), backgroundImageHandles);
+	public SpriteAtlas GetCharacterAtlas(string characterName) => GetAsset(GetAddressablePath(characterName, characterAtlasLabel), characterAtlasHandles);
+	public GameObject GetModel3DPrefab(string characterName) => GetAsset(GetAddressablePath(characterName, model3DPrefabLabel), model3DPrefabHandles);
+	public GameObject GetCharacterPrefab(string characterName) => GetAsset(GetAddressablePath(characterName, characterPrefabLabel), characterPrefabHandles);
 
-	public void UnloadCharacterPrefab(string characterName) => UnloadAsset(characterName, characterPrefabHandles);
-	public void UnloadModel3DPrefab(string characterName) => UnloadAsset(characterName, model3DPrefabHandles);
-	public void UnloadCharacterAtlas(string characterName) => UnloadAsset(characterName, characterAtlasHandles);
-	public void UnloadDialogueFile(string fileName) => UnloadAsset(fileName, dialogueFileHandles);
-	public void UnloadBackgroundImage(string imageName) => UnloadAsset(imageName, backgroundImageHandles);
-	public void UnloadAmbientAudio(string audioName) => UnloadAsset(audioName, ambientAudioHandles);
-	public void UnloadMusicAudio(string audioName) => UnloadAsset(audioName, musicAudioHandles);
-	public void UnloadSFXAudio(string audioName) => UnloadAsset(audioName, sfxAudioHandles);
-	public void UnloadVoiceAudio(string audioName) => UnloadAsset(audioName, voiceAudioHandles);
+	public void UnloadAudio(string audioName, AssetLabelReference audioLabel) => UnloadAsset(GetAddressablePath(audioName, audioLabel), audioHandles);
+	public void UnloadDialogue(string addressablePath) => UnloadAsset(addressablePath, dialogueHandles);
+	public void UnloadBackgroundImage(string imageName) => UnloadAsset(GetAddressablePath(imageName, backgroundImageLabel), backgroundImageHandles);
+	public void UnloadCharacterAtlas(string characterName) => UnloadAsset(GetAddressablePath(characterName, characterAtlasLabel), characterAtlasHandles);
+	public void UnloadModel3DPrefab(string characterName) => UnloadAsset(GetAddressablePath(characterName, model3DPrefabLabel), model3DPrefabHandles);
+	public void UnloadCharacterPrefab(string characterName) => UnloadAsset(GetAddressablePath(characterName, characterPrefabLabel), characterPrefabHandles);
 
 	IEnumerator LoadAsset<T>(string name, Dictionary<string, string> keys, Dictionary<string, AsyncOperationHandle<T>> handles)
 		where T : UnityEngine.Object
@@ -135,33 +122,37 @@ public class FileManagerSO : ScriptableObject
 		handles.Remove(name);
 	}
 
-	void CacheLabeledAssetsIntoDictionary(AssetLabelReference assetLabel, Dictionary<string, string> addressableKeys)
+	void CacheLabeledAssetsIntoDictionary(Dictionary<string, string> addressableKeys, params AssetLabelReference[] assetLabels)
 	{
-		if (assetLabel == null || string.IsNullOrEmpty(assetLabel.labelString))
+		foreach (AssetLabelReference assetLabel in assetLabels)
 		{
-			Debug.LogWarning("Invalid AssetLabelReference. Unable to load keys into dictionary.");
-			return;
-		}
-
-		// Get the addressable location metadata for all files with the same asset label
-		AsyncOperationHandle<IList<IResourceLocation>> asyncHandle = Addressables.LoadResourceLocationsAsync(assetLabel.labelString);
-		asyncHandle.Completed += (resultHandle) =>
-		{
-			if (resultHandle.Status == AsyncOperationStatus.Succeeded)
+			if (assetLabel == null || string.IsNullOrEmpty(assetLabel.labelString))
 			{
-				foreach (IResourceLocation location in resultHandle.Result)
+				Debug.LogWarning("Invalid AssetLabelReference. Unable to load keys into dictionary.");
+				return;
+			}
+
+			// Get the addressable location metadata for all files with the same asset label
+			AsyncOperationHandle<IList<IResourceLocation>> asyncHandle = Addressables.LoadResourceLocationsAsync(assetLabel.labelString);
+			asyncHandle.Completed += (resultHandle) =>
+			{
+				if (resultHandle.Status == AsyncOperationStatus.Succeeded)
 				{
-					// Map the location of each file to its name
-					string assetName = System.IO.Path.GetFileNameWithoutExtension(location.PrimaryKey);
-					addressableKeys[assetName] = location.PrimaryKey;
+					foreach (IResourceLocation location in resultHandle.Result)
+					{
+						// Map the location of each file to its label + name
+						string assetName = System.IO.Path.GetFileNameWithoutExtension(location.PrimaryKey);
+						string assetKey = assetLabel.labelString + "/" + assetName;
+						addressableKeys[assetKey] = location.PrimaryKey;
+					}
 				}
-			}
-			else
-			{
-				Debug.LogWarning($"Unable to load keys for the given AssetLabelReference: {assetLabel.labelString}");
-			}
+				else
+				{
+					Debug.LogWarning($"Unable to load keys for the given AssetLabelReference: {assetLabel.labelString}");
+				}
 
-			Addressables.Release(resultHandle);
-		};
+				Addressables.Release(resultHandle);
+			};
+		}
 	}
 }

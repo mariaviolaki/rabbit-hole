@@ -10,13 +10,15 @@ namespace Dialogue
 
 		public bool IsEmpty => dialogueBlocks.Count == 0;
 
+		public void Clear() => dialogueBlocks.Clear();
+
 		public void AddBlock(List<string> lines, int progress = 0)
 		{
 			DialogueBlock dialogueBlock = new(lines, progress);
 			dialogueBlocks.Push(dialogueBlock);
 		}
 
-		public string GetLine()
+		public string GetNextLine()
 		{
 			DialogueBlock dialogueBlock = GetBlock();
 			if (dialogueBlock == null) return null;
@@ -40,8 +42,15 @@ namespace Dialogue
 			return dialogueBlock;
 		}
 
+		public bool ProceedInBlock(DialogueBlock dialogueBlock)
+		{
+			if (dialogueBlock == null) return false;
+
+			return dialogueBlock.IncrementProgress();
+		}
+
 		// Try to increment the progress on the most recent dialogue block block
-		public bool Proceed()
+		bool Proceed()
 		{
 			while (!IsEmpty)
 			{

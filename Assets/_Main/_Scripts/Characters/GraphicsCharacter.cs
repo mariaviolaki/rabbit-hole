@@ -199,21 +199,22 @@ namespace Characters
 			// Calculate target position in parent space
 			Vector2 targetPos = normalizedPos * containerSize;
 
-			// Clamp the target pos so the sprite stays inside
 			Vector2 pivotOffset = root.pivot * rootSize;
 			Vector2 minPos = pivotOffset;
 			Vector2 maxPos = containerSize - rootSize + pivotOffset;
-			Vector2 clampedTargetPos = new Vector2(
-				Mathf.Clamp(targetPos.x, minPos.x, maxPos.x),
-				Mathf.Clamp(targetPos.y, minPos.y, maxPos.y)
-			);
+
+			// Clamp the target pos so the sprite stays inside
+			if (normalizedPos.x >= 0f && normalizedPos.x <= 1f)
+				targetPos.x = Mathf.Clamp(targetPos.x, minPos.x, maxPos.x);
+			if (normalizedPos.y >= 0f && normalizedPos.y <= 1f)
+				targetPos.y = Mathf.Clamp(targetPos.y, minPos.y, maxPos.y);
 
 			// Convert anchor to offset from bottom-left of container
 			Vector2 anchorCenter = (root.anchorMin + root.anchorMax) * 0.5f;
 			Vector2 anchorOffset = Vector2.Scale(anchorCenter, containerSize);
 
 			// Return position relative to anchor center
-			return clampedTargetPos - anchorOffset;
+			return targetPos - anchorOffset;
 		}
 	}
 }

@@ -22,8 +22,8 @@ namespace Dialogue
 		[SerializeField] string dialogueFileName; // TODO get dynamically
 
 		DialogueReader dialogueReader;
-		DialogueFile dialogueFile;
 		DialogueReadMode readMode = DialogueReadMode.Wait;
+		Coroutine dialogueLoadProcess;
 
 		public GameOptionsSO Options => gameOptions;
 		public VisualNovelUI UI => visualNovelUI;
@@ -31,6 +31,7 @@ namespace Dialogue
 		public CommandManager Commands => commandManager;
 		public DialogueContinuePromptUI ContinuePrompt => continuePrompt;
 		public DialogueTagDirectorySO TagDirectory => tagDirectory;
+		public FileManagerSO FileManager => fileManager;
 		public InputManagerSO InputManager => inputManager;
 		public DialogueReader Reader => dialogueReader;
 		public DialogueReadMode ReadMode => readMode;
@@ -54,28 +55,39 @@ namespace Dialogue
 			{
 				//StartCoroutine(RunTest());
 
-				StartCoroutine(StartDialogueFromFile());
+				StartCoroutine(ReadDialogueProcess(dialogueFileName));
 			}
-		}
-
-		public Coroutine Say(string speakerName, string line)
-		{
-			return Say(speakerName, new List<string> { line });
 		}
 
 		public Coroutine Say(string speakerName, List<string> lines)
 		{
-			return dialogueReader.StartReading(speakerName, lines);
+			DialogueFile dialogueFile = new DialogueFile(this, speakerName, lines);
+			return dialogueReader.StartReading();
 		}
 
-		IEnumerator StartDialogueFromFile()
+		public Coroutine LoadDialogue(string dialoguePath)
 		{
-			yield return fileManager.LoadDialogueFile(dialogueFileName);
-			TextAsset dialogueAsset = fileManager.GetDialogueFile(dialogueFileName);
-			if (dialogueAsset == null) yield break;
+			if (dialogueLoadProcess != null)
+			{
+				StopCoroutine(dialogueLoadProcess);
+				dialogueLoadProcess = null;
+			}
 
-			dialogueFile = new DialogueFile(dialogueAsset.name, dialogueAsset.text);
-			yield return dialogueReader.StartReading(dialogueFile.Lines);
+			dialogueLoadProcess = StartCoroutine(LoadDialogueProcess(dialoguePath));
+			return dialogueLoadProcess;
+		}
+
+		IEnumerator LoadDialogueProcess(string dialoguePath)
+		{
+			DialogueFile dialogueFile = new(this, dialoguePath);
+			yield return dialogueFile.Load();
+			dialogueLoadProcess = null;
+		}
+
+		IEnumerator ReadDialogueProcess(string dialoguePath)
+		{
+			yield return LoadDialogue(dialoguePath);
+			yield return dialogueReader.StartReading();
 		}
 
 		void HandleOnAdvanceEvent() => HandleReadModeEvent(DialogueReadMode.Wait, InputActionDuration.Toggle);

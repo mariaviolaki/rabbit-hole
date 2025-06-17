@@ -13,7 +13,7 @@ namespace Commands
 
 		public new static void Register(CommandManager commandManager)
 		{
-			characterManager = commandManager.GetCharacterManager();
+			characterManager = commandManager.Characters;
 
 			CommandDirectory mainDir = commandManager.GetDirectory(CommandManager.MainDirectoryName);
 			CommandDirectory charactersDir = commandManager.GetDirectory(CommandManager.CharacterDirectoryName);

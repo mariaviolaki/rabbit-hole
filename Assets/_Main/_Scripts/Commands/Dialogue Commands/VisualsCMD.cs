@@ -7,11 +7,11 @@ namespace Commands
 {
 	public class VisualsCMD : DialogueCommand
 	{
-		static VisualGroupManager graphicsGroupManager;
+		static VisualGroupManager visualGroupManager;
 
 		public new static void Register(CommandManager commandManager)
 		{
-			graphicsGroupManager = commandManager.GetGraphicsGroupManager();
+			visualGroupManager = commandManager.Visuals;
 
 			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
 
@@ -108,7 +108,7 @@ namespace Commands
 
 		static void CreateVisualGroup(string visualGroupName, DialogueCommandArguments args)
 		{
-			VisualLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
+			VisualLayerGroup layerGroup = visualGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) return;
 
 			int layerCount = args.Get(0, "layers", 1);
@@ -118,7 +118,7 @@ namespace Commands
 
 		static IEnumerator ClearVisualGroup(string visualGroupName, DialogueCommandArguments args)
 		{
-			VisualLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
+			VisualLayerGroup layerGroup = visualGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) yield break;
 
 			int layerDepth = args.Get(0, "layer", -1);
@@ -130,7 +130,7 @@ namespace Commands
 
 		static IEnumerator SetVisualGroupImage(string visualGroupName, DialogueCommandArguments args)
 		{
-			VisualLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
+			VisualLayerGroup layerGroup = visualGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) yield break;
 
 			string imageName = args.Get(0, "name", "");
@@ -146,7 +146,7 @@ namespace Commands
 
 		static IEnumerator SetVisualGroupVideo(string visualGroupName, DialogueCommandArguments args)
 		{
-			VisualLayerGroup layerGroup = graphicsGroupManager.GetLayerGroup(visualGroupName);
+			VisualLayerGroup layerGroup = visualGroupManager.GetLayerGroup(visualGroupName);
 			if (layerGroup == null) yield break;
 
 			string videoName = args.Get(0, "name", "");

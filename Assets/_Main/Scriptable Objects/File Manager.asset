@@ -15,16 +15,6 @@ MonoBehaviour:
   gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
   videoLabel:
     m_LabelString: StreamingAssets/Videos
-  characterPrefabLabel:
-    m_LabelString: Prefabs/Characters
-  model3DPrefabLabel:
-    m_LabelString: Prefabs/Character Models
-  characterAtlasLabel:
-    m_LabelString: Sprite Atlas/Characters
-  dialogueFileLabel:
-    m_LabelString: Dialogue
-  backgroundImageLabel:
-    m_LabelString: Graphics/Backgrounds
   ambientAudioLabel:
     m_LabelString: Audio/Ambient
   musicAudioLabel:
@@ -33,3 +23,17 @@ MonoBehaviour:
     m_LabelString: Audio/SFX
   voiceAudioLabel:
     m_LabelString: Audio/Voice
+  dialogueLabel:
+    m_LabelString: Dialogue
+  dialogueCharactersLabel:
+    m_LabelString: Dialogue/Characters
+  dialogueEndingsLabel:
+    m_LabelString: Dialogue/Endings
+  backgroundImageLabel:
+    m_LabelString: Graphics/Backgrounds
+  characterAtlasLabel:
+    m_LabelString: Sprite Atlas/Characters
+  model3DPrefabLabel:
+    m_LabelString: Prefabs/Character Models
+  characterPrefabLabel:
+    m_LabelString: Prefabs/Characters

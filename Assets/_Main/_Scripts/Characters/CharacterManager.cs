@@ -63,13 +63,14 @@ namespace Characters
 				Debug.LogWarning($"Unable to create character '{shortName}' because they already exist.");
 				yield break;
 			}
-			else if (!IsValidShortName(shortName) || !IsValidShortName(castShortName))
-			{
-				Debug.LogWarning($"Unable to create character '${shortName}' because their short name is invalid.");
-				yield break;
-			}
 
 			castShortName = string.IsNullOrWhiteSpace(castShortName) ? shortName : castShortName;
+			if (!IsValidShortName(shortName) || !IsValidShortName(castShortName))
+			{
+				Debug.LogWarning($"Unable to create character '{shortName}' because their short name is invalid.");
+				yield break;
+			}
+	
 			CharacterData data = characterDirectory.GetCharacterData(shortName, castShortName, gameOptions);
 
 			switch (data.Type)

@@ -17,11 +17,11 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: d3c9d180fd290d04a98c72f655148502
   m_SerializeEntries:
-  - m_GUID: 927f87ea93af44f4a92dad12f4779b68
-    m_Address: Assets/_Main/Dialogue
+  - m_GUID: a3dd6e85a5cfed14aa83c78d1374b267
+    m_Address: Assets/_Main/Dialogue/Characters
     m_ReadOnly: 0
     m_SerializedLabels:
-    - Dialogue
+    - Dialogue/Characters
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 91ba255192827954ab70d3b16c0e30d9
     m_Address: Assets/_Main/Prefabs/Characters
@@ -76,6 +76,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - StreamingAssets/Videos
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: df8b734477e9dd448a09150c382f2022
+    m_Address: Assets/_Main/Dialogue/Endings
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Dialogue/Endings
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 927f87ea93af44f4a92dad12f4779b68
+    m_Address: Assets/_Main/Dialogue
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Dialogue
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 9a96d69e6c0910047aed3e71b766540f, type: 2}

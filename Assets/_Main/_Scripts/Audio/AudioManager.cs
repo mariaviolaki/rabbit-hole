@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Audio;
 
 namespace Audio
@@ -12,6 +13,10 @@ namespace Audio
 		[SerializeField] AudioMixerGroup musicMixerGroup;
 		[SerializeField] AudioMixerGroup sfxMixerGroup;
 		[SerializeField] AudioMixerGroup voiceMixerGroup;
+		[SerializeField] AssetLabelReference ambientAddressableLabel;
+		[SerializeField] AssetLabelReference musicAddressableLabel;
+		[SerializeField] AssetLabelReference sfxAddressableLabel;
+		[SerializeField] AssetLabelReference voiceAddressableLabel;
 
 		public FileManagerSO FileManager => fileManager;
 		public GameOptionsSO Options => options;
@@ -24,10 +29,10 @@ namespace Audio
 
 		void Awake()
 		{
-			audioGroups[AudioType.Ambient] = new AudioGroup(this, AudioType.Ambient, ambientMixerGroup);
-			audioGroups[AudioType.Music] = new AudioGroup(this, AudioType.Music, musicMixerGroup);
-			audioGroups[AudioType.SFX] = new AudioGroup(this, AudioType.SFX, sfxMixerGroup);
-			audioGroups[AudioType.Voice] = new AudioGroup(this, AudioType.Voice, voiceMixerGroup);
+			audioGroups[AudioType.Ambient] = new AudioGroup(this, AudioType.Ambient, ambientMixerGroup, ambientAddressableLabel);
+			audioGroups[AudioType.Music] = new AudioGroup(this, AudioType.Music, musicMixerGroup, musicAddressableLabel);
+			audioGroups[AudioType.SFX] = new AudioGroup(this, AudioType.SFX, sfxMixerGroup, sfxAddressableLabel);
+			audioGroups[AudioType.Voice] = new AudioGroup(this, AudioType.Voice, voiceMixerGroup, voiceAddressableLabel);
 		}
 
 		public void Create(AudioType audioType, int layerCount = 1)

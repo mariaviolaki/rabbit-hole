@@ -9,7 +9,6 @@ namespace Dialogue
 
 		readonly InputManagerSO inputManager;
 		readonly VisualNovelUI visualNovelUI;
-		readonly DialogueStack dialogueStack;
 		string title = "";
 		string input = null;
 
@@ -17,7 +16,6 @@ namespace Dialogue
 		{
 			inputManager = dialogueSystem.InputManager;
 			visualNovelUI = dialogueSystem.UI;
-			dialogueStack = dialogueSystem.Reader.Stack;
 
 			ParseTitle();
 		}
@@ -31,7 +29,6 @@ namespace Dialogue
 			{
 				yield return visualNovelUI.ShowInput(title);
 				while (input == null) yield return null;
-				dialogueStack.Proceed();
 			}
 			finally
 			{

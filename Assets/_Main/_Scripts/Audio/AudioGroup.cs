@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Audio;
 
 namespace Audio
@@ -11,18 +12,21 @@ namespace Audio
 		readonly AudioType type;
 		readonly Transform root;
 		readonly AudioMixerGroup mixerGroup;
+		readonly AssetLabelReference assetLabel;
 		readonly Dictionary<int, AudioLayer> layers = new();
 
 		public AudioManager Manager => manager;
 		public AudioMixerGroup MixerGroup => mixerGroup;
+		public AssetLabelReference AssetLabel => assetLabel;
 		public Transform Root => root;
 		public AudioType Type => type;
 
-		public AudioGroup(AudioManager manager, AudioType type, AudioMixerGroup mixerGroup)
+		public AudioGroup(AudioManager manager, AudioType type, AudioMixerGroup mixerGroup, AssetLabelReference assetLabel)
 		{
 			this.manager = manager;
 			this.type = type;
 			this.mixerGroup = mixerGroup;
+			this.assetLabel = assetLabel;
 
 			name = type.ToString();
 			root = new GameObject(name).transform;

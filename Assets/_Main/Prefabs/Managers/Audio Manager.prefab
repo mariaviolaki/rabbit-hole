@@ -50,3 +50,11 @@ MonoBehaviour:
   musicMixerGroup: {fileID: -2396788913241241238, guid: f4c2154a5ab2fc5478b513bebb12b489, type: 2}
   sfxMixerGroup: {fileID: -911277444545198641, guid: f4c2154a5ab2fc5478b513bebb12b489, type: 2}
   voiceMixerGroup: {fileID: -6374156116296934832, guid: f4c2154a5ab2fc5478b513bebb12b489, type: 2}
+  ambientAddressableLabel:
+    m_LabelString: Audio/Ambient
+  musicAddressableLabel:
+    m_LabelString: Audio/Music
+  sfxAddressableLabel:
+    m_LabelString: Audio/SFX
+  voiceAddressableLabel:
+    m_LabelString: Audio/Voice

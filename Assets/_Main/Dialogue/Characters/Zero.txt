@@ -1,0 +1,14 @@
+
+wait CreateCharacter(z)
+SetBackgroundImage(Snow-Back, layer=1), SetBackgroundImage(Snow-Front)
+PlayMusic(day, volume=0.02)
+
+m.SetPosition(x=-0.5), eg.SetPosition(x=1.5)
+
+z.SetPosition(-0.5, 0.5, immediate=true), z.Show(immediate=true)
+z.SetPosition(x=0.5)
+
+z "That's would be me."
+z "Now get out of here, Void."
+v "Oh no, no, no, Zero~"
+v "I'm present in <i>all</i> the routes."

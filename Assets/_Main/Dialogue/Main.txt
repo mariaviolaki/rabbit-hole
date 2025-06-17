@@ -1,0 +1,35 @@
+CreateBackground(2), CreateForeground(), CreateCinematic()
+CreateAmbient(2), CreateMusic(2), CreateSFX(2), CreateVoice(2)
+
+ShowVN(immediate=true)
+
+wait CreateCharacters(v, eg, v1:v, m, mc)
+SetBackgroundImage(Green-Forest-Back, 1, immediate=true), SetBackgroundImage(Green-Forest-Front, immediate=true)
+PlayMusic(night, volume=0.02)
+
+v.Setposition(0, 0.5, immediate=true), eg.setPosition(1, 0.5, immediate=true), m.setposition(0.5, 0.5, immediate=true)
+v.show(immediate=true), eg.show(immediate=true), m.show(immediate=true)
+
+v.setsprite(face, face smug)
+v "Now then."
+v "If I asked you to choose someone, who would you choose...?"
+
+choice
+{
+	-You of course!
+		v "Haha."
+		Load(Dialogue/Characters/Void)
+	-Zero.
+		v "Huh."
+		v "Who is Zero?"
+		Load(Dialogue/Characters/Zero)
+	-Neither!
+		v "..."
+		Load(Dialogue/Endings/Common)
+}
+
+v "Now answer me something."
+input "What is your name...?"
+v "Well, it's very nice to meet you again, <input>."
+v "..."
+v "You're not supposed to reach this part."

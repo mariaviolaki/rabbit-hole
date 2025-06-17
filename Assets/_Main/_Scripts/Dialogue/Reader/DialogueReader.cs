@@ -64,25 +64,10 @@ namespace Dialogue
 				textBuilder.Speed = gameOptions.Dialogue.TextSpeed;
 		}
 
-		public Coroutine StartReading(List<string> lines)
+		public Coroutine StartReading()
 		{
-			if (lines == null) return null;
-
 			PrepareDialogue();
-
-			dialogueStack.AddBlock(lines);
 			readProcess = dialogueSystem.StartCoroutine(Read());
-			return readProcess;
-		}
-
-		public Coroutine StartReading(string speakerName, List<string> lines)
-		{
-			if (lines == null) return null;
-
-			PrepareDialogue();
-
-			dialogueStack.AddBlock(lines);
-			readProcess = dialogueSystem.StartCoroutine(Read(speakerName));
 			return readProcess;
 		}
 
@@ -101,7 +86,8 @@ namespace Dialogue
 		{
 			while (!dialogueStack.IsEmpty)
 			{
-				string rawLine = dialogueStack.GetLine();
+				string rawLine = dialogueStack.GetNextLine();
+				DialogueBlock dialogueBlock = dialogueStack.GetBlock();
 				if (rawLine == null) break;
 
 				// Wait for any previous skipped transitions to complete smoothly
@@ -112,28 +98,8 @@ namespace Dialogue
 					yield return ProcessDialogueLine(dialogueLine);
 				else
 					yield return ProcessLogicSegment(dialogueLine);
-			}
 
-			readProcess = null;
-		}
-
-		// Read a list of dialogue lines spoken by a certain character
-		IEnumerator Read(string speakerName)
-		{
-			Character character = characterManager.GetCharacter(speakerName);
-			SetSpeakerName(character.Data);
-
-			while (!dialogueStack.IsEmpty)
-			{
-				string rawLine = dialogueStack.GetLine();
-				if (rawLine == null) break;
-
-				DialogueLine dialogueLine = DialogueParser.Parse(rawLine, logicSegmentManager);
-
-				if (dialogueLine.Dialogue != null)
-					yield return DisplayDialogue(dialogueLine);
-
-				dialogueStack.Proceed();
+				dialogueStack.ProceedInBlock(dialogueBlock);
 			}
 
 			readProcess = null;
@@ -149,8 +115,6 @@ namespace Dialogue
 
 			if (line.Commands != null)
 				yield return RunCommands(line.Commands.CommandList);
-
-			dialogueStack.Proceed();
 		}
 
 		IEnumerator ProcessLogicSegment(DialogueLine line)

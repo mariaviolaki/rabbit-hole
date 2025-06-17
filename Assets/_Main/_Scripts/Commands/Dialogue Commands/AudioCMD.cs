@@ -10,7 +10,7 @@ namespace Commands
 
 		public new static void Register(CommandManager commandManager)
 		{
-			audioManager = commandManager.GetAudioManager();
+			audioManager = commandManager.Audio;
 
 			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
 

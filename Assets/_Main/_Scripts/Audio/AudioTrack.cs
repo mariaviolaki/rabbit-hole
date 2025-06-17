@@ -149,44 +149,13 @@ namespace Audio
 
 		IEnumerator LoadAudioTrack()
 		{
-			switch (audioGroup.Type)
-			{
-				case AudioType.Ambient:
-					yield return audioGroup.Manager.FileManager.LoadAmbientAudio(name);
-					audioClip = audioGroup.Manager.FileManager.GetAmbientAudio(name);
-					break;
-				case AudioType.Music:
-					yield return audioGroup.Manager.FileManager.LoadMusicAudio(name);
-					audioClip = audioGroup.Manager.FileManager.GetMusicAudio(name);
-					break;
-				case AudioType.SFX:
-					yield return audioGroup.Manager.FileManager.LoadSFXAudio(name);
-					audioClip = audioGroup.Manager.FileManager.GetSFXAudio(name);
-					break;
-				case AudioType.Voice:
-					yield return audioGroup.Manager.FileManager.LoadVoiceAudio(name);
-					audioClip = audioGroup.Manager.FileManager.GetVoiceAudio(name);
-					break;
-			}
+			yield return audioGroup.Manager.FileManager.LoadAudio(name, audioGroup.AssetLabel);
+			audioClip = audioGroup.Manager.FileManager.GetAudio(name, audioGroup.AssetLabel);
 		}
 
 		void UnloadAudioTrack()
 		{
-			switch (audioGroup.Type)
-			{
-				case AudioType.Ambient:
-					audioGroup.Manager.FileManager.UnloadAmbientAudio(name);
-					break;
-				case AudioType.Music:
-					audioGroup.Manager.FileManager.UnloadMusicAudio(name);
-					break;
-				case AudioType.SFX:
-					audioGroup.Manager.FileManager.UnloadSFXAudio(name);
-					break;
-				case AudioType.Voice:
-					audioGroup.Manager.FileManager.UnloadVoiceAudio(name);
-					break;
-			}
+			audioGroup.Manager.FileManager.UnloadAudio(name, audioGroup.AssetLabel);
 		}
 
 		void StopAudioCoroutine(ref Coroutine coroutine)

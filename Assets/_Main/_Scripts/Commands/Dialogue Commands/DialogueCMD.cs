@@ -11,7 +11,7 @@ namespace Commands
 
 		public new static void Register(CommandManager commandManager)
 		{
-			visualNovelUI = commandManager.GetDialogueSystem().UI;
+			visualNovelUI = commandManager.Dialogue.UI;
 
 			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
 

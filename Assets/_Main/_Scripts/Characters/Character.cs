@@ -62,7 +62,7 @@ namespace Characters
 
 		public Coroutine Say(string dialogueLine)
 		{
-			return manager.Dialogue.Say(Data.Name, dialogueLine);
+			return Say(new List<string> { dialogueLine });
 		}
 
 		public Coroutine Say(List<string> dialogueLines)
