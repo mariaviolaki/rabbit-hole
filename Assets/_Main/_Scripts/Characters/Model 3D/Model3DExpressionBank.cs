@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Characters
 {
 	[RequireComponent(typeof(SkinnedMeshRenderer))]
-	public class Model3DExpressionDirectory : MonoBehaviour
+	public class Model3DExpressionBank : MonoBehaviour
 	{
 		[SerializeField] Model3DExpression[] expressionData;
 		readonly Dictionary<string, SubExpression[]> expressions = new(StringComparer.OrdinalIgnoreCase);

@@ -12,7 +12,7 @@ namespace Characters
 
 		[SerializeField] GameOptionsSO gameOptions;
 		[SerializeField] FileManagerSO fileManager;
-		[SerializeField] CharacterDirectorySO characterDirectory;
+		[SerializeField] CharacterBankSO characterBank;
 		[SerializeField] DialogueSystem dialogueSystem;
 		[SerializeField] RectTransform characterContainer;
 		[SerializeField] Transform model3DContainer;
@@ -20,7 +20,7 @@ namespace Characters
 		Dictionary<string, Character> characters = new Dictionary<string, Character>();
 
 		public GameOptionsSO GameOptions { get { return gameOptions; } }
-		public CharacterDirectorySO Directory { get { return characterDirectory; } }
+		public CharacterBankSO Bank { get { return characterBank; } }
 		public FileManagerSO FileManager { get { return fileManager; } }
 		public DialogueSystem Dialogue { get { return dialogueSystem; } }
 		public RectTransform Container { get { return characterContainer; } }
@@ -71,7 +71,7 @@ namespace Characters
 				yield break;
 			}
 	
-			CharacterData data = characterDirectory.GetCharacterData(shortName, castShortName, gameOptions);
+			CharacterData data = characterBank.GetCharacterData(shortName, castShortName, gameOptions);
 
 			switch (data.Type)
 			{
@@ -198,7 +198,7 @@ namespace Characters
 
 		void CreateDefaultCharacter(string shortName)
 		{
-			CharacterData data = characterDirectory.GetDefaultData(shortName, gameOptions);
+			CharacterData data = characterBank.GetDefaultData(shortName, gameOptions);
 			characters[shortName] = Character.CreateDefault(this, data);
 		}
 

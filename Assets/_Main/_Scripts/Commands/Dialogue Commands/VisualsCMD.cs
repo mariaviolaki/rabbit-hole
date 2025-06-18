@@ -13,25 +13,25 @@ namespace Commands
 		{
 			visualGroupManager = commandManager.Visuals;
 
-			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
+			CommandBank bank = commandManager.GetBank(CommandManager.MainBankName);
 
 			// Background
-			directory.AddCommand("CreateBackground", new Action<DialogueCommandArguments>(CreateBackground));
-			directory.AddCommand("ClearBackground", new Func<DialogueCommandArguments, IEnumerator>(ClearBackground), CommandSkipType.Transition);
-			directory.AddCommand("SetBackgroundImage", new Func<DialogueCommandArguments, IEnumerator>(SetBackgroundImage), CommandSkipType.Transition);
-			directory.AddCommand("SetBackgroundVideo", new Func<DialogueCommandArguments, IEnumerator>(SetBackgroundVideo), CommandSkipType.Transition);
+			bank.AddCommand("CreateBackground", new Action<DialogueCommandArguments>(CreateBackground));
+			bank.AddCommand("ClearBackground", new Func<DialogueCommandArguments, IEnumerator>(ClearBackground), CommandSkipType.Transition);
+			bank.AddCommand("SetBackgroundImage", new Func<DialogueCommandArguments, IEnumerator>(SetBackgroundImage), CommandSkipType.Transition);
+			bank.AddCommand("SetBackgroundVideo", new Func<DialogueCommandArguments, IEnumerator>(SetBackgroundVideo), CommandSkipType.Transition);
 
 			// Foreground
-			directory.AddCommand("CreateForeground", new Action<DialogueCommandArguments>(CreateForeground));
-			directory.AddCommand("ClearForeground", new Func<DialogueCommandArguments, IEnumerator>(ClearForeground), CommandSkipType.Transition);
-			directory.AddCommand("SetForegroundImage", new Func<DialogueCommandArguments, IEnumerator>(SetForegroundImage), CommandSkipType.Transition);
-			directory.AddCommand("SetForegroundVideo", new Func<DialogueCommandArguments, IEnumerator>(SetForegroundVideo), CommandSkipType.Transition);
+			bank.AddCommand("CreateForeground", new Action<DialogueCommandArguments>(CreateForeground));
+			bank.AddCommand("ClearForeground", new Func<DialogueCommandArguments, IEnumerator>(ClearForeground), CommandSkipType.Transition);
+			bank.AddCommand("SetForegroundImage", new Func<DialogueCommandArguments, IEnumerator>(SetForegroundImage), CommandSkipType.Transition);
+			bank.AddCommand("SetForegroundVideo", new Func<DialogueCommandArguments, IEnumerator>(SetForegroundVideo), CommandSkipType.Transition);
 
 			// Cinematic
-			directory.AddCommand("CreateCinematic", new Action<DialogueCommandArguments>(CreateCinematic));
-			directory.AddCommand("ClearCinematic", new Func<DialogueCommandArguments, IEnumerator>(ClearCinematic), CommandSkipType.Transition);
-			directory.AddCommand("SetCinematicImage", new Func<DialogueCommandArguments, IEnumerator>(SetCinematicImage), CommandSkipType.Transition);
-			directory.AddCommand("SetCinematicVideo", new Func<DialogueCommandArguments, IEnumerator>(SetCinematicVideo), CommandSkipType.Transition);
+			bank.AddCommand("CreateCinematic", new Action<DialogueCommandArguments>(CreateCinematic));
+			bank.AddCommand("ClearCinematic", new Func<DialogueCommandArguments, IEnumerator>(ClearCinematic), CommandSkipType.Transition);
+			bank.AddCommand("SetCinematicImage", new Func<DialogueCommandArguments, IEnumerator>(SetCinematicImage), CommandSkipType.Transition);
+			bank.AddCommand("SetCinematicVideo", new Func<DialogueCommandArguments, IEnumerator>(SetCinematicVideo), CommandSkipType.Transition);
 		}
 
 

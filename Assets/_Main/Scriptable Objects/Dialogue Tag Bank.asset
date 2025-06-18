@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 259dc38eae235dd4186e7351a865c3e0, type: 3}
-  m_Name: Dialogue Tag Directory
+  m_Name: Dialogue Tag Bank
   m_EditorClassIdentifier: 
   dialogueTags:
   - name: input

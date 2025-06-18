@@ -13,7 +13,7 @@ namespace Dialogue
 		[SerializeField] GameOptionsSO gameOptions;
 		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] FileManagerSO fileManager;
-		[SerializeField] DialogueTagDirectorySO tagDirectory;
+		[SerializeField] DialogueTagBankSO tagBank;
 		[SerializeField] CommandManager commandManager;
 		[SerializeField] CharacterManager characterManager;
 		[SerializeField] VisualNovelUI visualNovelUI;
@@ -30,7 +30,7 @@ namespace Dialogue
 		public CharacterManager Characters => characterManager;
 		public CommandManager Commands => commandManager;
 		public DialogueContinuePromptUI ContinuePrompt => continuePrompt;
-		public DialogueTagDirectorySO TagDirectory => tagDirectory;
+		public DialogueTagBankSO TagBank => tagBank;
 		public FileManagerSO FileManager => fileManager;
 		public InputManagerSO InputManager => inputManager;
 		public DialogueReader Reader => dialogueReader;

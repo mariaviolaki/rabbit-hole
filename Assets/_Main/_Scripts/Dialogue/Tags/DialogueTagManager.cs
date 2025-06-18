@@ -10,12 +10,12 @@ namespace Dialogue
 		const string tagPattern = @"<[a-zA-Z][a-zA-Z0-9]*>";
 		static readonly Regex regex = new Regex(tagPattern);
 
-		readonly DialogueTagDirectorySO tagDirectory;
+		readonly DialogueTagBankSO tagBank;
 		readonly InputPanelUI inputUI;
 
 		public DialogueTagManager(DialogueSystem dialogueSystem)
 		{
-			tagDirectory = dialogueSystem.TagDirectory;
+			tagBank = dialogueSystem.TagBank;
 			inputUI = dialogueSystem.UI.InputUI;
 
 			InitTags();
@@ -27,7 +27,7 @@ namespace Dialogue
 
 			foreach (Match match in matches)
 			{
-				if (tagDirectory.Tags.TryGetValue(match.Value, out DialogueTag dialogueTag))
+				if (tagBank.Tags.TryGetValue(match.Value, out DialogueTag dialogueTag))
 				{
 					text = ReplaceFirst(text, match.Value, dialogueTag.CurrentValue());
 				}
@@ -38,7 +38,7 @@ namespace Dialogue
 
 		public string GetTagValue(string tagName)
 		{
-			if (!tagDirectory.Tags.TryGetValue(tagName, out DialogueTag dialogueTag)) return null;
+			if (!tagBank.Tags.TryGetValue(tagName, out DialogueTag dialogueTag)) return null;
 
 			return dialogueTag.CurrentValue();
 		}
@@ -51,9 +51,9 @@ namespace Dialogue
 		void SetTagValue(string tagName, Func<string> value)
 		{
 			string formattedTagName = $"<{tagName}>";
-			if (!tagDirectory.Tags.TryGetValue(formattedTagName, out DialogueTag dialogueTag))
+			if (!tagBank.Tags.TryGetValue(formattedTagName, out DialogueTag dialogueTag))
 			{
-				Debug.LogWarning($"Tag '{tagName}' not found in Tag Directory.");
+				Debug.LogWarning($"Tag '{tagName}' not found in Tag Bank.");
 				return;
 			}
 

@@ -47,7 +47,7 @@ MonoBehaviour:
   gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
   inputManager: {fileID: 11400000, guid: 9b3fa728f456aeb4bb05c35c62b6cfc2, type: 2}
   fileManager: {fileID: 11400000, guid: 527643bfa3cac48449467bd17611abdd, type: 2}
-  tagDirectory: {fileID: 11400000, guid: 25409b45a3612ec48ace89e513ed0c73, type: 2}
+  tagBank: {fileID: 11400000, guid: 25409b45a3612ec48ace89e513ed0c73, type: 2}
   commandManager: {fileID: 0}
   characterManager: {fileID: 0}
   visualNovelUI: {fileID: 0}

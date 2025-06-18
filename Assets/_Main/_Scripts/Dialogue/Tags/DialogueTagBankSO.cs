@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace Dialogue
 {
-	[CreateAssetMenu(fileName = "Dialogue Tag Directory", menuName = "Scriptable Objects/Dialogue Tag Directory")]
-	public class DialogueTagDirectorySO : ScriptableObject
+	[CreateAssetMenu(fileName = "Dialogue Tag Bank", menuName = "Scriptable Objects/Dialogue Tag Bank")]
+	public class DialogueTagBankSO : ScriptableObject
 	{
 		[SerializeField] DialogueTag[] dialogueTags;
 

@@ -13,10 +13,10 @@ namespace Commands
 		{
 			dialogueSystem = commandManager.Dialogue;
 
-			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
+			CommandBank bank = commandManager.GetBank(CommandManager.MainBankName);
 
-			directory.AddCommand("Wait", new Func<DialogueCommandArguments, IEnumerator>(Wait));
-			directory.AddCommand("Load", new Func<DialogueCommandArguments, IEnumerator>(Load));
+			bank.AddCommand("Wait", new Func<DialogueCommandArguments, IEnumerator>(Wait));
+			bank.AddCommand("Load", new Func<DialogueCommandArguments, IEnumerator>(Load));
 		}
 
 		static IEnumerator Wait(DialogueCommandArguments args)

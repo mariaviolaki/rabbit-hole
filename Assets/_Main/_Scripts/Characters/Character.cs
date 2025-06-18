@@ -43,7 +43,7 @@ namespace Characters
 
 		public void ResetData()
 		{
-			data = manager.Directory.GetCharacterData(Data.Name, Data.CastName, manager.GameOptions);
+			data = manager.Bank.GetCharacterData(Data.Name, Data.CastName, manager.GameOptions);
 		}
 
 		public void SetName(string name)

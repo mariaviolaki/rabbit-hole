@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b050812d3f6fabb4ea76cb4f960ed2fb, type: 3}
-  m_Name: Font Directory
+  m_Name: Font Bank
   m_EditorClassIdentifier: 
   fontData:
   - fontAsset: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}

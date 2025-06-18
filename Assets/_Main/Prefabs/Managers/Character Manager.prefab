@@ -46,6 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
   fileManager: {fileID: 11400000, guid: 527643bfa3cac48449467bd17611abdd, type: 2}
-  characterDirectory: {fileID: 11400000, guid: a56599e06ff1517458c71a5b515770b8, type: 2}
+  characterBank: {fileID: 11400000, guid: a56599e06ff1517458c71a5b515770b8, type: 2}
   dialogueSystem: {fileID: 0}
   characterContainer: {fileID: 0}
+  model3DContainer: {fileID: 0}

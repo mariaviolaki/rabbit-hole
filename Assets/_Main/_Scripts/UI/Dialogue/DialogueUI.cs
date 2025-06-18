@@ -7,7 +7,7 @@ namespace UI
 {
 	public class DialogueUI : FadeableUI
 	{
-		[SerializeField] FontDirectorySO fontDirectory;
+		[SerializeField] FontBankSO fontBank;
 		[SerializeField] DialogueNameUI dialogueNameUI;
 		[SerializeField] TextMeshProUGUI dialogueText;
 
@@ -57,7 +57,7 @@ namespace UI
 			float baseFontSize = gameOptions.Dialogue.DialogueFontSize;
 
 			float fontSizeMultiplier = 1f;
-			if (fontDirectory.Fonts.TryGetValue(font.name, out FontData fontData))
+			if (fontBank.Fonts.TryGetValue(font.name, out FontData fontData))
 				fontSizeMultiplier = fontData.SizeMultiplier;
 
 			dialogueText.fontSize = baseFontSize * fontSizeMultiplier;

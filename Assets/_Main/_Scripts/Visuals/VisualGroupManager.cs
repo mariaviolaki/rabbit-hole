@@ -15,7 +15,7 @@ namespace Graphics
 		public static string ForegroundName = "Foreground";
 		public static string CinematicName = "Cinematic";
 
-		Dictionary<string, VisualLayerGroup> layerGroupDirectory = new Dictionary<string, VisualLayerGroup>();
+		Dictionary<string, VisualLayerGroup> layerGroupBank = new Dictionary<string, VisualLayerGroup>();
 
 		public FileManagerSO FileManager => fileManager;
 		public GameOptionsSO GameOptions => gameOptions;
@@ -25,15 +25,15 @@ namespace Graphics
 			foreach (VisualLayerGroup group in layerGroups)
 			{
 				group.Init(this);
-				layerGroupDirectory.Add(group.Name, group);
+				layerGroupBank.Add(group.Name, group);
 			}
 		}
 
 		public VisualLayerGroup GetLayerGroup(string name)
 		{
-			if (!layerGroupDirectory.ContainsKey(name)) return null;
+			if (!layerGroupBank.ContainsKey(name)) return null;
 
-			return layerGroupDirectory[name];
+			return layerGroupBank[name];
 		}
 
 		public float GetTransitionSpeed(float speedInput, bool isTransitionSkipped)

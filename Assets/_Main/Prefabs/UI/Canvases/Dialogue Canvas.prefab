@@ -639,7 +639,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
-  fontDirectory: {fileID: 11400000, guid: db537088bba751342bcac66f6387861f, type: 2}
+  fontBank: {fileID: 11400000, guid: db537088bba751342bcac66f6387861f, type: 2}
   dialogueNameUI: {fileID: 2891754192573281634}
   dialogueText: {fileID: 4309489026128052386}
 --- !u!1001 &5764869758182828519

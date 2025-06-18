@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Characters
 {
-	[CreateAssetMenu(fileName = "Character Directory", menuName = "Scriptable Objects/Character Directory")]
-	public class CharacterDirectorySO : ScriptableObject
+	[CreateAssetMenu(fileName = "Character Bank", menuName = "Scriptable Objects/Character Bank")]
+	public class CharacterBankSO : ScriptableObject
 	{
 		[SerializeField] CharacterData[] gameCharacters;
 		Dictionary<string, CharacterData> characters = new Dictionary<string, CharacterData>();

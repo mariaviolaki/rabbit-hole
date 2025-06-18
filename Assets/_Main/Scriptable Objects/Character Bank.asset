@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 08c16fedf16347a4a9c4a43b615c59ca, type: 3}
-  m_Name: Character Directory
+  m_Name: Character Bank
   m_EditorClassIdentifier: 
   gameCharacters:
   - name: <mcName>

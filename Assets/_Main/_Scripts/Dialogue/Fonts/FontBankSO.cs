@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Dialogue
 {
-	[CreateAssetMenu(fileName = "Font Directory", menuName = "Scriptable Objects/Font Directory")]
-	public class FontDirectorySO : ScriptableObject
+	[CreateAssetMenu(fileName = "Font Bank", menuName = "Scriptable Objects/Font Bank")]
+	public class FontBankSO : ScriptableObject
 	{
 		[SerializeField] FontData[] fontData;
 		Dictionary<string, FontData> fonts = new();

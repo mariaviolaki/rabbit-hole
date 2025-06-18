@@ -12,7 +12,7 @@ namespace Characters
 		const float expressionTransitionMultiplier = 5f;
 
 		Transform modelRoot;
-		Model3DExpressionDirectory expressionDirectory;
+		Model3DExpressionBank expressionBank;
 
 		GameObject primaryImageContainer;
 		RawImage primaryRawImage;
@@ -57,7 +57,7 @@ namespace Characters
 			primaryModelContainer = primaryModelCamera.transform.GetChild(0);
 			primaryModelAnimator = primaryModelContainer.GetComponentInChildren<Animator>();
 			primaryMeshRenderer = primaryModelAnimator.GetComponentInChildren<SkinnedMeshRenderer>();
-			expressionDirectory = primaryMeshRenderer.GetComponent<Model3DExpressionDirectory>();
+			expressionBank = primaryMeshRenderer.GetComponent<Model3DExpressionBank>();
 
 			// Setup how the 3D model is displayed in the UI
 			primaryRawImage.texture = renderTexture;
@@ -206,7 +206,7 @@ namespace Characters
 		void SetSubExpressionsImmediate(string expressionName)
 		{
 			bool isNewExpression = expressionName != currentExpression;
-			SubExpression[] currentSubExpressions = expressionDirectory.Expressions[expressionName];
+			SubExpression[] currentSubExpressions = expressionBank.Expressions[expressionName];
 
 			// Immediately set all the sub-expressions listed for the main expression
 			foreach (SubExpression subExpression in currentSubExpressions)
@@ -220,7 +220,7 @@ namespace Characters
 		bool IsValidExpression(string expressionName)
 		{
 			if (expressionName == currentExpression) return false;
-			if (expressionName != string.Empty && !expressionDirectory.Expressions.ContainsKey(expressionName))
+			if (expressionName != string.Empty && !expressionBank.Expressions.ContainsKey(expressionName))
 			{
 				Debug.LogError($"No expression '{expressionName}' found for 3D Model: '{data.CastName}'");
 				return false;
@@ -338,7 +338,7 @@ namespace Characters
 		IEnumerator ChangeSubExpressions(string expressionName, float transitionDuration)
 		{
 			bool isNewExpression = expressionName != currentExpression;
-			SubExpression[] currentSubExpressions = expressionDirectory.Expressions[expressionName];
+			SubExpression[] currentSubExpressions = expressionBank.Expressions[expressionName];
 
 			float timeElapsed = 0;
 			while (timeElapsed < transitionDuration)

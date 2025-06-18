@@ -13,15 +13,15 @@ namespace Commands
 		{
 			visualNovelUI = commandManager.Dialogue.UI;
 
-			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
+			CommandBank bank = commandManager.GetBank(CommandManager.MainBankName);
 
 			// Show UI
-			directory.AddCommand("ShowVN", new Func<DialogueCommandArguments, IEnumerator>(ShowVN), CommandSkipType.Transition);
-			directory.AddCommand("ShowDialogue", new Func<DialogueCommandArguments, IEnumerator>(ShowDialogue), CommandSkipType.Transition);
+			bank.AddCommand("ShowVN", new Func<DialogueCommandArguments, IEnumerator>(ShowVN), CommandSkipType.Transition);
+			bank.AddCommand("ShowDialogue", new Func<DialogueCommandArguments, IEnumerator>(ShowDialogue), CommandSkipType.Transition);
 
 			// Hide UI
-			directory.AddCommand("HideVN", new Func<DialogueCommandArguments, IEnumerator>(HideVN), CommandSkipType.Transition);
-			directory.AddCommand("HideDialogue", new Func<DialogueCommandArguments, IEnumerator>(HideDialogue), CommandSkipType.Transition);
+			bank.AddCommand("HideVN", new Func<DialogueCommandArguments, IEnumerator>(HideVN), CommandSkipType.Transition);
+			bank.AddCommand("HideDialogue", new Func<DialogueCommandArguments, IEnumerator>(HideDialogue), CommandSkipType.Transition);
 		}
 
 

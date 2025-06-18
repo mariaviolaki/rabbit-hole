@@ -16,28 +16,28 @@ namespace Commands
 	{
 		class CommandInputData
 		{
-			public string Directory { get; private set; }
+			public string Bank { get; private set; }
 			public string Command { get; private set; }
 			public DialogueCommandArguments Arguments { get; private set; }
 
-			public CommandInputData(string directoryName, string commandName, DialogueCommandArguments arguments)
+			public CommandInputData(string bankName, string commandName, DialogueCommandArguments arguments)
 			{
-				Directory = directoryName;
+				Bank = bankName;
 				Command = commandName;
 				Arguments = arguments;
 			}
 		}
 
-		// Command directory categories
-		public static readonly string MainDirectoryName = "Main";
-		public static readonly string DialogueDirectoryName = "Dialogue";
-		public static readonly string VisualsDirectoryName = "Visuals";
-		public static readonly string AudioDirectoryName = "Audio";
-		public static readonly string CharacterDirectoryName = "Characters";
-		public static readonly string GraphicsCharacterDirectoryName = "GraphicsCharacters";
-		public static readonly string SpriteCharacterDirectoryName = "SpriteCharacters";
-		public static readonly string Model3DCharacterDirectoryName = "Model3DCharacters";
-		const char CommandDirectoryIdentifier = '.';
+		// Command bank categories
+		public static readonly string MainBankName = "Main";
+		public static readonly string DialogueBankName = "Dialogue";
+		public static readonly string VisualsBankName = "Visuals";
+		public static readonly string AudioBankName = "Audio";
+		public static readonly string CharacterBankName = "Characters";
+		public static readonly string GraphicsCharacterBankName = "GraphicsCharacters";
+		public static readonly string SpriteCharacterBankName = "SpriteCharacters";
+		public static readonly string Model3DCharacterBankName = "Model3DCharacters";
+		const char CommandBankIdentifier = '.';
 
 		CharacterManager characterManager;
 		VisualGroupManager visualGroupManager;
@@ -45,7 +45,7 @@ namespace Commands
 		DialogueSystem dialogueSystem;
 
 		// The grouping of all dialogue commands available to be run (divided into categories)
-		Dictionary<string, CommandDirectory> commandDirectories = new();
+		Dictionary<string, CommandBank> commandDirectories = new();
 
 		// Keep track of all the processes that may run simultaneously
 		readonly Dictionary<Guid, CommandProcess> blockingProcesses = new();
@@ -65,7 +65,7 @@ namespace Commands
 			visualGroupManager = FindObjectOfType<VisualGroupManager>();
 			audioManager = FindObjectOfType<AudioManager>();
 			dialogueSystem = FindObjectOfType<DialogueSystem>();
-			InitDirectory();
+			InitBank();
 		}
 
 		public CommandProcess Execute(string fullCommandName, DialogueCommandArguments inputArguments)
@@ -77,15 +77,15 @@ namespace Commands
 				return null;
 			}
 
-			CommandDirectory directory = commandDirectories.ContainsKey(inputData.Directory) ? commandDirectories[inputData.Directory] : null;
-			if (directory == null || !directory.HasCommand(inputData.Command))
+			CommandBank bank = commandDirectories.ContainsKey(inputData.Bank) ? commandDirectories[inputData.Bank] : null;
+			if (bank == null || !bank.HasCommand(inputData.Command))
 			{
-				Debug.LogWarning($"Command '{inputData.Command}' not found in directory '{inputData.Directory}'. Command skipped.");
+				Debug.LogWarning($"Command '{inputData.Command}' not found in bank '{inputData.Bank}'. Command skipped.");
 				return null;
 			}
 
-			Delegate command = directory.GetCommand(inputData.Command);
-			CommandSkipType skipType = directory.GetSkipType(inputData.Command);
+			Delegate command = bank.GetCommand(inputData.Command);
+			CommandSkipType skipType = bank.GetSkipType(inputData.Command);
 			if (command == null) return null;
 
 			if (command.Method.ReturnType == typeof(void))
@@ -111,12 +111,12 @@ namespace Commands
 			}
 		}
 
-		public CommandDirectory GetDirectory(string directoryName)
+		public CommandBank GetBank(string bankName)
 		{
-			if (!commandDirectories.ContainsKey(directoryName))
-				commandDirectories.Add(directoryName, new CommandDirectory());
+			if (!commandDirectories.ContainsKey(bankName))
+				commandDirectories.Add(bankName, new CommandBank());
 
-			return commandDirectories[directoryName];
+			return commandDirectories[bankName];
 		}
 
 		void DeleteProcess(Guid processId, bool isBlocking)
@@ -146,66 +146,66 @@ namespace Commands
 
 		CommandInputData GetCommandInputData(string fullCommandName, DialogueCommandArguments arguments)
 		{
-			(string directoryName, string commandName) = ParseCommandInput(fullCommandName);
+			(string bankName, string commandName) = ParseCommandInput(fullCommandName);
 
-			// If the directory name is valid, get the command from this directory
-			if (commandDirectories.ContainsKey(directoryName))
-				return new CommandInputData(directoryName, commandName, arguments);
+			// If the bank name is valid, get the command from this bank
+			if (commandDirectories.ContainsKey(bankName))
+				return new CommandInputData(bankName, commandName, arguments);
 
-			// If not directory was found, assume that a character name was provided
-			string characterShortName = directoryName;
+			// If not bank was found, assume that a character name was provided
+			string characterShortName = bankName;
 			if (!characterManager.HasCharacter(characterShortName))
 			{
-				Debug.LogWarning($"Invalid Command Directory Entered: '{directoryName}'. Command '{fullCommandName}' skipped.");
+				Debug.LogWarning($"Invalid Command Bank Entered: '{bankName}'. Command '{fullCommandName}' skipped.");
 				return null;
 			}
 
-			directoryName = GetCharacterDirectoryName(characterShortName, commandName);
+			bankName = GetCharacterBankName(characterShortName, commandName);
 
 			// Inject the character's short name into the arguments so that the command can find the character
 			arguments.AddIndexedArgument(0, characterShortName);
 
-			return new CommandInputData(directoryName, commandName, arguments);
+			return new CommandInputData(bankName, commandName, arguments);
 		}
 
 		(string, string) ParseCommandInput(string fullCommandName)
 		{
-			// If no directory was specified, get the command from the main directory
-			int commandIndex = fullCommandName.LastIndexOf(CommandDirectoryIdentifier);
+			// If no bank was specified, get the command from the main bank
+			int commandIndex = fullCommandName.LastIndexOf(CommandBankIdentifier);
 			if (commandIndex == -1)
-				return (MainDirectoryName, fullCommandName);
+				return (MainBankName, fullCommandName);
 
-			string directoryName = fullCommandName.Substring(0, commandIndex);
+			string bankName = fullCommandName.Substring(0, commandIndex);
 			string commandName = fullCommandName.Substring(commandIndex + 1);
 
-			return (directoryName, commandName);
+			return (bankName, commandName);
 		}
 
-		string GetCharacterDirectoryName(string characterShortName, string commandName)
+		string GetCharacterBankName(string characterShortName, string commandName)
 		{
 			CharacterType characterType = characterManager.GetCharacter(characterShortName).Data.Type;
 			bool isGraphicsCharacter = characterType == CharacterType.Sprite || characterType == CharacterType.Model3D;
 
-			if (!isGraphicsCharacter) return CharacterDirectoryName;
+			if (!isGraphicsCharacter) return CharacterBankName;
 
-			if (characterType == CharacterType.Sprite && commandDirectories[SpriteCharacterDirectoryName].HasCommand(commandName))
-				return SpriteCharacterDirectoryName;
-			else if (characterType == CharacterType.Model3D && commandDirectories[Model3DCharacterDirectoryName].HasCommand(commandName))
-				return Model3DCharacterDirectoryName;
-			else if (commandDirectories[GraphicsCharacterDirectoryName].HasCommand(commandName))
-				return GraphicsCharacterDirectoryName;
+			if (characterType == CharacterType.Sprite && commandDirectories[SpriteCharacterBankName].HasCommand(commandName))
+				return SpriteCharacterBankName;
+			else if (characterType == CharacterType.Model3D && commandDirectories[Model3DCharacterBankName].HasCommand(commandName))
+				return Model3DCharacterBankName;
+			else if (commandDirectories[GraphicsCharacterBankName].HasCommand(commandName))
+				return GraphicsCharacterBankName;
 			
-			return CharacterDirectoryName;
+			return CharacterBankName;
 		}
 
-		void InitDirectory()
+		void InitBank()
 		{
 			Assembly projectAssembly = Assembly.GetExecutingAssembly();
 			Type[] commandTypes = projectAssembly.GetTypes().Where(t => t.IsSubclassOf(typeof(DialogueCommand))).ToArray();
 
 			foreach (Type commandType in commandTypes)
 			{
-				// Search for all scripts inheriting from DialogueCommand and register their commands to the directory 
+				// Search for all scripts inheriting from DialogueCommand and register their commands to the bank 
 				MethodInfo registerMethod = commandType.GetMethod("Register", BindingFlags.Static | BindingFlags.Public);
 				if (registerMethod != null)
 					registerMethod.Invoke(null, new object[] { this });

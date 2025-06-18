@@ -15,11 +15,11 @@ namespace Commands
 		{
 			characterManager = commandManager.Characters;
 
-			CommandDirectory mainDir = commandManager.GetDirectory(CommandManager.MainDirectoryName);
-			CommandDirectory charactersDir = commandManager.GetDirectory(CommandManager.CharacterDirectoryName);
-			CommandDirectory graphicsCharactersDir = commandManager.GetDirectory(CommandManager.GraphicsCharacterDirectoryName);
-			CommandDirectory spriteCharactersDir = commandManager.GetDirectory(CommandManager.SpriteCharacterDirectoryName);
-			CommandDirectory model3DCharactersDir = commandManager.GetDirectory(CommandManager.Model3DCharacterDirectoryName);
+			CommandBank mainDir = commandManager.GetBank(CommandManager.MainBankName);
+			CommandBank charactersDir = commandManager.GetBank(CommandManager.CharacterBankName);
+			CommandBank graphicsCharactersDir = commandManager.GetBank(CommandManager.GraphicsCharacterBankName);
+			CommandBank spriteCharactersDir = commandManager.GetBank(CommandManager.SpriteCharacterBankName);
+			CommandBank model3DCharactersDir = commandManager.GetBank(CommandManager.Model3DCharacterBankName);
 
 			// All Characters (cannot be called on specific ones)
 			mainDir.AddCommand("CreateCharacters", new Func<DialogueCommandArguments, IEnumerator>(CreateCharacters));

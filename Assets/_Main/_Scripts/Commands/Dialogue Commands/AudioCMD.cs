@@ -12,25 +12,25 @@ namespace Commands
 		{
 			audioManager = commandManager.Audio;
 
-			CommandDirectory directory = commandManager.GetDirectory(CommandManager.MainDirectoryName);
+			CommandBank bank = commandManager.GetBank(CommandManager.MainBankName);
 
 			// Initialize Layers
-			directory.AddCommand("CreateAmbient", new Action<DialogueCommandArguments>(CreateAmbient));
-			directory.AddCommand("CreateMusic", new Action<DialogueCommandArguments>(CreateMusic));
-			directory.AddCommand("CreateSFX", new Action<DialogueCommandArguments>(CreateSFX));
-			directory.AddCommand("CreateVoice", new Action<DialogueCommandArguments>(CreateVoice));
+			bank.AddCommand("CreateAmbient", new Action<DialogueCommandArguments>(CreateAmbient));
+			bank.AddCommand("CreateMusic", new Action<DialogueCommandArguments>(CreateMusic));
+			bank.AddCommand("CreateSFX", new Action<DialogueCommandArguments>(CreateSFX));
+			bank.AddCommand("CreateVoice", new Action<DialogueCommandArguments>(CreateVoice));
 
 			// Play Audio
-			directory.AddCommand("PlayAmbient", new Action<DialogueCommandArguments>(PlayAmbient));
-			directory.AddCommand("PlayMusic", new Action<DialogueCommandArguments>(PlayMusic));
-			directory.AddCommand("PlaySFX", new Action<DialogueCommandArguments>(PlaySFX));
-			directory.AddCommand("PlayVoice", new Action<DialogueCommandArguments>(PlayVoice));
+			bank.AddCommand("PlayAmbient", new Action<DialogueCommandArguments>(PlayAmbient));
+			bank.AddCommand("PlayMusic", new Action<DialogueCommandArguments>(PlayMusic));
+			bank.AddCommand("PlaySFX", new Action<DialogueCommandArguments>(PlaySFX));
+			bank.AddCommand("PlayVoice", new Action<DialogueCommandArguments>(PlayVoice));
 
 			// Stop Audio
-			directory.AddCommand("StopAmbient", new Action<DialogueCommandArguments>(StopAmbient));
-			directory.AddCommand("StopMusic", new Action<DialogueCommandArguments>(StopMusic));
-			directory.AddCommand("StopSFX", new Action<DialogueCommandArguments>(StopSFX));
-			directory.AddCommand("StopVoice", new Action<DialogueCommandArguments>(StopVoice));
+			bank.AddCommand("StopAmbient", new Action<DialogueCommandArguments>(StopAmbient));
+			bank.AddCommand("StopMusic", new Action<DialogueCommandArguments>(StopMusic));
+			bank.AddCommand("StopSFX", new Action<DialogueCommandArguments>(StopSFX));
+			bank.AddCommand("StopVoice", new Action<DialogueCommandArguments>(StopVoice));
 		}
 
 
