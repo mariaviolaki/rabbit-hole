@@ -10,6 +10,26 @@ PlayMusic(night, volume=0.02)
 v.Setposition(0, 0.5, immediate=true), eg.setPosition(1, 0.5, immediate=true), m.setposition(0.5, 0.5, immediate=true)
 v.show(immediate=true), eg.show(immediate=true), m.show(immediate=true)
 
+v "My affinity is {$voidAffinity}"
+$voidAffinity = 1000
+v "My affinity is {$voidAffinity}"
+$voidAffinity *= 2
+v "My affinity is {$voidAffinity}"
+$voidAffinity /= 2
+v "My affinity is {$voidAffinity}"
+$voidAffinity += 5
+v "My affinity is {$voidAffinity}"
+$voidAffinity -= 1
+v "My affinity is {$voidAffinity}"
+
+$result = 1 + 2 * 3 / 4 - 5
+v "result is {$result}"
+
+$light = false
+v "Is the light on? {$light}"
+$light = !$light
+v "Is the light on? {$light}"
+
 v.setsprite(face, face smug)
 v "Now then."
 v "If I asked you to choose someone, who would you choose...?"
@@ -27,6 +47,10 @@ choice
 		v "..."
 		Load(Dialogue/Endings/Common)
 }
+
+<mcName> "It's fun to test with you!"
+$newName = <mcName> + ", the Great Rabbit"
+v "Let's call you {$newName}"
 
 v "Now answer me something."
 input "What is your name...?"

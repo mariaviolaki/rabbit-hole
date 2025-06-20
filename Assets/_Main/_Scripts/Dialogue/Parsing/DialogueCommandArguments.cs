@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 namespace Dialogue
@@ -84,7 +85,7 @@ namespace Dialogue
 				resultValue = (T)(object)parsedBool;
 			else if (typeof(T) == typeof(int) && int.TryParse(arg, out int parsedInt))
 				resultValue = (T)(object)parsedInt;
-			else if (typeof(T) == typeof(float) && float.TryParse(arg, out float parsedFloat))
+			else if (typeof(T) == typeof(float) && float.TryParse(arg, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedFloat))
 				resultValue = (T)(object)parsedFloat;
 			else if (typeof(T).IsEnum && Enum.TryParse(typeof(T), arg, ignoreCase: true, out object parsedEnum))
 				resultValue = (T)parsedEnum;

@@ -1,6 +1,7 @@
 using Characters;
 using Commands;
 using GameIO;
+using Logic;
 using System.Collections;
 using System.Collections.Generic;
 using UI;
@@ -21,6 +22,8 @@ namespace Dialogue
 		[SerializeField] ReadModeIndicatorUI readModeIndicator;
 		[SerializeField] string dialogueFileName; // TODO get dynamically
 
+		DialogueTagManager tagManager;
+		ScriptVariableManager variableManager;
 		DialogueReader dialogueReader;
 		DialogueReadMode readMode = DialogueReadMode.Wait;
 		Coroutine dialogueLoadProcess;
@@ -34,13 +37,17 @@ namespace Dialogue
 		public FileManagerSO FileManager => fileManager;
 		public InputManagerSO InputManager => inputManager;
 		public DialogueReader Reader => dialogueReader;
+		public DialogueTagManager TagManager => tagManager;
+		public ScriptVariableManager VariableManager => variableManager;
 		public DialogueReadMode ReadMode => readMode;
 
 		void Start()
 		{
 			SubscribeEvents();
 
-			dialogueReader = new DialogueReader(this);
+			tagManager = new(this);
+			variableManager = new();
+			dialogueReader = new(this);
 		}
 
 		void OnDestroy()

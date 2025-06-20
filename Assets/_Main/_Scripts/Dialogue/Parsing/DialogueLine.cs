@@ -1,3 +1,5 @@
+using Logic;
+
 namespace Dialogue
 {
 	public class DialogueLine

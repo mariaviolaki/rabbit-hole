@@ -1,14 +1,16 @@
+using Dialogue;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UI;
 using UnityEngine;
 
-namespace Dialogue
+namespace Logic
 {
 	public class ChoiceLogicSegment : LogicSegmentBase
 	{
-		public static new string Keyword => "Choice";
+		const string keyword = "choice";
+		public static new bool Matches(string rawLine) => StartsWithKeyword(rawLine, keyword);
 
 		const char BlockStartDelimiter = '{';
 		const char BlockEndDelimiter = '}';
@@ -20,7 +22,7 @@ namespace Dialogue
 		List<DialogueChoice> choices = new();
 		DialogueChoice choice;
 
-		public ChoiceLogicSegment(DialogueSystem dialogueSystem, string rawData) : base(dialogueSystem, rawData)
+		public ChoiceLogicSegment(DialogueSystem dialogueSystem, string rawLine) : base(dialogueSystem, rawLine)
 		{
 			inputManager = dialogueSystem.InputManager;
 			visualNovelUI = dialogueSystem.UI;

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Dialogue
+namespace Logic
 {
 	public class DialogueChoice
 	{

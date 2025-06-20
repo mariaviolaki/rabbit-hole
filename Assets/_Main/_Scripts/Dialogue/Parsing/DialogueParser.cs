@@ -1,3 +1,4 @@
+using Logic;
 using System.Text.RegularExpressions;
 
 namespace Dialogue

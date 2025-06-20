@@ -1,5 +1,5 @@
 using Characters;
-using Dialogue;
+using Logic;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;

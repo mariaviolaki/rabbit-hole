@@ -1,4 +1,4 @@
-using Dialogue;
+using Logic;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;

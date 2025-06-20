@@ -10,7 +10,7 @@ namespace Dialogue
 		[SerializeField] string defaultValue;
 		Func<string> currentValue;
 
-		public string Name => $"<{name}>";
+		public string Name => name;
 		public string DefaultValue => defaultValue;
 		public Func<string> CurrentValue
 		{

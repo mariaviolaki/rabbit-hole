@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Characters;
 using Commands;
+using Logic;
 using UI;
 using UnityEngine;
 
@@ -28,6 +29,7 @@ namespace Dialogue
 		readonly DialogueTagManager tagManager;
 		readonly LogicSegmentManager logicSegmentManager;
 		readonly DialogueStack dialogueStack;
+		readonly ScriptValueParser valueParser;
 
 		Coroutine readProcess;
 
@@ -47,11 +49,12 @@ namespace Dialogue
 			commandManager = dialogueSystem.Commands;
 			visualNovelUI = dialogueSystem.UI;
 			continuePrompt = dialogueSystem.ContinuePrompt;
+			tagManager = dialogueSystem.TagManager;
 
-			textBuilder = new TextBuilder(visualNovelUI.DialogueText);
-			tagManager = new DialogueTagManager(dialogueSystem);
-			logicSegmentManager = new LogicSegmentManager(dialogueSystem);
-			dialogueStack = new DialogueStack();
+			textBuilder = new(visualNovelUI.DialogueText);
+			logicSegmentManager = new(dialogueSystem);
+			dialogueStack = new();
+			valueParser = new(dialogueSystem);
 
 			textMode = gameOptions.Dialogue.TextMode;
 		}
@@ -141,7 +144,7 @@ namespace Dialogue
 
 		IEnumerator DisplayDialogueSegment(DialogueTextData.Segment segment, DialogueTextData.Segment nextSegment)
 		{
-			string dialogueText = tagManager.Parse(segment.Text);
+			string dialogueText = valueParser.Parse(segment.Text);
 
 			while (true)
 			{
@@ -176,10 +179,7 @@ namespace Dialogue
 			}
 
 			Character character = characterManager.GetCharacter(speakerData.Name);
-
-			string tagValue = tagManager.GetTagValue(character.Data.Name);
-			if (tagValue != null)
-				speakerData.DisplayName = tagManager.Parse(character.Data.Name);
+			speakerData.DisplayName = valueParser.Parse(character.Data.Name);
 
 			ChangeSpeakerDisplayName(character, speakerData.DisplayName);
 			ChangeSpeakerPosition(character, speakerData.XPos, speakerData.YPos);

@@ -1,20 +1,26 @@
+using Dialogue;
 using System.Collections;
 
-namespace Dialogue
+namespace Logic
 {
 	public abstract class LogicSegmentBase
 	{
-		public static string Keyword => null;
+		public static bool Matches(string rawLine) => false;
 
-		protected string rawData;
+		protected string rawLine;
 		protected DialogueSystem dialogueSystem;
 
-		public LogicSegmentBase(DialogueSystem dialogueSystem, string rawData)
+		public LogicSegmentBase(DialogueSystem dialogueSystem, string rawLine)
 		{
 			this.dialogueSystem = dialogueSystem;
-			this.rawData = rawData;
+			this.rawLine = rawLine;
 		}
 
 		public abstract IEnumerator Execute();
+
+		protected static bool StartsWithKeyword(string rawLine, string keyword)
+		{
+			return rawLine != null && rawLine.TrimStart().ToLower().StartsWith(keyword);
+		}
 	}
 }
