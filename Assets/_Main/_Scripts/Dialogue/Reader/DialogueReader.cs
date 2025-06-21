@@ -11,6 +11,7 @@ namespace Dialogue
 {
 	public class DialogueReader
 	{
+		const string CommentLineDelimiter = "//";
 		const float MinAutoTime = 0.5f;
 		const float MaxAutoTime = 100f;
 		const float MinSkipTime = 0.001f;
@@ -26,7 +27,6 @@ namespace Dialogue
 		readonly CommandManager commandManager;
 		readonly VisualNovelUI visualNovelUI;
 		readonly DialogueContinuePromptUI continuePrompt;
-		readonly DialogueTagManager tagManager;
 		readonly LogicSegmentManager logicSegmentManager;
 		readonly DialogueStack dialogueStack;
 		readonly ScriptValueParser valueParser;
@@ -37,6 +37,7 @@ namespace Dialogue
 		bool isRunning = false;
 
 		public DialogueStack Stack => dialogueStack;
+		public ScriptValueParser ValueParser => valueParser;
 
 		public void AdvanceDialogue() => isRunning = true;
 		public void PauseDialogue() => isRunning = false;
@@ -49,7 +50,6 @@ namespace Dialogue
 			commandManager = dialogueSystem.Commands;
 			visualNovelUI = dialogueSystem.UI;
 			continuePrompt = dialogueSystem.ContinuePrompt;
-			tagManager = dialogueSystem.TagManager;
 
 			textBuilder = new(visualNovelUI.DialogueText);
 			logicSegmentManager = new(dialogueSystem);
@@ -89,9 +89,17 @@ namespace Dialogue
 		{
 			while (!dialogueStack.IsEmpty)
 			{
-				string rawLine = dialogueStack.GetNextLine();
-				DialogueBlock dialogueBlock = dialogueStack.GetBlock();
+				// Get the next non-null line and remove any blocks that are complete
+				string rawLine = dialogueStack.GetCurrentLine();
 				if (rawLine == null) break;
+
+				// Proceed inside the block where the current line belongs
+				DialogueBlock dialogueBlock = dialogueStack.GetBlock();
+				if (!IsValidLine(rawLine))
+				{
+					dialogueStack.Proceed(dialogueBlock);
+					continue;
+				}
 
 				// Wait for any previous skipped transitions to complete smoothly
 				while (!commandManager.IsIdle) yield return null;
@@ -102,7 +110,7 @@ namespace Dialogue
 				else
 					yield return ProcessLogicSegment(dialogueLine);
 
-				dialogueStack.ProceedInBlock(dialogueBlock);
+				dialogueStack.Proceed(dialogueBlock);
 			}
 
 			readProcess = null;
@@ -144,7 +152,7 @@ namespace Dialogue
 
 		IEnumerator DisplayDialogueSegment(DialogueTextData.Segment segment, DialogueTextData.Segment nextSegment)
 		{
-			string dialogueText = valueParser.Parse(segment.Text);
+			string dialogueText = valueParser.ParseText(segment.Text);
 
 			while (true)
 			{
@@ -179,7 +187,7 @@ namespace Dialogue
 			}
 
 			Character character = characterManager.GetCharacter(speakerData.Name);
-			speakerData.DisplayName = valueParser.Parse(character.Data.Name);
+			speakerData.DisplayName = valueParser.ParseText(character.Data.Name);
 
 			ChangeSpeakerDisplayName(character, speakerData.DisplayName);
 			ChangeSpeakerPosition(character, speakerData.XPos, speakerData.YPos);
@@ -286,6 +294,11 @@ namespace Dialogue
 			float speed = gameOptions.Dialogue.AutoDialogueSpeed;
 			float delay = (1 / speed) * SkipSpeedMultiplier;
 			return Mathf.Clamp(delay, MinSkipTime, MaxSkipTime);
+		}
+
+		bool IsValidLine(string rawLine)
+		{
+			return !string.IsNullOrWhiteSpace(rawLine) && !rawLine.TrimStart().StartsWith(CommentLineDelimiter);
 		}
 	}
 }

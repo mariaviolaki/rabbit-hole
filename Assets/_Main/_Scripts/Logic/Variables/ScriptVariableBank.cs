@@ -20,9 +20,19 @@ namespace Logic
 			if (variables.TryGetValue(name, out ScriptVariable variable))
 			{
 				if (variable is ScriptVariable<T> typedVariable)
+				{
 					typedVariable.Set(value);
+				}
+				else if (typeof(T) == typeof(string) || (variable is ScriptVariable<int> && typeof(T) == typeof(float)))
+				{
+					// In certain cases overwrite the type of the initial variable
+					Remove(name);
+					variables.Add(name, new ScriptVariable<T>(value, getter, setter));
+				}
 				else
+				{
 					Debug.LogWarning($"Unable to assign value to Script Variable '{name}' because it is not of type {typeof(T).Name}.");
+				}
 			}
 			else
 			{

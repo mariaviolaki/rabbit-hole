@@ -7,13 +7,11 @@ using UnityEngine;
 
 namespace Logic
 {
-	public class ChoiceLogicSegment : LogicSegmentBase
+	public class ChoiceLogicSegment : BlockingLogicSegmentBase
 	{
 		const string keyword = "choice";
 		public static new bool Matches(string rawLine) => StartsWithKeyword(rawLine, keyword);
 
-		const char BlockStartDelimiter = '{';
-		const char BlockEndDelimiter = '}';
 		const char ChoiceStartDelimiter = '-';
 
 		readonly InputManagerSO inputManager;
@@ -21,18 +19,22 @@ namespace Logic
 		readonly DialogueStack dialogueStack;
 		List<DialogueChoice> choices = new();
 		DialogueChoice choice;
+		LogicSegmentUtils logicSegmentUtils;
 
 		public ChoiceLogicSegment(DialogueSystem dialogueSystem, string rawLine) : base(dialogueSystem, rawLine)
 		{
 			inputManager = dialogueSystem.InputManager;
 			visualNovelUI = dialogueSystem.UI;
 			dialogueStack = dialogueSystem.Reader.Stack;
+			logicSegmentUtils = new(dialogueSystem);
 
 			ParseChoices();
 		}
 
 		public override IEnumerator Execute()
 		{
+			if (choices.Count == 0) yield break;
+
 			inputManager.OnClearChoice += HandleOnClearChoiceEvent;
 			inputManager.OnSelectChoice += HandleOnSelectChoiceEvent;
 
@@ -62,40 +64,31 @@ namespace Logic
 				return;
 			}
 
-			List<string> rawLines = dialogueBlock.Lines;
-			int progress = dialogueBlock.Progress + 1;
-			int depth = -1; // start outside of any blocks
+			LogicBlock logicBlock = logicSegmentUtils.ParseBlock(dialogueBlock, dialogueBlock.Progress);
+			if (logicBlock == null) return;
 
-			while (progress < rawLines.Count)
+			int depth = 0; // start outside of any blocks
+
+			foreach (string line in logicBlock.Lines)
 			{
-				string rawLine = rawLines[progress].TrimStart();
-				bool isLineSkipped = false;
-
-				if (rawLine.StartsWith(ChoiceStartDelimiter) && depth == 0)
-				{
-					string choiceText = rawLine.Substring(1).Trim();
-					choices.Add(new DialogueChoice(choices.Count, choiceText));
-					isLineSkipped = true;
-				}
-				else if (rawLine.StartsWith(BlockStartDelimiter))
-				{
+				if (line.StartsWith(LogicSegmentUtils.BlockStartDelimiter))
 					depth++;
-					isLineSkipped = depth == 0;
-				}
-				else if (rawLine.StartsWith(BlockEndDelimiter))
-				{
+				else if (line.StartsWith(LogicSegmentUtils.BlockEndDelimiter))
 					depth--;
-					if (depth < 0) break;
+
+				if (line.StartsWith(ChoiceStartDelimiter) && depth == 0)
+				{
+					string choiceText = line.Substring(1).Trim();
+					choices.Add(new DialogueChoice(choices.Count, choiceText));
+					continue;
 				}
 
-				if (choices.Count > 0 && !isLineSkipped)
-					choices.Last().DialogueLines.Add(rawLines[progress]);
-
-				progress++;
+				if (choices.Count > 0)
+					choices.Last().DialogueLines.Add(line);
 			}
 
 			// Continue the main dialogue after the choice block
-			dialogueBlock.SetProgress(progress - 1);
+			dialogueBlock.SetProgress(logicBlock.EndIndex);
 		}
 	}
 }

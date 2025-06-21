@@ -4,7 +4,7 @@ using UI;
 
 namespace Logic
 {
-	public class InputLogicSegment : LogicSegmentBase
+	public class InputLogicSegment : BlockingLogicSegmentBase
 	{
 		const string keyword = "input";
 		public static new bool Matches(string rawLine) => StartsWithKeyword(rawLine, keyword);

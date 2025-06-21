@@ -44,7 +44,16 @@ namespace Logic
 			if (!HasPendingLogic) yield break;
 
 			LogicSegmentBase logicSegment = segments.Pop();
-			yield return logicSegment.Execute();
+
+			if (logicSegment is BlockingLogicSegmentBase blockingLogicSegment)
+			{
+				yield return blockingLogicSegment.Execute();
+			}	
+			else if (logicSegment is NonBlockingLogicSegmentBase nonBlockingLogicSegment)
+			{
+				nonBlockingLogicSegment.Execute();
+				yield break;
+			}
 		}
 
 		LogicSegmentBase CreateLogicSegment(Type segmentType, string rawData)

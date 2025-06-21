@@ -6,6 +6,9 @@ namespace Logic
 	public class ScriptVariableManager
 	{
 		public const char VariablePrefix = '$';
+		const string identifierPattern = @"[a-zA-Z][a-zA-Z0-9]*";
+		public static readonly string VariablePattern = $@"\{VariablePrefix}{identifierPattern}(?:\s*\.\s*{identifierPattern})*";
+
 		const string DefaultBankName = "Default";
 		const char BankSeparator = '.';
 
