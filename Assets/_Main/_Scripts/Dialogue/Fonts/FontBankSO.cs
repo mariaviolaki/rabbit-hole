@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 namespace Dialogue
@@ -10,6 +11,13 @@ namespace Dialogue
 		Dictionary<string, FontData> fonts = new();
 
 		public Dictionary<string, FontData> Fonts { get { return fonts; } }
+
+		public TMP_FontAsset GetFontAsset(string fontName)
+		{
+			if (!fonts.TryGetValue(fontName, out FontData fontData)) return null;
+
+			return fontData.FontAsset;
+		}
 
 		void OnEnable()
 		{

@@ -20,6 +20,7 @@ namespace Audio
 		public AssetLabelReference AssetLabel => assetLabel;
 		public Transform Root => root;
 		public AudioType Type => type;
+		public Dictionary<int, AudioLayer> Layers => layers;
 
 		public AudioGroup(AudioManager manager, AudioType type, AudioMixerGroup mixerGroup, AssetLabelReference assetLabel)
 		{

@@ -27,6 +27,8 @@ namespace Audio
 
 		readonly Dictionary<AudioType, AudioGroup> audioGroups = new();
 
+		public Dictionary<AudioType, AudioGroup> AudioGroups => audioGroups;
+
 		void Awake()
 		{
 			audioGroups[AudioType.Ambient] = new AudioGroup(this, AudioType.Ambient, ambientMixerGroup, ambientAddressableLabel);

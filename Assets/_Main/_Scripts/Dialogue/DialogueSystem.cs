@@ -1,6 +1,9 @@
+using Audio;
 using Characters;
 using Commands;
 using GameIO;
+using Visuals;
+using History;
 using Logic;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,6 +20,9 @@ namespace Dialogue
 		[SerializeField] DialogueTagBankSO tagBank;
 		[SerializeField] CommandManager commandManager;
 		[SerializeField] CharacterManager characterManager;
+		[SerializeField] AudioManager audioManager;
+		[SerializeField] HistoryManager historyManager;
+		[SerializeField] VisualGroupManager visualManager;
 		[SerializeField] VisualNovelUI visualNovelUI;
 		[SerializeField] DialogueContinuePromptUI continuePrompt;
 		[SerializeField] ReadModeIndicatorUI readModeIndicator;
@@ -39,7 +45,12 @@ namespace Dialogue
 		public DialogueReader Reader => dialogueReader;
 		public DialogueTagManager TagManager => tagManager;
 		public ScriptVariableManager VariableManager => variableManager;
+		public AudioManager Audio => audioManager;
+		public VisualGroupManager Visuals => visualManager;
 		public DialogueReadMode ReadMode => readMode;
+
+		// TODO remove and manage dynamically
+		[SerializeField] HistoryState historyState;
 
 		void Start()
 		{
@@ -63,6 +74,18 @@ namespace Dialogue
 				//StartCoroutine(RunTest());
 
 				StartCoroutine(ReadDialogueProcess(dialogueFileName));
+			}
+
+			// TODO capture and load history states dynamically
+			else if (Input.GetKeyDown(KeyCode.LeftArrow))
+			{
+				Debug.Log("Capturing history state...");
+				historyState = historyManager.Capture();
+			}
+			else if (Input.GetKeyDown(KeyCode.RightArrow) && historyState != null)
+			{
+				Debug.Log("Loading history state...");
+				historyManager.Load(historyState);
 			}
 		}
 

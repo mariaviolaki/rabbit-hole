@@ -11,6 +11,7 @@ namespace Audio
 		readonly Dictionary<Guid, AudioTrack> tracks = new();
 
 		public int Num => num;
+		public Dictionary<Guid, AudioTrack> Tracks => tracks;
 
 		public AudioLayer(AudioGroup audioGroup, int num)
 		{

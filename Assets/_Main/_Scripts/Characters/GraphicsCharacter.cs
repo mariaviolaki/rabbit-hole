@@ -22,13 +22,18 @@ namespace Characters
 
 		protected UITransitionHandler TransitionHandler { get; private set; }
 		protected Color DisplayColor { get { return isHighlighted ? LightColor : DarkColor; } }
-		protected Color LightColor { get; set; } = Color.white;
 		protected Color DarkColor { get { return GetDarkColor(LightColor); } }
+		public Color LightColor { get; protected set; } = Color.white;
 
 		public abstract Coroutine Flip(bool isImmediate = false, float speed = 0);
 		public abstract Coroutine Highlight(bool isImmediate = false, float speed = 0);
 		public abstract Coroutine Unhighlight(bool isImmediate = false, float speed = 0);
 		public abstract Coroutine SetColor(Color color, bool isImmediate = false, float speed = 0);
+
+		public int HierarchyPriority => root.GetSiblingIndex();
+		public Vector2 Position => currentPos;
+		public bool IsHighlighted => isHighlighted;
+		public bool IsFacingRight => isFacingRight;
 
 		protected override IEnumerator Init()
 		{
@@ -54,6 +59,26 @@ namespace Characters
 			if (!isVisible) return;
 
 			manager.SetPriority(data.ShortName, index);
+		}
+
+		public Coroutine SetVisibility(bool isVisible, bool isImmediate = false, float speed = 0)
+		{
+			if (isVisible == IsVisible) return null;
+
+			if (isVisible)
+				return Show(isImmediate, speed);
+			else
+				return Hide(isImmediate, speed);
+		}
+
+		public Coroutine SetHighlighted(bool isHighlighted, bool isImmediate = false, float speed = 0)
+		{
+			if (isHighlighted == IsHighlighted) return null;
+
+			if (isHighlighted)
+				return Highlight(isImmediate, speed);
+			else
+				return Unhighlight(isImmediate, speed);
 		}
 
 		public Coroutine Show(bool isImmediate = false, float speed = 0)

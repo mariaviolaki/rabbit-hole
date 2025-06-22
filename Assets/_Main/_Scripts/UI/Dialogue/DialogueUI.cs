@@ -11,6 +11,7 @@ namespace UI
 		[SerializeField] DialogueNameUI dialogueNameUI;
 		[SerializeField] TextMeshProUGUI dialogueText;
 
+		public TextMeshProUGUI SpeakerText => dialogueNameUI.NameText;
 		public TextMeshProUGUI DialogueText => dialogueText;
 
 		protected override void Start()
@@ -18,10 +19,19 @@ namespace UI
 			UpdateFontSize(gameOptions.Dialogue.DefaultFont);
 		}
 
+		public Coroutine ShowSpeaker(string speakerName, TMP_FontAsset speakerFont, Color speakerColor,
+			TMP_FontAsset dialogueFont, Color dialogueColor, bool isImmediate = false, float fadeSpeed = 0)
+		{
+			UpdateDialogueText(dialogueFont, dialogueColor);
+			dialogueNameUI.ShowSpeaker(speakerName, speakerFont, speakerColor, isImmediate, fadeSpeed);
+
+			// Ensure that the dialogue box is visible when a character speaks
+			return Show(isImmediate, fadeSpeed);
+		}
+
 		public Coroutine ShowSpeaker(CharacterData characterData, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			UpdateDialogueText(characterData);
-
 			dialogueNameUI.ShowSpeaker(characterData, isImmediate, fadeSpeed);
 
 			// Ensure that the dialogue box is visible when a character speaks
@@ -31,25 +41,21 @@ namespace UI
 		public Coroutine HideSpeaker(bool isImmediate = false, float fadeSpeed = 0)
 		{
 			// When there is no speaker specified, revert to default text as dialogue
-			UpdateDialogueText(null);
+			UpdateDialogueText();
 
 			return dialogueNameUI.HideSpeaker(isImmediate, fadeSpeed);
 		}
 
-		void UpdateDialogueText(CharacterData characterData)
+		void UpdateDialogueText() => UpdateDialogueText(gameOptions.Dialogue.DefaultFont, gameOptions.Dialogue.DefaultTextColor);
+		void UpdateDialogueText(CharacterData characterData) => UpdateDialogueText(characterData?.DialogueFont, characterData.DialogueColor);
+		void UpdateDialogueText(TMP_FontAsset font, Color color)
 		{
-			if (characterData == null)
-			{
-				dialogueText.color = gameOptions.Dialogue.DefaultTextColor;
-				dialogueText.font = gameOptions.Dialogue.DefaultFont;
-				UpdateFontSize(gameOptions.Dialogue.DefaultFont);
-			}
-			else
-			{
-				dialogueText.color = characterData.DialogueColor;
-				dialogueText.font = characterData.DialogueFont;
-				UpdateFontSize(characterData.DialogueFont);
-			}
+			if (font == null)
+				font = gameOptions.Dialogue.DefaultFont;
+
+			dialogueText.color = color;
+			dialogueText.font = font;
+			UpdateFontSize(font);
 		}
 
 		void UpdateFontSize(TMP_FontAsset font)

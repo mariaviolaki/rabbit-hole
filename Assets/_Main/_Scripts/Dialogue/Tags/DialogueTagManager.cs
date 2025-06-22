@@ -14,7 +14,7 @@ namespace Dialogue
 		public DialogueTagManager(DialogueSystem dialogueSystem)
 		{
 			tagBank = dialogueSystem.TagBank;
-			inputUI = dialogueSystem.UI.InputUI;
+			inputUI = dialogueSystem.UI.InputPanel;
 
 			InitTags();
 		}

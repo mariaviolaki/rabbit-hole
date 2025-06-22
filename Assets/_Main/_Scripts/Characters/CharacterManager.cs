@@ -31,6 +31,7 @@ namespace Characters
 			Character.OnCreateCharacter += (Character character) => SaveCharacter(character);
 		}
 
+		public Dictionary<string, Character> GetCharacters() => characters;
 		public bool HasCharacter(string shortName) => characters.ContainsKey(shortName);
 
 		public IEnumerator CreateCharacters(List<string> names)

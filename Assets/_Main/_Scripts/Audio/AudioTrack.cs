@@ -14,6 +14,10 @@ namespace Audio
 		AudioSource audioSource;
 		AudioClip audioClip;
 
+		float volume;
+		float pitch;
+		bool isLooping;
+
 		Coroutine playCoroutine;
 		Coroutine stopCoroutine;
 		Coroutine autoStopCoroutine;
@@ -21,6 +25,9 @@ namespace Audio
 		public event Action<Guid> OnUnloadTrack;
 
 		public string Name => name;
+		public float Volume => volume;
+		public float Pitch => pitch;
+		public bool IsLooping => isLooping;
 		public bool IsActive => audioSource != null && audioSource.clip != null;
 
 		public AudioTrack(AudioGroup audioGroup, Guid id, string name)
@@ -33,6 +40,10 @@ namespace Audio
 		public void Play(float volume, float pitch, bool isLooping, bool isImmediate, float fadeSpeed)
 		{
 			if (playCoroutine != null) return;
+
+			this.volume = volume;
+			this.pitch = pitch;
+			this.isLooping = isLooping;
 
 			if (isImmediate)
 				playCoroutine = audioGroup.Manager.StartCoroutine(LoadTrack(volume, pitch, isLooping, volume));

@@ -1,5 +1,5 @@
 using Dialogue;
-using Graphics;
+using Visuals;
 using System;
 using System.Collections;
 
@@ -39,22 +39,22 @@ namespace Commands
 
 		static void CreateBackground(DialogueCommandArguments args)
 		{
-			CreateVisualGroup(VisualGroupManager.BackgroundName, args);
+			CreateVisualGroup(VisualType.Background, args);
 		}
 
 		static IEnumerator ClearBackground(DialogueCommandArguments args)
 		{
-			yield return ClearVisualGroup(VisualGroupManager.BackgroundName, args);
+			yield return ClearVisualGroup(VisualType.Background, args);
 		}
 
 		static IEnumerator SetBackgroundImage(DialogueCommandArguments args)
 		{
-			yield return SetVisualGroupImage(VisualGroupManager.BackgroundName, args);
+			yield return SetVisualGroupImage(VisualType.Background, args);
 		}
 
 		static IEnumerator SetBackgroundVideo(DialogueCommandArguments args)
 		{
-			yield return SetVisualGroupVideo(VisualGroupManager.BackgroundName, args);
+			yield return SetVisualGroupVideo(VisualType.Background, args);
 		}
 
 
@@ -62,22 +62,22 @@ namespace Commands
 
 		static void CreateForeground(DialogueCommandArguments args)
 		{
-			CreateVisualGroup(VisualGroupManager.ForegroundName, args);
+			CreateVisualGroup(VisualType.Foreground, args);
 		}
 
 		static IEnumerator ClearForeground(DialogueCommandArguments args)
 		{
-			yield return ClearVisualGroup(VisualGroupManager.ForegroundName, args);
+			yield return ClearVisualGroup(VisualType.Foreground, args);
 		}
 
 		static IEnumerator SetForegroundImage(DialogueCommandArguments args)
 		{
-			yield return SetVisualGroupImage(VisualGroupManager.ForegroundName, args);
+			yield return SetVisualGroupImage(VisualType.Foreground, args);
 		}
 
 		static IEnumerator SetForegroundVideo(DialogueCommandArguments args)
 		{
-			yield return SetVisualGroupVideo(VisualGroupManager.ForegroundName, args);
+			yield return SetVisualGroupVideo(VisualType.Foreground, args);
 		}
 
 
@@ -85,80 +85,62 @@ namespace Commands
 
 		static void CreateCinematic(DialogueCommandArguments args)
 		{
-			CreateVisualGroup(VisualGroupManager.CinematicName, args);
+			CreateVisualGroup(VisualType.Cinematic, args);
 		}
 
 		static IEnumerator ClearCinematic(DialogueCommandArguments args)
 		{
-			yield return ClearVisualGroup(VisualGroupManager.CinematicName, args);
+			yield return ClearVisualGroup(VisualType.Cinematic, args);
 		}
 
 		static IEnumerator SetCinematicImage(DialogueCommandArguments args)
 		{
-			yield return SetVisualGroupImage(VisualGroupManager.CinematicName, args);
+			yield return SetVisualGroupImage(VisualType.Cinematic, args);
 		}
 
 		static IEnumerator SetCinematicVideo(DialogueCommandArguments args)
 		{
-			yield return SetVisualGroupVideo(VisualGroupManager.CinematicName, args);
+			yield return SetVisualGroupVideo(VisualType.Cinematic, args);
 		}
 
 
 		/***** All Visual Groups *****/
 
-		static void CreateVisualGroup(string visualGroupName, DialogueCommandArguments args)
+		static void CreateVisualGroup(VisualType visualType, DialogueCommandArguments args)
 		{
-			VisualLayerGroup layerGroup = visualGroupManager.GetLayerGroup(visualGroupName);
-			if (layerGroup == null) return;
-
 			int layerCount = args.Get(0, "layers", 1);
 
-			layerGroup.CreateLayers(layerCount);
+			visualGroupManager.Create(visualType, layerCount);
 		}
 
-		static IEnumerator ClearVisualGroup(string visualGroupName, DialogueCommandArguments args)
+		static IEnumerator ClearVisualGroup(VisualType visualType, DialogueCommandArguments args)
 		{
-			VisualLayerGroup layerGroup = visualGroupManager.GetLayerGroup(visualGroupName);
-			if (layerGroup == null) yield break;
-
 			int layerDepth = args.Get(0, "layer", -1);
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			yield return layerGroup.Clear(layerDepth, isImmediate, speed);
+			yield return visualGroupManager.Clear(visualType, layerDepth, isImmediate, speed);
 		}
 
-		static IEnumerator SetVisualGroupImage(string visualGroupName, DialogueCommandArguments args)
+		static IEnumerator SetVisualGroupImage(VisualType visualType, DialogueCommandArguments args)
 		{
-			VisualLayerGroup layerGroup = visualGroupManager.GetLayerGroup(visualGroupName);
-			if (layerGroup == null) yield break;
-
 			string imageName = args.Get(0, "name", "");
 			int layerDepth = args.Get(1, "layer", 0);
 			bool isImmediate = args.Get(2, "immediate", false);
 			float speed = args.Get(3, "speed", 0f);
 
-			VisualLayer layer = layerGroup.GetLayer(layerDepth);
-			if (layer == null) yield break;
-
-			yield return layer.SetImage(imageName, isImmediate, speed);
+			yield return visualGroupManager.SetImage(visualType, layerDepth, imageName, isImmediate, speed);
 		}
 
-		static IEnumerator SetVisualGroupVideo(string visualGroupName, DialogueCommandArguments args)
+		static IEnumerator SetVisualGroupVideo(VisualType visualType, DialogueCommandArguments args)
 		{
-			VisualLayerGroup layerGroup = visualGroupManager.GetLayerGroup(visualGroupName);
-			if (layerGroup == null) yield break;
-
 			string videoName = args.Get(0, "name", "");
 			int layerDepth = args.Get(1, "layer", 0);
 			bool isMuted = args.Get(2, "mute", false);
 			bool isImmediate = args.Get(3, "immediate", false);
 			float speed = args.Get(4, "speed", 0f);
 
-			VisualLayer layer = layerGroup.GetLayer(layerDepth);
-			if (layer == null) yield break;
-
-			yield return layer.SetVideo(videoName, isMuted, isImmediate, speed);
+			yield return visualGroupManager.SetVideo(visualType, layerDepth, videoName, isMuted, isImmediate, speed);
 		}
 	}
 }

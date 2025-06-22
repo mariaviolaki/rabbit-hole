@@ -13,6 +13,8 @@ namespace Characters
 		readonly Dictionary<string, Sprite> sprites = new(StringComparer.OrdinalIgnoreCase);
 		SpriteAtlas spriteAtlas;
 
+		public Dictionary<SpriteLayerType, CharacterSpriteLayer> SpriteLayers => spriteLayers;
+
 		protected override IEnumerator Init()
 		{
 			yield return base.Init();

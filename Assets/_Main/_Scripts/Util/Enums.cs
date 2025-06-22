@@ -32,6 +32,14 @@ namespace Audio
 	}
 }
 
+namespace Visuals
+{
+	public enum VisualType
+	{
+		None, Background, Foreground, Cinematic
+	}
+}
+
 namespace GameIO
 {
 	public enum InputActionType

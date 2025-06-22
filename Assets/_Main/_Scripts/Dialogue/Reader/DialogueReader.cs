@@ -1,9 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Characters;
 using Commands;
 using Logic;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UI;
 using UnityEngine;
 
@@ -32,8 +32,10 @@ namespace Dialogue
 		readonly ScriptValueParser valueParser;
 
 		Coroutine readProcess;
+		Coroutine directTextProcess;
 
 		TextBuilder.TextMode textMode;
+		float readSpeed;
 		bool isRunning = false;
 
 		public DialogueStack Stack => dialogueStack;
@@ -51,7 +53,7 @@ namespace Dialogue
 			visualNovelUI = dialogueSystem.UI;
 			continuePrompt = dialogueSystem.ContinuePrompt;
 
-			textBuilder = new(visualNovelUI.DialogueText);
+			textBuilder = new(visualNovelUI.Dialogue.DialogueText);
 			logicSegmentManager = new(dialogueSystem);
 			dialogueStack = new();
 			valueParser = new(dialogueSystem);
@@ -62,9 +64,11 @@ namespace Dialogue
 		public void UpdateReadMode(DialogueReadMode readMode)
 		{
 			if (readMode == DialogueReadMode.Skip)
-				textBuilder.Speed = textBuilder.MaxSpeed;
+				readSpeed = textBuilder.MaxSpeed;
 			else
-				textBuilder.Speed = gameOptions.Dialogue.TextSpeed;
+				readSpeed = gameOptions.Dialogue.TextSpeed;
+
+			textBuilder.Speed = readSpeed;
 		}
 
 		public Coroutine StartReading()
@@ -74,11 +78,22 @@ namespace Dialogue
 			return readProcess;
 		}
 
+		public Coroutine ReadDirectText(string dialogueText)
+		{
+			if (directTextProcess != null)
+				dialogueSystem.StopCoroutine(directTextProcess);
+
+			directTextProcess = dialogueSystem.StartCoroutine(WriteDirectText(dialogueText));
+			return directTextProcess;
+		}
+
 		void PrepareDialogue()
 		{
 			// End any prior writing process
 			if (readProcess != null)
 				dialogueSystem.StopCoroutine(readProcess);
+			if (directTextProcess != null)
+				dialogueSystem.StopCoroutine(directTextProcess);
 
 			UpdateReadMode(DialogueReadMode.Wait);
 			isRunning = true;
@@ -163,6 +178,7 @@ namespace Dialogue
 					while (!isRunning && Time.time < startTime + segment.WaitTime) yield return null;
 
 				continuePrompt.Hide();
+				textBuilder.Speed = readSpeed;
 
 				if (segment.IsAppended)
 					textBuilder.Append(dialogueText, textMode);
@@ -176,6 +192,19 @@ namespace Dialogue
 
 				if (!textBuilder.IsBuilding) break;
 			}
+		}
+
+		IEnumerator WriteDirectText(string dialogueText)
+		{
+			while (textBuilder.IsBuilding) yield return null;
+
+			textBuilder.Speed = textBuilder.MaxSpeed;
+			textBuilder.Write(dialogueText, textMode);
+
+			while (textBuilder.IsBuilding) yield return null;
+
+			continuePrompt.Show();
+			directTextProcess = null;
 		}
 
 		public void SetSpeaker(DialogueSpeakerData speakerData)

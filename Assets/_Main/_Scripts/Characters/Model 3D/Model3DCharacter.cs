@@ -33,6 +33,8 @@ namespace Characters
 		string currentExpression = string.Empty;
 		Coroutine expressionCoroutine;
 
+		public string Expression => currentExpression;
+
 		protected override IEnumerator Init()
 		{
 			yield return base.Init();

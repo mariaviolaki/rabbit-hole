@@ -20,9 +20,9 @@ namespace UI
 		const float fadeMultiplier = 0.1f;
 		Coroutine fadeCoroutine;
 
-		public TextMeshProUGUI DialogueText => dialogue.DialogueText;
-		public InputPanelUI InputUI => gameplayControls.InputPanel;
-		public ChoicePanelUI ChoiceUI => gameplayControls.ChoicePanel;
+		public DialogueUI Dialogue => dialogue;
+		public InputPanelUI InputPanel => gameplayControls.InputPanel;
+		public ChoicePanelUI ChoicePanel => gameplayControls.ChoicePanel;
 
 		void Start()
 		{

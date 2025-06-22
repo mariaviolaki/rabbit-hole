@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Audio;
 using Characters;
 using Dialogue;
-using Graphics;
+using Visuals;
 using UnityEngine;
 
 namespace Commands

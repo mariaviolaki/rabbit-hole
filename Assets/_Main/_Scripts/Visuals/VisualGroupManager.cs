@@ -2,7 +2,7 @@ using Dialogue;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Graphics
+namespace Visuals
 {
 	public class VisualGroupManager : MonoBehaviour
 	{
@@ -11,29 +11,26 @@ namespace Graphics
 		[SerializeField] GameOptionsSO gameOptions;
 		[SerializeField] DialogueSystem dialogueSystem;
 
-		public static string BackgroundName = "Background";
-		public static string ForegroundName = "Foreground";
-		public static string CinematicName = "Cinematic";
-
-		Dictionary<string, VisualLayerGroup> layerGroupBank = new Dictionary<string, VisualLayerGroup>();
+		Dictionary<VisualType, VisualLayerGroup> layerGroupBank = new();
 
 		public FileManagerSO FileManager => fileManager;
 		public GameOptionsSO GameOptions => gameOptions;
+
+		public Dictionary<VisualType, VisualLayerGroup> VisualGroups => layerGroupBank;
 
 		void Awake()
 		{
 			foreach (VisualLayerGroup group in layerGroups)
 			{
 				group.Init(this);
-				layerGroupBank.Add(group.Name, group);
+				layerGroupBank.Add(group.Type, group);
 			}
 		}
 
-		public VisualLayerGroup GetLayerGroup(string name)
+		public VisualLayerGroup GetLayerGroup(VisualType visualType)
 		{
-			if (!layerGroupBank.ContainsKey(name)) return null;
-
-			return layerGroupBank[name];
+			layerGroupBank.TryGetValue(visualType, out VisualLayerGroup visualLayerGroup);
+			return visualLayerGroup;
 		}
 
 		public float GetTransitionSpeed(float speedInput, bool isTransitionSkipped)
@@ -54,6 +51,40 @@ namespace Graphics
 			process = null;
 
 			return true;
+		}
+
+		public void Create(VisualType visualType, int count = 0)
+		{
+			if (!layerGroupBank.TryGetValue(visualType, out VisualLayerGroup visualLayerGroup)) return;
+
+			visualLayerGroup.CreateLayers(count);
+		}
+
+		public Coroutine Clear(VisualType visualType, int depth = -1, bool isImmediate = false, float speed = 0)
+		{
+			if (!layerGroupBank.TryGetValue(visualType, out VisualLayerGroup visualLayerGroup)) return null;
+
+			return visualLayerGroup.Clear(depth, isImmediate, speed);
+		}
+
+		public Coroutine SetImage(VisualType visualType, int layerDepth, string name, bool isImmediate = false, float speed = 0)
+		{
+			if (!layerGroupBank.TryGetValue(visualType, out VisualLayerGroup visualLayerGroup)) return null;
+
+			VisualLayer visualLayer = visualLayerGroup.GetLayer(layerDepth);
+			if (visualLayer == null) return null;
+
+			return visualLayer.SetImage(name, isImmediate, speed);
+		}
+
+		public Coroutine SetVideo(VisualType visualType, int layerDepth, string name, bool isMuted = false, bool isImmediate = false, float speed = 0)
+		{
+			if (!layerGroupBank.TryGetValue(visualType, out VisualLayerGroup visualLayerGroup)) return null;
+
+			VisualLayer visualLayer = visualLayerGroup.GetLayer(layerDepth);
+			if (visualLayer == null) return null;
+
+			return visualLayer.SetVideo(name, isMuted, isImmediate, speed);
 		}
 	}
 }

@@ -28,6 +28,7 @@ namespace Characters
 		bool isFacingRight;
 
 		public SpriteLayerType LayerType => layerType;
+		public Sprite LayerSprite => primaryImage.sprite;
 		public bool IsChangingDirection => directionCoroutine != null;
 		public bool IsChangingSprite => spriteCoroutine != null;
 		public bool IsChangingBrightness => brightnessCoroutine != null;

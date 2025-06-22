@@ -8,6 +8,14 @@ namespace UI
 	{
 		[SerializeField] TextMeshProUGUI nameText;
 
+		public TextMeshProUGUI NameText => nameText;
+
+		public Coroutine ShowSpeaker(string speakerName, TMP_FontAsset font, Color color, bool isImmediate = false, float fadeSpeed = 0)
+		{
+			UpdateNameText(speakerName, font, color);
+			return Show(isImmediate, fadeSpeed);
+		}
+
 		public Coroutine ShowSpeaker(CharacterData characterData, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			UpdateNameText(characterData);
@@ -16,23 +24,20 @@ namespace UI
 
 		public Coroutine HideSpeaker(bool isImmediate = false, float fadeSpeed = 0)
 		{
+			UpdateNameText();
 			return Hide(isImmediate, fadeSpeed);
 		}
 
-		void UpdateNameText(CharacterData characterData)
+		void UpdateNameText() => UpdateNameText("", gameOptions.Dialogue.DefaultFont, gameOptions.Dialogue.DefaultTextColor);
+		void UpdateNameText(CharacterData characterData) => UpdateNameText(characterData?.DisplayName, characterData?.NameFont, characterData.NameColor);
+		void UpdateNameText(string speakerName, TMP_FontAsset font, Color color)
 		{
-			if (characterData == null)
-			{
-				nameText.text = "";
-				nameText.color = gameOptions.Dialogue.DefaultTextColor;
-				nameText.font = gameOptions.Dialogue.DefaultFont;
-			}
-			else
-			{
-				nameText.text = characterData.DisplayName;
-				nameText.color = characterData.NameColor;
-				nameText.font = characterData.NameFont;
-			}
+			if (font == null)
+				font = gameOptions.Dialogue.DefaultFont;
+
+			nameText.text = speakerName;
+			nameText.color = color;
+			nameText.font = font;
 		}
 	}
 }

@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace Graphics
+namespace Visuals
 {
 	public class VisualLayer
 	{
@@ -17,6 +17,9 @@ namespace Graphics
 		VisualContainer secondaryContainer;
 		Coroutine swapCoroutine;
 
+		public string VisualName => primaryContainer.VisualName;
+		public bool IsImage => primaryContainer.IsImage;
+		public bool IsMuted => primaryContainer.IsMuted;
 		public int Depth => depth;
 		public bool IsIdle => swapCoroutine == null && primaryContainer.IsIdle;
 

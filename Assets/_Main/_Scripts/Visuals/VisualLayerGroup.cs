@@ -3,21 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Graphics
+namespace Visuals
 {
 	[System.Serializable]
 	public class VisualLayerGroup
 	{
-		[SerializeField] string name;
+		[SerializeField] VisualType visualType;
 		[SerializeField] RectTransform root;
 
 		readonly Dictionary<int, VisualLayer> layers = new();
 		VisualGroupManager manager;
 		Coroutine clearCoroutine;
 
-		public string Name => name;
+		public VisualType Type => visualType;
 		public RectTransform Root => root;
 		public VisualGroupManager Manager => manager;
+		public Dictionary<int, VisualLayer> Layers => layers;
 
 		public void Init(VisualGroupManager manager)
 		{
@@ -56,13 +57,10 @@ namespace Graphics
 
 		public VisualLayer GetLayer(int depth)
 		{
-			if (!layers.ContainsKey(depth))
-			{
-				Debug.LogError($"Layer {depth} not found in {name} layer group.");
-				return null;
-			}
+			if (layers.TryGetValue(depth, out VisualLayer layer)) return layer;
 
-			return layers[depth];
+			Debug.LogWarning($"Layer {depth} not found in {visualType.ToString()} layer group.");
+			return null;
 		}
 
 		public void CreateLayers(int count = 0)
@@ -84,7 +82,7 @@ namespace Graphics
 
 			if (layers.ContainsKey(clampedIndex))
 			{
-				Debug.LogWarning($"Layer {clampedIndex} already exists in {name} layer group.");
+				Debug.LogWarning($"Layer {clampedIndex} already exists in {visualType.ToString()} layer group.");
 				return;
 			}
 
@@ -93,7 +91,7 @@ namespace Graphics
 			layers[clampedIndex] = layer;
 
 			if (depth != clampedIndex)
-				Debug.LogWarning($"'Layer {depth}' was created as 'Layer {clampedIndex}' in {name} layer group because it was out of bounds.");
+				Debug.LogWarning($"'Layer {depth}' was created as 'Layer {clampedIndex}' in {visualType.ToString()} layer group because it was out of bounds.");
 		}
 
 		VisualLayer[] GetLayersFromDepth(int depth)

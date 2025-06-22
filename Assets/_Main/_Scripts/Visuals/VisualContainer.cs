@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
-namespace Graphics
+namespace Visuals
 {
 	public class VisualContainer
 	{
@@ -24,6 +24,7 @@ namespace Graphics
 		public bool IsIdle => transitionCoroutine == null;
 		public string VisualName => visualName;
 		public bool IsImage => isImage;
+		public bool IsMuted => isMuted;
 
 		public VisualContainer(VisualLayerGroup layerGroup, GameObject layerObject)
 		{
@@ -66,7 +67,7 @@ namespace Graphics
 			}
 		}
 
-		public Coroutine SetImage(string name, bool isImmediate = false, float speed = 0)
+		public Coroutine SetImage(string name, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			if (isImage && visualName == name) return null;
 
@@ -79,7 +80,7 @@ namespace Graphics
 			}
 			else
 			{
-				transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeVisual(name, speed, isSkipped, true, true));
+				transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeVisual(name, fadeSpeed, isSkipped, true, true));
 				return transitionCoroutine;
 			}
 		}
