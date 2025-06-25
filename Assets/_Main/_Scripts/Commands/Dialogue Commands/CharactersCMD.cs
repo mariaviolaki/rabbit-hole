@@ -226,12 +226,12 @@ namespace Commands
 			SpriteCharacter character = GetCharacterFromArgs<SpriteCharacter>(args);
 			if (character == null) yield break;
 
-			SpriteLayerType layerType = args.Get(1, "layer", SpriteLayerType.None);
-			string spriteName = args.Get(2, "name", "");
+			string spriteName = args.Get(1, "name", "");
+			SpriteLayerType layerType = args.Get(2, "layer", SpriteLayerType.None);
 			bool isImmediate = args.Get(3, "immediate", false);
 			float speed = args.Get(4, "speed", 0f);
 
-			yield return character.SetSprite(layerType, spriteName, isImmediate, speed);
+			yield return character.SetSprite(spriteName, layerType, isImmediate, speed);
 		}
 
 

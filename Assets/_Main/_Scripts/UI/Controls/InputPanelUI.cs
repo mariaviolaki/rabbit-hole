@@ -1,24 +1,33 @@
+using Dialogue;
 using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Variables;
 
 namespace UI
 {
 	public class InputPanelUI : BaseFadeableUI
 	{
 		[SerializeField] InputManagerSO inputManager;
+		[SerializeField] DialogueSystem dialogueSystem;
 		[SerializeField] TextMeshProUGUI titleText;
 		[SerializeField] TMP_InputField inputField;
 		[SerializeField] Button submitButton;
 
+		ScriptTagManager scriptTagManager;
+		const string InputTagName = "input";
 		bool isImmediate = false;
 		string lastInput = "";
 
-		public string LastInput => lastInput;
-
 		public event Action OnClose;
+
+		override protected void Awake()
+		{
+			base.Awake();
+			scriptTagManager = dialogueSystem.TagManager;
+		}
 
 		override protected void OnEnable()
 		{
@@ -26,7 +35,7 @@ namespace UI
 			SubscribeListeners();
 		}
 
-		protected override void OnDisable()
+		override protected void OnDisable()
 		{
 			base.OnDisable();
 			UnsubscribeListeners();
@@ -43,10 +52,10 @@ namespace UI
 			return SetVisible(isImmediate, fadeSpeed);
 		}
 
-		Coroutine Hide()
+		public Coroutine ForceHide(bool isImmediate = false)
 		{
-			if (IsHidden) return null;
-
+			this.isImmediate = isImmediate;
+			fadeSpeed = gameOptions.General.SkipTransitionSpeed;
 			return StartCoroutine(HideAndClose());
 		}
 
@@ -55,10 +64,10 @@ namespace UI
 			if (string.IsNullOrWhiteSpace(inputField.text)) return;
 
 			lastInput = inputField.text.Trim();
+			scriptTagManager.SetTagValue(InputTagName, lastInput);
 
-			inputManager.IsInputPanelOpen = false;
 			inputManager.OnSubmitInput?.Invoke(lastInput);
-			Hide();
+			StartCoroutine(HideAndClose());
 		}
 
 		void SetButtonVisibility(string input)
@@ -100,6 +109,8 @@ namespace UI
 
 		IEnumerator HideAndClose()
 		{
+			inputField.text = string.Empty;
+			inputManager.IsInputPanelOpen = false;
 			yield return SetHidden(isImmediate, fadeSpeed);
 			OnClose?.Invoke();
 		}

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using Variables;
 
 namespace Logic
 {
@@ -78,7 +79,10 @@ namespace Logic
 			}
 
 			if (endIndex == -1) return null;
-			return new LogicBlock(startIndex, endIndex, lines);
+
+			int fileStartIndex = dialogueBlock.FileStartIndex + startIndex + 1; // skip the block start identifier
+			int fileEndIndex = dialogueBlock.FileStartIndex + endIndex - 1; // don't count the block end identifier
+			return new LogicBlock(startIndex, endIndex, lines, dialogueBlock.FilePath, fileStartIndex, fileEndIndex);
 		}
 
 		public string EvaluateExpression(string valueString)
@@ -149,12 +153,18 @@ namespace Logic
 			bool isRightInvalid = string.IsNullOrWhiteSpace(rightOperand);
 
 			if (isLeftInvalid && isRightInvalid) return string.Empty;
-			if (isLeftInvalid) return RemoveStringQuotes(rightOperand);
-			if (isRightInvalid) return RemoveStringQuotes(leftOperand);
 
-			if (double.TryParse(leftOperand, NumberStyles.Float, CultureInfo.InvariantCulture, out double leftDouble)
-					&& double.TryParse(rightOperand, NumberStyles.Float, CultureInfo.InvariantCulture, out double rightDouble))
+			bool isLeftNumeric = double.TryParse(leftOperand, NumberStyles.Float, CultureInfo.InvariantCulture, out double leftDouble);
+			bool isRightNumeric = double.TryParse(rightOperand, NumberStyles.Float, CultureInfo.InvariantCulture, out double rightDouble);
+			bool isLeftBool = bool.TryParse(leftOperand, out bool leftBool);
+			bool isRightBool = bool.TryParse(rightOperand, out bool rightBool);
+
+			if ((isLeftNumeric && isRightNumeric) || (isLeftNumeric && isRightInvalid) || (isRightNumeric && isLeftInvalid))
 			{
+				// Define the default values if one of the operands is invalid
+				leftDouble = isLeftNumeric ? leftDouble : 0;
+				rightDouble = isRightNumeric ? rightDouble : 0;
+
 				if (middleOperator == "/" && rightDouble == 0)
 				{
 					Debug.LogWarning($"Unable to divide {leftOperand} by zero.");
@@ -178,8 +188,12 @@ namespace Logic
 					_ => "0"
 				};
 			}
-			else if (bool.TryParse(leftOperand, out bool leftBool) && bool.TryParse(rightOperand, out bool rightBool))
+			else if ((isLeftBool && isRightBool) || (isLeftBool && isRightInvalid) || (isRightBool && isLeftInvalid))
 			{
+				// Define the default values if one of the operands is invalid
+				leftBool = isLeftBool ? leftBool : rightBool;
+				rightBool = isRightBool ? rightBool : leftBool;
+
 				// Check for available operations between booleans
 				return middleOperator switch
 				{

@@ -28,6 +28,7 @@ namespace Logic
 	{
 		protected BlockingLogicSegmentBase(DialogueSystem dialogueSystem, string rawLine) : base(dialogueSystem, rawLine) { }
 		public abstract IEnumerator Execute();
+		public abstract IEnumerator ForceComplete();
 	}
 
 	public abstract class NonBlockingLogicSegmentBase : LogicSegmentBase

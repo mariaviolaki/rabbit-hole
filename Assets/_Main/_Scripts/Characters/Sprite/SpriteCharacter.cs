@@ -34,7 +34,7 @@ namespace Characters
 			{
 				string layerName = layerParent.name;
 				if (Enum.TryParse(layerName, true, out SpriteLayerType layerType))
-					spriteLayers[layerType] = new CharacterSpriteLayer(manager, TransitionHandler, layerType, layerParent, isFacingRight);
+					spriteLayers[layerType] = new CharacterSpriteLayer(this, TransitionHandler, layerType, layerParent, isFacingRight);
 			}
 
 			// Cache the sprite in a dictionary for case-insensitive lookup
@@ -42,9 +42,7 @@ namespace Characters
 			spriteAtlas.GetSprites(spriteArray);
 			foreach (Sprite sprite in spriteArray)
 			{
-				string spriteName = sprite.name;
-				if (spriteName.EndsWith("(Clone)"))
-					spriteName = spriteName.Substring(0, spriteName.Length - "(Clone)".Length);
+				string spriteName = GetRawSpriteName(sprite.name);
 
 				if (sprites.ContainsKey(spriteName))
 					Debug.LogWarning($"Duplicate sprite name '{spriteName}' found in atlas for {data.CastName}.");
@@ -53,7 +51,7 @@ namespace Characters
 			}
 		}
 
-		public Coroutine SetSprite(SpriteLayerType layerType, string spriteName, bool isImmediate = false, float speed = 0)
+		public Coroutine SetSprite(string spriteName, SpriteLayerType layerType, bool isImmediate = false, float speed = 0)
 		{
 			Sprite sprite = GetSprite(layerType, spriteName);
 			if (sprite == null) return null;
@@ -127,6 +125,14 @@ namespace Characters
 				colorCoroutine = manager.StartCoroutine(TransitionColor(color, speed, isSkipped));
 				return colorCoroutine;
 			}
+		}
+
+		public string GetRawSpriteName(string spriteName)
+		{
+			if (string.IsNullOrWhiteSpace(spriteName)) return string.Empty;
+
+			if (!spriteName.EndsWith("(Clone)")) return spriteName;
+			return spriteName.Substring(0, spriteName.Length - "(Clone)".Length);
 		}
 
 		void FlipDirectionImmediate()

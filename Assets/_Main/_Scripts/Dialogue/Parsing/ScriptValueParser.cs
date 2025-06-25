@@ -1,5 +1,5 @@
-using Logic;
 using System.Text.RegularExpressions;
+using Variables;
 
 namespace Dialogue
 {
@@ -26,15 +26,15 @@ namespace Dialogue
 
 		public string ParseText(string text)
 		{
-			return Parse(textRegex, text);
+			return Parse(textRegex, text, false);
 		}
 
 		public string ParseLogic(string text)
 		{
-			return Parse(logicRegex, text);
+			return Parse(logicRegex, text, true);
 		}
 
-		string Parse(Regex regex, string text)
+		string Parse(Regex regex, string text, bool isLogic)
 		{
 			return regex.Replace(text, match =>
 			{
@@ -43,13 +43,16 @@ namespace Dialogue
 					// Remove any spaces between the dot separating the variable bank from the variable name
 					string variableName = match.Groups[variableGroupName].Value.Replace(" ", "");
 					object variableValue = variableManager.Get(variableName);
-					return variableValue != null ? variableValue.ToString() : match.Value;
+					if (variableValue != null) return variableValue.ToString();
+					else if (isLogic) return string.Empty;
+					else return variableName;
 				}
 				else if (match.Groups[tagGroupName].Success)
 				{
 					string tagName = match.Groups[tagGroupName].Value;
-					if (!tagBank.Tags.TryGetValue(tagName, out DialogueTag dialogueTag)) return match.Value;
-					return dialogueTag.CurrentValue();
+					if (tagBank.Tags.TryGetValue(tagName, out DialogueTag dialogueTag)) return dialogueTag.CurrentValue;
+					else if (isLogic) return string.Empty;
+					else return tagName;
 				}
 				return match.Value;
 			});

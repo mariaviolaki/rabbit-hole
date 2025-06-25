@@ -11,16 +11,28 @@ namespace Logic
 	public class LogicSegmentManager
 	{
 		readonly DialogueSystem dialogueSystem;
+		readonly InputManagerSO inputManager;
 		readonly Dictionary<Type, Func<string, bool>> segmentMatches = new();
 		readonly Stack<LogicSegmentBase> segments = new();
 
 		public bool HasPendingLogic => segments.Count > 0;
+		bool isExecuting;
+
+		void PauseExecution() => isExecuting = false;
 
 		public LogicSegmentManager(DialogueSystem dialogueSystem)
 		{
 			this.dialogueSystem = dialogueSystem;
+			this.inputManager = dialogueSystem.InputManager;
 
 			InitSegmentTypes();
+
+			inputManager.OnBack += PauseExecution;
+		}
+
+		public void Dispose()
+		{
+			inputManager.OnBack -= PauseExecution;
 		}
 
 		public void Add(LogicSegmentBase logicSegment)
@@ -43,11 +55,17 @@ namespace Logic
 		{
 			if (!HasPendingLogic) yield break;
 
+			isExecuting = true;
 			LogicSegmentBase logicSegment = segments.Pop();
 
 			if (logicSegment is BlockingLogicSegmentBase blockingLogicSegment)
 			{
-				yield return blockingLogicSegment.Execute();
+				IEnumerator logic = blockingLogicSegment.Execute();
+
+				while (isExecuting && logic.MoveNext()) yield return null;
+
+				if (!isExecuting)
+					yield return blockingLogicSegment.ForceComplete();
 			}	
 			else if (logicSegment is NonBlockingLogicSegmentBase nonBlockingLogicSegment)
 			{

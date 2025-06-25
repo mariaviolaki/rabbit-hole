@@ -2,11 +2,11 @@
     "name": "InputActions",
     "maps": [
         {
-            "name": "Game",
+            "name": "VN",
             "id": "097095ec-854e-408d-99d9-8340c1d27a42",
             "actions": [
                 {
-                    "name": "AdvanceAction",
+                    "name": "ForwardAction",
                     "type": "Button",
                     "id": "f4c70e3d-c7c9-4575-b403-2135b91d8c9c",
                     "expectedControlType": "Button",
@@ -40,6 +40,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "BackAction",
+                    "type": "Button",
+                    "id": "137331eb-2fa5-441f-a2b7-fd2f70429606",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -50,7 +59,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "AdvanceAction",
+                    "action": "ForwardAction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -61,7 +70,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "AdvanceAction",
+                    "action": "ForwardAction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "dc00ba4f-d08e-46e7-bd72-fad20993ed8f",
+                    "path": "<Keyboard>/rightArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ForwardAction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -95,6 +115,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "SkipHoldAction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f19a7ea0-20e5-4fc5-878e-81747b0ee5f9",
+                    "path": "<Keyboard>/leftArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "BackAction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

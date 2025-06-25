@@ -31,6 +31,7 @@ namespace Commands
 			string path = args.Get(0, "path", "");
 
 			yield return dialogueSystem.LoadDialogue(path);
+			yield return dialogueSystem.ReadDialogue(DialogueReadMode.None);
 		}
 	}
 }

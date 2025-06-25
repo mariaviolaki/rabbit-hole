@@ -1,4 +1,5 @@
 using Dialogue;
+using System.Collections;
 using UnityEngine;
 
 namespace History
@@ -10,21 +11,32 @@ namespace History
 		[SerializeField] HistoryAudioData audioData;
 		[SerializeField] HistoryVisualData visualData;
 		[SerializeField] HistoryCharacterData characterData;
+		[SerializeField] HistoryVariableData variableData;
 
 		public HistoryState(DialogueSystem dialogueSystem)
 		{
-			dialogueData = new(dialogueSystem.UI.Dialogue);
+			dialogueData = new(dialogueSystem.Reader.Stack, dialogueSystem.UI.Dialogue);
 			audioData = new(dialogueSystem.Audio);
 			visualData = new(dialogueSystem.Visuals);
 			characterData = new(dialogueSystem.Characters);
+			variableData = new(dialogueSystem.VariableManager, dialogueSystem.TagManager);
 		}
 
-		public void Apply(DialogueSystem dialogueSystem, FontBankSO fontBank)
+		// Safely traverses older state
+		public void Load(DialogueSystem dialogueSystem, FontBankSO fontBank)
 		{
-			dialogueData.Apply(dialogueSystem.UI.Dialogue, dialogueSystem.Reader, dialogueSystem.Options, fontBank);
-			audioData.Apply(dialogueSystem.Audio, dialogueSystem.Options);
-			visualData.Apply(dialogueSystem.Visuals, dialogueSystem.Options);
-			characterData.Apply(dialogueSystem.Characters, dialogueSystem.Options);
+			dialogueData.Load(dialogueSystem.UI.Dialogue, dialogueSystem.Reader, dialogueSystem.Options, fontBank);
+			audioData.Load(dialogueSystem.Audio, dialogueSystem.Options);
+			visualData.Load(dialogueSystem.Visuals, dialogueSystem.Options);
+			characterData.Load(dialogueSystem.Characters, dialogueSystem.Options);
+		}
+
+		// Resets progress to an older state
+		public IEnumerator Apply(DialogueSystem dialogueSystem, FontBankSO fontBank)
+		{
+			Load(dialogueSystem, fontBank);
+			variableData.Apply(dialogueSystem.VariableManager, dialogueSystem.TagManager);
+			yield return dialogueData.Apply(dialogueSystem);
 		}
 	}
 }

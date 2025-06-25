@@ -17,9 +17,9 @@ namespace Logic
 		readonly InputManagerSO inputManager;
 		readonly VisualNovelUI visualNovelUI;
 		readonly DialogueStack dialogueStack;
-		List<DialogueChoice> choices = new();
+		readonly LogicSegmentUtils logicSegmentUtils;
+		readonly List<DialogueChoice> choices = new();
 		DialogueChoice choice;
-		LogicSegmentUtils logicSegmentUtils;
 
 		public ChoiceLogicSegment(DialogueSystem dialogueSystem, string rawLine) : base(dialogueSystem, rawLine)
 		{
@@ -42,13 +42,18 @@ namespace Logic
 			{
 				yield return visualNovelUI.ShowChoices(choices);
 				while (choice == null) yield return null;
-				dialogueStack.AddBlock(choice.DialogueLines);
+				dialogueStack.AddBlock(choice.FilePath, choice.DialogueLines, choice.FileStartIndex, choice.FileEndIndex);
 			}
 			finally
 			{
 				inputManager.OnClearChoice -= HandleOnClearChoiceEvent;
 				inputManager.OnSelectChoice -= HandleOnSelectChoiceEvent;
 			}
+		}
+
+		public override IEnumerator ForceComplete()
+		{
+			yield return visualNovelUI.ForceHideChoices();
 		}
 
 		void HandleOnClearChoiceEvent() => HandleChoiceEvent(null);
@@ -69,8 +74,10 @@ namespace Logic
 
 			int depth = 0; // start outside of any blocks
 
-			foreach (string line in logicBlock.Lines)
+			for (int i = 0; i < logicBlock.Lines.Count; i++)
 			{
+				string line = logicBlock.Lines[i];
+
 				if (line.StartsWith(LogicSegmentUtils.BlockStartDelimiter))
 					depth++;
 				else if (line.StartsWith(LogicSegmentUtils.BlockEndDelimiter))
@@ -79,12 +86,17 @@ namespace Logic
 				if (line.StartsWith(ChoiceStartDelimiter) && depth == 0)
 				{
 					string choiceText = line.Substring(1).Trim();
-					choices.Add(new DialogueChoice(choices.Count, choiceText));
+					int fileStartIndex = logicBlock.FileStartIndex + i + 1; // skip the choice identifier
+
+					choices.Add(new DialogueChoice(choices.Count, choiceText, dialogueBlock.FilePath, fileStartIndex));
 					continue;
 				}
 
 				if (choices.Count > 0)
+				{
 					choices.Last().DialogueLines.Add(line);
+					choices.Last().FileEndIndex = logicBlock.FileStartIndex + i;
+				}
 			}
 
 			// Continue the main dialogue after the choice block

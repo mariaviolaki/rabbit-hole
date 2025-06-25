@@ -50,7 +50,24 @@ MonoBehaviour:
   tagBank: {fileID: 11400000, guid: 25409b45a3612ec48ace89e513ed0c73, type: 2}
   commandManager: {fileID: 0}
   characterManager: {fileID: 0}
+  audioManager: {fileID: 0}
+  historyManager: {fileID: 0}
+  visualManager: {fileID: 0}
   visualNovelUI: {fileID: 0}
   continuePrompt: {fileID: 0}
   readModeIndicator: {fileID: 0}
-  dialogueFileName: Dialogue/Main
+  dialogueFileName: Main
+  historyState:
+    dialogueData:
+      speakerText: 
+      dialogueText: 
+      speakerColor: {r: 0, g: 0, b: 0, a: 0}
+      dialogueColor: {r: 0, g: 0, b: 0, a: 0}
+      speakerFont: 
+      dialogueFont: 
+    audioData:
+      audioTracks: []
+    visualData:
+      visuals: []
+    variableData:
+      variables: []

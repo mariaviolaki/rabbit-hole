@@ -30,7 +30,7 @@ namespace History
 			}
 		}
 
-		public void Apply(VisualGroupManager visualManager, GameOptionsSO gameOptions)
+		public void Load(VisualGroupManager visualManager, GameOptionsSO gameOptions)
 		{
 			float fadeSpeed = gameOptions.General.SkipTransitionSpeed;
 

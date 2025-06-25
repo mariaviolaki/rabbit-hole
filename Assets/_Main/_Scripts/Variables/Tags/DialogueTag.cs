@@ -1,20 +1,19 @@
-using System;
 using UnityEngine;
 
-namespace Dialogue
+namespace Variables
 {
 	[System.Serializable]
 	public class DialogueTag
 	{
 		[SerializeField] string name;
 		[SerializeField] string defaultValue;
-		Func<string> currentValue;
+		string currentValue;
 
 		public string Name => name;
 		public string DefaultValue => defaultValue;
-		public Func<string> CurrentValue
+		public string CurrentValue
 		{
-			get { return currentValue == null ? () => defaultValue : currentValue; }
+			get { return string.IsNullOrWhiteSpace(currentValue) ? defaultValue : currentValue; }
 			set { currentValue = value; }
 		}
 	}

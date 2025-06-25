@@ -46,10 +46,12 @@ namespace Logic
 
 			foreach (LogicCondition logicCondition in logicConditions)
 			{
+				LogicBlock logicBlock = logicCondition.Block;
+
 				// This is likely an else block
 				if (string.IsNullOrWhiteSpace(logicCondition.Condition) && logicCondition.Block.Lines.Count > 0)
 				{
-					dialogueStack.AddBlock(logicCondition.Block.Lines);
+					dialogueStack.AddBlock(logicBlock.FilePath, logicBlock.Lines, logicBlock.FileStartIndex, logicBlock.FileEndIndex);
 					break;
 				}
 
@@ -57,7 +59,7 @@ namespace Logic
 				string resultString = logicSegmentUtils.EvaluateExpression(logicCondition.Condition);
 				if (!bool.TryParse(resultString, out bool resultBool) || !resultBool) continue;
 
-				dialogueStack.AddBlock(logicCondition.Block.Lines);
+				dialogueStack.AddBlock(logicBlock.FilePath, logicBlock.Lines, logicBlock.FileStartIndex, logicBlock.FileEndIndex);
 				break;
 			}
 		}
@@ -72,11 +74,6 @@ namespace Logic
 			{
 				// Ignore any whitespace between blocks
 				string line = lines[progress].Trim();
-				if (string.IsNullOrWhiteSpace(line))
-				{
-					progress++;
-					continue;
-				}
 
 				// Only allow valid keywords and whitespace between blocks
 				string condition = null;

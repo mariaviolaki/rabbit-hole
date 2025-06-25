@@ -45,6 +45,16 @@ namespace UI
 			return choicePanel.Show(choices, isImmediate, fadeSpeed);
 		}
 
+		public Coroutine ForceHideInput(bool isImmediate = false)
+		{
+			return inputPanel.ForceHide(isImmediate);
+		}
+
+		public Coroutine ForceHideChoices(bool isImmediate = false)
+		{
+			return choicePanel.ForceHide(isImmediate);
+		}
+
 		void CloseInput()
 		{
 			inputPanel.gameObject.SetActive(false);

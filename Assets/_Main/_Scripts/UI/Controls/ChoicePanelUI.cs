@@ -26,7 +26,6 @@ namespace UI
 		protected override void Awake()
 		{
 			base.Awake();
-
 			buttonPool = new ObjectPool<ChoiceButtonUI>(OnCreateButton, OnGetButton, OnReleaseButton, OnDestroyButton, maxSize: poolSize);
 		}
 
@@ -42,11 +41,12 @@ namespace UI
 			return SetVisible(isImmediate, fadeSpeed);
 		}
 
-		Coroutine Hide()
+		public Coroutine ForceHide(bool isImmediate = false)
 		{
-			if (IsHidden) return null;
+			this.isImmediate = isImmediate;
+			fadeSpeed = gameOptions.General.SkipTransitionSpeed;
 
-			return SetHidden(isImmediate, fadeSpeed);
+			return StartCoroutine(HideAndClear());
 		}
 
 		void PrepareChoicePanel(List<DialogueChoice> choices)
@@ -69,10 +69,6 @@ namespace UI
 		void SelectChoice(DialogueChoice choice)
 		{
 			lastChoice = choice;
-
-			inputManager.IsChoicePanelOpen = false;
-			inputManager.OnSelectChoice?.Invoke(choice);
-
 			StartCoroutine(HideAndClear());
 		}
 
@@ -105,17 +101,20 @@ namespace UI
 
 		IEnumerator HideAndClear()
 		{
+			inputManager.IsChoicePanelOpen = false;
+
 			foreach (ChoiceButtonUI choiceButton in activeButtons)
 			{
 				choiceButton.RemoveListeners();
 				choiceButton.OnSelect -= SelectChoice;
 			}
 
-			yield return Hide();
+			yield return SetHidden(isImmediate, fadeSpeed);
 
 			for (int i = activeButtons.Count - 1; i >= 0; i--)
 				activeButtons[i].Release();
 
+			inputManager.OnSelectChoice?.Invoke(lastChoice);
 			OnClose?.Invoke();
 		}
 	}

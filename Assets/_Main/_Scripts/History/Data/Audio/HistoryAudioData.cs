@@ -32,7 +32,7 @@ namespace History
 			}
 		}
 
-		public void Apply(AudioManager audioManager, GameOptionsSO gameOptions)
+		public void Load(AudioManager audioManager, GameOptionsSO gameOptions)
 		{
 			float fadeSpeed = gameOptions.General.SkipTransitionSpeed;
 

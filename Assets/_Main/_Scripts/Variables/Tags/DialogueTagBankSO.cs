@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Dialogue
+namespace Variables
 {
 	[CreateAssetMenu(fileName = "Dialogue Tag Bank", menuName = "Scriptable Objects/Dialogue Tag Bank")]
 	public class DialogueTagBankSO : ScriptableObject

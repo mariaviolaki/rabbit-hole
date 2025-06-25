@@ -7,6 +7,9 @@ namespace Dialogue
 {
 	public class DialogueFile
 	{
+		const string RootPath = "Dialogue/";
+		const string CommentLineDelimiter = "//";
+
 		readonly DialogueSystem dialogueSystem;
 		readonly string addressablePath;
 		readonly List<string> lines = new();
@@ -18,6 +21,8 @@ namespace Dialogue
 		// Used to load files in addressables using the file manager
 		public DialogueFile(DialogueSystem dialogueSystem, string addressablePath)
 		{
+			addressablePath = GetNormalizedPath(addressablePath);
+
 			this.dialogueSystem = dialogueSystem;
 			this.addressablePath = addressablePath;
 		}
@@ -41,7 +46,7 @@ namespace Dialogue
 			ParseLines(dialogueAsset);
 
 			dialogueSystem.Reader.Stack.Clear();
-			dialogueSystem.Reader.Stack.AddBlock(lines);
+			dialogueSystem.Reader.Stack.AddBlock(addressablePath, lines);
 		}
 
 		void ParseLines(TextAsset dialogueAsset)
@@ -50,7 +55,7 @@ namespace Dialogue
 			string line;
 			while ((line = sr.ReadLine()) != null)
 			{
-				if (line == string.Empty) continue;
+				if (string.IsNullOrWhiteSpace(line) || line.StartsWith(CommentLineDelimiter)) continue;
 
 				lines.Add(line);
 			}
@@ -68,7 +73,15 @@ namespace Dialogue
 			}
 
 			dialogueSystem.Reader.Stack.Clear();
-			dialogueSystem.Reader.Stack.AddBlock(lines);
+			dialogueSystem.Reader.Stack.AddBlock(null, lines);
+		}
+
+		string GetNormalizedPath(string path)
+		{
+			string normalizedPath = path.Trim().Trim('/');
+			if (normalizedPath.StartsWith(RootPath)) return normalizedPath;
+
+			return $"{RootPath}{normalizedPath}";
 		}
 	}
 }

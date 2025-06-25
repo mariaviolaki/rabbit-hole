@@ -14,7 +14,7 @@ namespace UI
 			switch (inputType)
 			{
 				case InputActionType.Advance:
-					inputManager.OnAdvance?.Invoke();
+					inputManager.OnForward?.Invoke();
 					break;
 				case InputActionType.Auto:
 					inputManager.OnAuto?.Invoke();

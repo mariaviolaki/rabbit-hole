@@ -6,13 +6,14 @@ namespace Dialogue
 	{
 		readonly Stack<DialogueBlock> dialogueBlocks = new();
 
+		public Stack<DialogueBlock> Blocks => dialogueBlocks;
 		public bool IsEmpty => dialogueBlocks.Count == 0;
 
 		public void Clear() => dialogueBlocks.Clear();
 
-		public void AddBlock(List<string> lines, int progress = 0)
+		public void AddBlock(string filePath, List<string> lines, int fileStartIndex = -1, int fileEndIndex = -1, int progress = 0)
 		{
-			DialogueBlock dialogueBlock = new(lines, progress);
+			DialogueBlock dialogueBlock = new(filePath, lines, fileStartIndex, fileEndIndex, progress);
 			dialogueBlocks.Push(dialogueBlock);
 		}
 

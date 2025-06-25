@@ -24,11 +24,11 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     ""name"": ""InputActions"",
     ""maps"": [
         {
-            ""name"": ""Game"",
+            ""name"": ""VN"",
             ""id"": ""097095ec-854e-408d-99d9-8340c1d27a42"",
             ""actions"": [
                 {
-                    ""name"": ""AdvanceAction"",
+                    ""name"": ""ForwardAction"",
                     ""type"": ""Button"",
                     ""id"": ""f4c70e3d-c7c9-4575-b403-2135b91d8c9c"",
                     ""expectedControlType"": ""Button"",
@@ -62,6 +62,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""BackAction"",
+                    ""type"": ""Button"",
+                    ""id"": ""137331eb-2fa5-441f-a2b7-fd2f70429606"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -72,7 +81,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""AdvanceAction"",
+                    ""action"": ""ForwardAction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -83,7 +92,18 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""AdvanceAction"",
+                    ""action"": ""ForwardAction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""dc00ba4f-d08e-46e7-bd72-fad20993ed8f"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ForwardAction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -119,18 +139,30 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""action"": ""SkipHoldAction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""f19a7ea0-20e5-4fc5-878e-81747b0ee5f9"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""BackAction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
     ],
     ""controlSchemes"": []
 }");
-        // Game
-        m_Game = asset.FindActionMap("Game", throwIfNotFound: true);
-        m_Game_AdvanceAction = m_Game.FindAction("AdvanceAction", throwIfNotFound: true);
-        m_Game_AutoAction = m_Game.FindAction("AutoAction", throwIfNotFound: true);
-        m_Game_SkipAction = m_Game.FindAction("SkipAction", throwIfNotFound: true);
-        m_Game_SkipHoldAction = m_Game.FindAction("SkipHoldAction", throwIfNotFound: true);
+        // VN
+        m_VN = asset.FindActionMap("VN", throwIfNotFound: true);
+        m_VN_ForwardAction = m_VN.FindAction("ForwardAction", throwIfNotFound: true);
+        m_VN_AutoAction = m_VN.FindAction("AutoAction", throwIfNotFound: true);
+        m_VN_SkipAction = m_VN.FindAction("SkipAction", throwIfNotFound: true);
+        m_VN_SkipHoldAction = m_VN.FindAction("SkipHoldAction", throwIfNotFound: true);
+        m_VN_BackAction = m_VN.FindAction("BackAction", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -189,33 +221,35 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         return asset.FindBinding(bindingMask, out action);
     }
 
-    // Game
-    private readonly InputActionMap m_Game;
-    private List<IGameActions> m_GameActionsCallbackInterfaces = new List<IGameActions>();
-    private readonly InputAction m_Game_AdvanceAction;
-    private readonly InputAction m_Game_AutoAction;
-    private readonly InputAction m_Game_SkipAction;
-    private readonly InputAction m_Game_SkipHoldAction;
-    public struct GameActions
+    // VN
+    private readonly InputActionMap m_VN;
+    private List<IVNActions> m_VNActionsCallbackInterfaces = new List<IVNActions>();
+    private readonly InputAction m_VN_ForwardAction;
+    private readonly InputAction m_VN_AutoAction;
+    private readonly InputAction m_VN_SkipAction;
+    private readonly InputAction m_VN_SkipHoldAction;
+    private readonly InputAction m_VN_BackAction;
+    public struct VNActions
     {
         private @InputActions m_Wrapper;
-        public GameActions(@InputActions wrapper) { m_Wrapper = wrapper; }
-        public InputAction @AdvanceAction => m_Wrapper.m_Game_AdvanceAction;
-        public InputAction @AutoAction => m_Wrapper.m_Game_AutoAction;
-        public InputAction @SkipAction => m_Wrapper.m_Game_SkipAction;
-        public InputAction @SkipHoldAction => m_Wrapper.m_Game_SkipHoldAction;
-        public InputActionMap Get() { return m_Wrapper.m_Game; }
+        public VNActions(@InputActions wrapper) { m_Wrapper = wrapper; }
+        public InputAction @ForwardAction => m_Wrapper.m_VN_ForwardAction;
+        public InputAction @AutoAction => m_Wrapper.m_VN_AutoAction;
+        public InputAction @SkipAction => m_Wrapper.m_VN_SkipAction;
+        public InputAction @SkipHoldAction => m_Wrapper.m_VN_SkipHoldAction;
+        public InputAction @BackAction => m_Wrapper.m_VN_BackAction;
+        public InputActionMap Get() { return m_Wrapper.m_VN; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
         public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(GameActions set) { return set.Get(); }
-        public void AddCallbacks(IGameActions instance)
+        public static implicit operator InputActionMap(VNActions set) { return set.Get(); }
+        public void AddCallbacks(IVNActions instance)
         {
-            if (instance == null || m_Wrapper.m_GameActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_GameActionsCallbackInterfaces.Add(instance);
-            @AdvanceAction.started += instance.OnAdvanceAction;
-            @AdvanceAction.performed += instance.OnAdvanceAction;
-            @AdvanceAction.canceled += instance.OnAdvanceAction;
+            if (instance == null || m_Wrapper.m_VNActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_VNActionsCallbackInterfaces.Add(instance);
+            @ForwardAction.started += instance.OnForwardAction;
+            @ForwardAction.performed += instance.OnForwardAction;
+            @ForwardAction.canceled += instance.OnForwardAction;
             @AutoAction.started += instance.OnAutoAction;
             @AutoAction.performed += instance.OnAutoAction;
             @AutoAction.canceled += instance.OnAutoAction;
@@ -225,13 +259,16 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @SkipHoldAction.started += instance.OnSkipHoldAction;
             @SkipHoldAction.performed += instance.OnSkipHoldAction;
             @SkipHoldAction.canceled += instance.OnSkipHoldAction;
+            @BackAction.started += instance.OnBackAction;
+            @BackAction.performed += instance.OnBackAction;
+            @BackAction.canceled += instance.OnBackAction;
         }
 
-        private void UnregisterCallbacks(IGameActions instance)
+        private void UnregisterCallbacks(IVNActions instance)
         {
-            @AdvanceAction.started -= instance.OnAdvanceAction;
-            @AdvanceAction.performed -= instance.OnAdvanceAction;
-            @AdvanceAction.canceled -= instance.OnAdvanceAction;
+            @ForwardAction.started -= instance.OnForwardAction;
+            @ForwardAction.performed -= instance.OnForwardAction;
+            @ForwardAction.canceled -= instance.OnForwardAction;
             @AutoAction.started -= instance.OnAutoAction;
             @AutoAction.performed -= instance.OnAutoAction;
             @AutoAction.canceled -= instance.OnAutoAction;
@@ -241,28 +278,32 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @SkipHoldAction.started -= instance.OnSkipHoldAction;
             @SkipHoldAction.performed -= instance.OnSkipHoldAction;
             @SkipHoldAction.canceled -= instance.OnSkipHoldAction;
+            @BackAction.started -= instance.OnBackAction;
+            @BackAction.performed -= instance.OnBackAction;
+            @BackAction.canceled -= instance.OnBackAction;
         }
 
-        public void RemoveCallbacks(IGameActions instance)
+        public void RemoveCallbacks(IVNActions instance)
         {
-            if (m_Wrapper.m_GameActionsCallbackInterfaces.Remove(instance))
+            if (m_Wrapper.m_VNActionsCallbackInterfaces.Remove(instance))
                 UnregisterCallbacks(instance);
         }
 
-        public void SetCallbacks(IGameActions instance)
+        public void SetCallbacks(IVNActions instance)
         {
-            foreach (var item in m_Wrapper.m_GameActionsCallbackInterfaces)
+            foreach (var item in m_Wrapper.m_VNActionsCallbackInterfaces)
                 UnregisterCallbacks(item);
-            m_Wrapper.m_GameActionsCallbackInterfaces.Clear();
+            m_Wrapper.m_VNActionsCallbackInterfaces.Clear();
             AddCallbacks(instance);
         }
     }
-    public GameActions @Game => new GameActions(this);
-    public interface IGameActions
+    public VNActions @VN => new VNActions(this);
+    public interface IVNActions
     {
-        void OnAdvanceAction(InputAction.CallbackContext context);
+        void OnForwardAction(InputAction.CallbackContext context);
         void OnAutoAction(InputAction.CallbackContext context);
         void OnSkipAction(InputAction.CallbackContext context);
         void OnSkipHoldAction(InputAction.CallbackContext context);
+        void OnBackAction(InputAction.CallbackContext context);
     }
 }

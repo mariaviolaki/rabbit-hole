@@ -9,13 +9,21 @@ namespace UI
 	{
 		[SerializeField] TextMeshProUGUI autoReadText;
 
-		public Coroutine Hide(bool isImmediate = false, float fadeSpeed = 0f) => SetHidden(isImmediate, fadeSpeed);
+		public Coroutine Hide(bool isImmediate = false, float fadeSpeed = 0f)
+		{
+			if (IsHidden) return null;
+
+			return SetHidden(isImmediate, fadeSpeed);
+		}
+
 		public Coroutine Show(DialogueReadMode readMode, bool isImmediate = false, float fadeSpeed = 0f)
 		{
-			if (IsVisible) return null;
+			string newText = readMode.ToString();
 
-			autoReadText.text = readMode.ToString();
-			return SetVisible(isImmediate, fadeSpeed);
+			if (autoReadText.text != newText)
+				autoReadText.text = newText;
+
+			return IsVisible ? null : SetVisible(isImmediate, fadeSpeed);
 		}
 	}
 }

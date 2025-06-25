@@ -39,6 +39,11 @@ namespace Logic
 			}
 		}
 
+		public override IEnumerator ForceComplete()
+		{
+			yield return visualNovelUI.ForceHideInput();
+		}
+
 		void HandleOnClearInputEvent() => HandleInputEvent(null);
 		void HandleOnSubmitInputEvent(string input) => HandleInputEvent(input);
 		void HandleInputEvent(string input) => this.input = input;

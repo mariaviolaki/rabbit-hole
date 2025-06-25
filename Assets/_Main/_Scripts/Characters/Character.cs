@@ -7,14 +7,15 @@ namespace Characters
 {
 	public abstract class Character
 	{
+		protected CharacterManager manager;
 		protected RectTransform root;
 		protected CharacterData data;
-		protected CharacterManager manager;
 		protected bool isVisible = false;
 
-		public RectTransform Root { get { return root; } }
-		public CharacterData Data { get { return data; } }
-		public bool IsVisible { get { return isVisible; } }
+		public CharacterManager Manager => manager;
+		public RectTransform Root => root;
+		public CharacterData Data => data;
+		public bool IsVisible => isVisible;
 
 		public static event Action<Character> OnCreateCharacter;
 

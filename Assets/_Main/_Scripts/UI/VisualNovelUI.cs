@@ -2,7 +2,6 @@ using Characters;
 using Logic;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 namespace UI
@@ -10,6 +9,7 @@ namespace UI
 	public class VisualNovelUI : MonoBehaviour
 	{
 		[SerializeField] GameOptionsSO gameOptions;
+		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] DialogueUI dialogue;
 		[SerializeField] FadeableUI background;
 		[SerializeField] FadeableUI sprites;
@@ -27,6 +27,9 @@ namespace UI
 		void Start()
 		{
 			ToggleOverlayControls(false);
+
+			inputManager.IsChoicePanelOpen = false;
+			inputManager.IsInputPanelOpen = false;
 		}
 
 		public Coroutine Show(bool isImmediate = false, float fadeSpeed = 0)
@@ -75,9 +78,13 @@ namespace UI
 
 		public Coroutine ShowInput(string title, bool isImmediate = false, float fadeSpeed = 0)
 			=> gameplayControls.ShowInput(title, isImmediate, fadeSpeed);
+		public Coroutine ForceHideInput(bool isImmediate = false)
+			=> gameplayControls.ForceHideInput(isImmediate);
 
 		public Coroutine ShowChoices(List<DialogueChoice> choices, bool isImmediate = false, float fadeSpeed = 0)
 			=> gameplayControls.ShowChoices(choices, isImmediate, fadeSpeed);
+		public Coroutine ForceHideChoices(bool isImmediate = false)
+			=> gameplayControls.ForceHideChoices(isImmediate);
 
 		void StopFadeCoroutine()
 		{

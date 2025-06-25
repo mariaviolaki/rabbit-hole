@@ -9,7 +9,7 @@ namespace Characters
 		const string primaryContainerName = "Primary";
 		const string secondaryContainerName = "Secondary";
 
-		readonly CharacterManager characterManager;
+		readonly SpriteCharacter spriteCharacter;
 		readonly UITransitionHandler transitionHandler;
 		readonly SpriteLayerType layerType;
 
@@ -28,15 +28,16 @@ namespace Characters
 		bool isFacingRight;
 
 		public SpriteLayerType LayerType => layerType;
-		public Sprite LayerSprite => primaryImage.sprite;
+		public string SpriteName => spriteCharacter.GetRawSpriteName(primaryImage.sprite.name);
+
 		public bool IsChangingDirection => directionCoroutine != null;
 		public bool IsChangingSprite => spriteCoroutine != null;
 		public bool IsChangingBrightness => brightnessCoroutine != null;
 		public bool IsChangingColor => colorCoroutine != null;
 
-		public CharacterSpriteLayer(CharacterManager characterManager, UITransitionHandler transitionHandler, SpriteLayerType layerType, Transform root, bool isFacingRight)
+		public CharacterSpriteLayer(SpriteCharacter spriteCharacter, UITransitionHandler transitionHandler, SpriteLayerType layerType, Transform root, bool isFacingRight)
 		{
-			this.characterManager = characterManager;
+			this.spriteCharacter = spriteCharacter;
 			this.transitionHandler = transitionHandler;
 			this.layerType = layerType;
 			this.isFacingRight = isFacingRight;
@@ -57,7 +58,7 @@ namespace Characters
 
 		public Coroutine SetSprite(Sprite sprite, bool isImmediate, float speed = 0)
 		{
-			characterManager.StopProcess(ref spriteCoroutine);
+			spriteCharacter.Manager.StopProcess(ref spriteCoroutine);
 
 			if (isImmediate)
 			{
@@ -66,7 +67,7 @@ namespace Characters
 			}
 			else
 			{
-				spriteCoroutine = characterManager.StartCoroutine(ChangeSprite(sprite, speed));
+				spriteCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeSprite(sprite, speed));
 				return spriteCoroutine;
 			}
 		}
@@ -85,7 +86,7 @@ namespace Characters
 
 		Coroutine Flip(bool isImmediate, float speed = 0)
 		{
-			characterManager.StopProcess(ref directionCoroutine);
+			spriteCharacter.Manager.StopProcess(ref directionCoroutine);
 
 			if (isImmediate)
 			{
@@ -96,14 +97,14 @@ namespace Characters
 			}
 			else
 			{
-				directionCoroutine = characterManager.StartCoroutine(ChangeDirection(speed));
+				directionCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeDirection(speed));
 				return directionCoroutine;
 			}
 		}
 
 		public Coroutine SetBrightness(Color color, bool isImmediate, float speed = 0)
 		{
-			characterManager.StopProcess(ref brightnessCoroutine);
+			spriteCharacter.Manager.StopProcess(ref brightnessCoroutine);
 
 			if (isImmediate)
 			{
@@ -112,14 +113,14 @@ namespace Characters
 			}
 			else
 			{
-				brightnessCoroutine = characterManager.StartCoroutine(ChangeBrightness(color, speed));
+				brightnessCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeBrightness(color, speed));
 				return brightnessCoroutine;
 			}
 		}
 
 		public Coroutine SetColor(Color color, bool isImmediate, float speed = 0)
 		{
-			characterManager.StopProcess(ref colorCoroutine);
+			spriteCharacter.Manager.StopProcess(ref colorCoroutine);
 
 			if (isImmediate)
 			{
@@ -128,7 +129,7 @@ namespace Characters
 			}
 			else
 			{
-				colorCoroutine = characterManager.StartCoroutine(ChangeColor(color, speed));
+				colorCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeColor(color, speed));
 				return colorCoroutine;
 			}
 		}

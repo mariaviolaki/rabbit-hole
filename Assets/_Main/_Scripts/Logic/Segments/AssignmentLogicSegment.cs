@@ -1,6 +1,7 @@
 using Dialogue;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Variables;
 
 namespace Logic
 {
@@ -9,13 +10,11 @@ namespace Logic
 		public static new bool Matches(string rawLine) => LogicSegmentUtils.AssignmentRegex.Match(rawLine).Success;
 
 		readonly ScriptVariableManager variableManager;
-		readonly ScriptValueParser valueParser;
 		readonly LogicSegmentUtils logicSegmentUtils;
 
 		public AssignmentLogicSegment(DialogueSystem dialogueSystem, string rawLine) : base(dialogueSystem, rawLine)
 		{
 			variableManager = dialogueSystem.VariableManager;
-			valueParser = dialogueSystem.Reader.ValueParser;
 			logicSegmentUtils = new(dialogueSystem);
 		}
 

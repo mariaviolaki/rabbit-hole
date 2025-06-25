@@ -4,11 +4,12 @@ using Commands;
 using GameIO;
 using Visuals;
 using History;
-using Logic;
 using System.Collections;
 using System.Collections.Generic;
 using UI;
 using UnityEngine;
+using Variables;
+using Logic;
 
 namespace Dialogue
 {
@@ -28,11 +29,12 @@ namespace Dialogue
 		[SerializeField] ReadModeIndicatorUI readModeIndicator;
 		[SerializeField] string dialogueFileName; // TODO get dynamically
 
-		DialogueTagManager tagManager;
+		ScriptTagManager tagManager;
 		ScriptVariableManager variableManager;
+		LogicSegmentManager logicSegmentManager;
 		DialogueReader dialogueReader;
-		DialogueReadMode readMode = DialogueReadMode.Wait;
-		Coroutine dialogueLoadProcess;
+		DialogueReadMode readMode = DialogueReadMode.Forward;
+		Coroutine dialogueProcess;
 
 		public GameOptionsSO Options => gameOptions;
 		public VisualNovelUI UI => visualNovelUI;
@@ -43,14 +45,13 @@ namespace Dialogue
 		public FileManagerSO FileManager => fileManager;
 		public InputManagerSO InputManager => inputManager;
 		public DialogueReader Reader => dialogueReader;
-		public DialogueTagManager TagManager => tagManager;
+		public ScriptTagManager TagManager => tagManager;
 		public ScriptVariableManager VariableManager => variableManager;
 		public AudioManager Audio => audioManager;
 		public VisualGroupManager Visuals => visualManager;
+		public LogicSegmentManager Logic => logicSegmentManager;
+		public HistoryManager History => historyManager;
 		public DialogueReadMode ReadMode => readMode;
-
-		// TODO remove and manage dynamically
-		[SerializeField] HistoryState historyState;
 
 		void Start()
 		{
@@ -58,11 +59,15 @@ namespace Dialogue
 
 			tagManager = new(this);
 			variableManager = new();
+			logicSegmentManager = new(this);
 			dialogueReader = new(this);
 		}
 
 		void OnDestroy()
 		{
+			dialogueReader.Dispose();
+			logicSegmentManager.Dispose();
+
 			UnsubscribeEvents();
 		}
 
@@ -73,131 +78,147 @@ namespace Dialogue
 			{
 				//StartCoroutine(RunTest());
 
-				StartCoroutine(ReadDialogueProcess(dialogueFileName));
+				StartCoroutine(LoadAndRead(dialogueFileName));
 			}
-
-			// TODO capture and load history states dynamically
-			else if (Input.GetKeyDown(KeyCode.LeftArrow))
-			{
-				Debug.Log("Capturing history state...");
-				historyState = historyManager.Capture();
-			}
-			else if (Input.GetKeyDown(KeyCode.RightArrow) && historyState != null)
-			{
-				Debug.Log("Loading history state...");
-				historyManager.Load(historyState);
-			}
-		}
-
-		public Coroutine Say(string speakerName, List<string> lines)
-		{
-			DialogueFile dialogueFile = new DialogueFile(this, speakerName, lines);
-			return dialogueReader.StartReading();
 		}
 
 		public Coroutine LoadDialogue(string dialoguePath)
 		{
-			if (dialogueLoadProcess != null)
-			{
-				StopCoroutine(dialogueLoadProcess);
-				dialogueLoadProcess = null;
-			}
+			StopProcess(ref dialogueProcess);
+			dialogueProcess = StartCoroutine(LoadDialogueProcess(dialoguePath));
+			return dialogueProcess;
+		}
 
-			dialogueLoadProcess = StartCoroutine(LoadDialogueProcess(dialoguePath));
-			return dialogueLoadProcess;
+		public Coroutine ReadDialogue(DialogueReadMode dialogueReadMode)
+		{
+			// If no read mode is specified, use the current one
+			dialogueReadMode = dialogueReadMode == DialogueReadMode.None ? readMode : dialogueReadMode;
+
+			StopProcess(ref dialogueProcess);
+			dialogueProcess = StartCoroutine(ReadDialogueProcess(dialogueReadMode));
+			return dialogueProcess;
+		}
+
+		public void StopDialogue()
+		{
+			dialogueReader.StopReading();
+			StopProcess(ref dialogueProcess);
+		}
+
+		public Coroutine Say(string speakerName, List<string> lines)
+		{
+			_ = new DialogueFile(this, speakerName, lines);
+			return dialogueReader.StartReading(DialogueReadMode.Forward);
 		}
 
 		IEnumerator LoadDialogueProcess(string dialoguePath)
 		{
 			DialogueFile dialogueFile = new(this, dialoguePath);
 			yield return dialogueFile.Load();
-			dialogueLoadProcess = null;
+			dialogueProcess = null;
 		}
 
-		IEnumerator ReadDialogueProcess(string dialoguePath)
+		IEnumerator ReadDialogueProcess(DialogueReadMode dialogueReadMode)
+		{
+			yield return dialogueReader.StartReading(dialogueReadMode);
+			dialogueProcess = null;
+		}
+
+		// TODO Remove test function
+		public IEnumerator LoadAndRead(string dialoguePath)
 		{
 			yield return LoadDialogue(dialoguePath);
-			yield return dialogueReader.StartReading();
-		}
-
-		void HandleOnAdvanceEvent() => HandleReadModeEvent(DialogueReadMode.Wait, InputActionDuration.Toggle);
-		void HandleOnAutoEvent() => HandleReadModeEvent(DialogueReadMode.Auto, InputActionDuration.Toggle);
-		void HandleOnSkipEvent() => HandleReadModeEvent(DialogueReadMode.Skip, InputActionDuration.Toggle);
-		void HandleOnSkipHoldEvent() => HandleReadModeEvent(DialogueReadMode.Skip, InputActionDuration.Hold);
-		void HandleOnSkipHoldEndEvent() => HandleReadModeEvent(DialogueReadMode.Skip, InputActionDuration.End);
-		void HandleReadModeEvent(DialogueReadMode newReadMode, InputActionDuration inputDuration)
-		{
-			DialogueReadMode currentReadMode = readMode;
-
-			if (newReadMode == DialogueReadMode.Wait)
-				HandleWaitModeInput();
-			else if (inputDuration == InputActionDuration.Toggle)
-				HandleToggleInput(newReadMode);
-			else if (inputDuration == InputActionDuration.Hold || inputDuration == InputActionDuration.End)
-				HandleHoldInput(newReadMode, inputDuration);
-
-			if (currentReadMode != readMode)
-			{
-				dialogueReader.UpdateReadMode(readMode);
-
-				if (readMode == DialogueReadMode.Auto || readMode == DialogueReadMode.Skip)
-					readModeIndicator.Show(readMode);
-				else
-					readModeIndicator.Hide();
-			}
-		}
-
-		void HandleWaitModeInput()
-		{
-			if (readMode == DialogueReadMode.Wait)
-			{
-				dialogueReader.AdvanceDialogue();
-			}
-			else if (readMode == DialogueReadMode.Auto)
-			{
-				if (gameOptions.Dialogue.StopAutoOnClick)
-					readMode = DialogueReadMode.Wait;
-				else
-					dialogueReader.AdvanceDialogue();
-			}
-			else if (readMode == DialogueReadMode.Skip)
-			{
-				readMode = DialogueReadMode.Wait;
-			}
-		}
-
-		void HandleToggleInput(DialogueReadMode newReadMode)
-		{
-			readMode = readMode == newReadMode ? DialogueReadMode.Wait : newReadMode;
-		}
-
-		void HandleHoldInput(DialogueReadMode newReadMode, InputActionDuration inputDuration)
-		{
-			readMode = inputDuration == InputActionDuration.Hold ? newReadMode : DialogueReadMode.Wait;
-		}
-
-		void SubscribeEvents()
-		{
-			inputManager.OnAdvance += HandleOnAdvanceEvent;
-			inputManager.OnAuto += HandleOnAutoEvent;
-			inputManager.OnSkip += HandleOnSkipEvent;
-			inputManager.OnSkipHold += HandleOnSkipHoldEvent;
-			inputManager.OnSkipHoldEnd += HandleOnSkipHoldEndEvent;
-		}
-
-		void UnsubscribeEvents()
-		{
-			inputManager.OnAdvance -= HandleOnAdvanceEvent;
-			inputManager.OnAuto -= HandleOnAutoEvent;
-			inputManager.OnSkip -= HandleOnSkipEvent;
-			inputManager.OnSkipHold -= HandleOnSkipHoldEvent;
-			inputManager.OnSkipHoldEnd -= HandleOnSkipHoldEndEvent;
+			yield return ReadDialogueProcess(DialogueReadMode.Forward);
+			dialogueProcess = null;
 		}
 
 		// TODO Remove test function
 		IEnumerator RunTest()
 		{
 			yield return null;
+		}
+
+		public void ResetReadMode()
+		{
+			DialogueReadMode lastReadMode = readMode;
+			readMode = DialogueReadMode.Forward;
+			UpdateReadMode(lastReadMode, readMode);
+		}
+		
+		void HandleOnForwardEvent()
+		{
+			DialogueReadMode lastReadMode = readMode;
+			bool shouldAdvanceDuringAuto = lastReadMode == DialogueReadMode.Auto && !gameOptions.Dialogue.StopAutoOnClick;
+
+			if (lastReadMode == DialogueReadMode.Forward || shouldAdvanceDuringAuto)
+				inputManager.OnAdvance?.Invoke();
+			else
+				readMode = DialogueReadMode.Forward;
+
+			UpdateReadMode(lastReadMode, readMode);
+		}
+
+		void HandleOnAutoEvent()
+		{
+			DialogueReadMode lastReadMode = readMode;
+			readMode = (lastReadMode == DialogueReadMode.Auto) ? DialogueReadMode.Forward : DialogueReadMode.Auto;
+
+			UpdateReadMode(lastReadMode, readMode);
+		}
+
+		void HandleOnSkipToggleEvent() => HandleOnSkipEvent(InputActionDuration.Toggle);
+		void HandleOnSkipHoldEvent() => HandleOnSkipEvent(InputActionDuration.Hold);
+		void HandleOnSkipHoldEndEvent() => HandleOnSkipEvent(InputActionDuration.End);
+		void HandleOnSkipEvent(InputActionDuration inputDuration)
+		{
+			DialogueReadMode lastReadMode = readMode;
+
+			if (inputDuration == InputActionDuration.Toggle)
+				readMode = (lastReadMode == DialogueReadMode.Skip) ? DialogueReadMode.Forward : DialogueReadMode.Skip;
+			else if (inputDuration == InputActionDuration.Hold)
+				readMode = DialogueReadMode.Skip;
+			else if (inputDuration == InputActionDuration.End)
+				readMode = DialogueReadMode.Forward;
+
+			UpdateReadMode(lastReadMode, readMode);
+		}
+
+		void UpdateReadMode(DialogueReadMode lastMode, DialogueReadMode newMode)
+		{
+			if (lastMode == newMode) return;
+
+			dialogueReader.UpdateReadMode(newMode);
+
+			if (newMode == DialogueReadMode.Auto || newMode == DialogueReadMode.Skip)
+				readModeIndicator.Show(newMode);
+			else if (lastMode == DialogueReadMode.Auto || lastMode == DialogueReadMode.Skip)
+				readModeIndicator.Hide();
+		}
+
+		void StopProcess(ref Coroutine coroutine)
+		{
+			if (coroutine == null) return;
+
+			StopCoroutine(coroutine);
+			coroutine = null;
+		}
+
+		void SubscribeEvents()
+		{
+			inputManager.OnForward += HandleOnForwardEvent;
+			inputManager.OnAuto += HandleOnAutoEvent;
+			inputManager.OnSkip += HandleOnSkipToggleEvent;
+			inputManager.OnSkipHold += HandleOnSkipHoldEvent;
+			inputManager.OnSkipHoldEnd += HandleOnSkipHoldEndEvent;
+		}
+
+		void UnsubscribeEvents()
+		{
+			inputManager.OnForward -= HandleOnForwardEvent;
+			inputManager.OnAuto -= HandleOnAutoEvent;
+			inputManager.OnSkip -= HandleOnSkipToggleEvent;
+			inputManager.OnSkipHold -= HandleOnSkipHoldEvent;
+			inputManager.OnSkipHoldEnd -= HandleOnSkipHoldEndEvent;
 		}
 	}
 }

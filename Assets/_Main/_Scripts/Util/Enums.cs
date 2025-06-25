@@ -20,7 +20,7 @@ namespace Dialogue
 
 	public enum DialogueReadMode
 	{
-		Wait, Auto, Skip
+		None, Forward, Auto, Skip
 	}
 }
 
@@ -63,5 +63,18 @@ namespace Commands
 	public enum CommandSkipType
 	{
 		None, Immediate, Transition
+	}
+}
+
+namespace Variables
+{
+	public enum ScriptVariableType
+	{
+		None, Tag, Variable
+	}
+
+	public enum ScriptVariableDataType
+	{
+		String, Int, Float, Bool
 	}
 }

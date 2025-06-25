@@ -1,37 +1,29 @@
-using System;
-using UI;
+using Dialogue;
 using UnityEngine;
 
-namespace Dialogue
+namespace Variables
 {
-	public class DialogueTagManager
+	public class ScriptTagManager
 	{
 		public const char TagStart = '<';
 		public const char TagEnd = '>';
 		readonly DialogueTagBankSO tagBank;
-		readonly InputPanelUI inputUI;
 
-		public DialogueTagManager(DialogueSystem dialogueSystem)
+		public DialogueTagBankSO TagBank => tagBank;
+
+		public ScriptTagManager(DialogueSystem dialogueSystem)
 		{
 			tagBank = dialogueSystem.TagBank;
-			inputUI = dialogueSystem.UI.InputPanel;
-
-			InitTags();
 		}
 
 		public string GetTagValue(string tagName)
 		{
 			if (!tagBank.Tags.TryGetValue(tagName, out DialogueTag dialogueTag)) return null;
 
-			return dialogueTag.CurrentValue();
+			return dialogueTag.CurrentValue;
 		}
 
-		void InitTags()
-		{
-			SetTagValue("input", () => inputUI.LastInput);
-		}
-
-		void SetTagValue(string tagName, Func<string> value)
+		public void SetTagValue(string tagName, string value)
 		{
 			if (!tagBank.Tags.TryGetValue(tagName, out DialogueTag dialogueTag))
 			{
@@ -40,6 +32,6 @@ namespace Dialogue
 			}
 
 			dialogueTag.CurrentValue = value;
-		}
+		}		
 	}
 }

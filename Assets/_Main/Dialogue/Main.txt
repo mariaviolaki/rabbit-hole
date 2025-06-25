@@ -10,7 +10,10 @@ PlayMusic(night, volume=0.01)
 v.Setposition(0, 0.5, immediate=true), eg.setPosition(1, 0.5, immediate=true), m.setposition(0.5, 0.5, immediate=true)
 v.show(immediate=true), eg.show(immediate=true), m.show(immediate=true)
 
-v "Testing history states now."
+v "Testing history states now, {<mcName>}."
+v "1"
+v "2"
+v "3"
 eg.SetSprite(name=Playful)
 SetBackgroundImage(snow-back)
 eg "Ah! That's for saving and loading, right?!"
@@ -21,8 +24,128 @@ v.SetSprite(layer=face, name=face Smug), m.SetExpression("")
 v "No maybes. That's where we're heading. Right, {<mcName>}?"
 "Yup!"
 
+input "test"
+
+v "Let me test you then."
+v "But before we start, you should know that..."
+if ($v.affinity < -5)
+//random code!
+//random code!
+//random code!
+{
+
+//random code!
+	v "...I'm not particularly interested in what I find out."
+	
+//random code!
+}
+
+//random code!
+else if ($v.affinity > 5)
+//random code!
+//random code!
+{
+	v "...You're pretty fun to talk to."
+}
+else
+{
+	v "...I'm vaguely curious about your answer."
+}
+
+v.setsprite(face neutral, face)
+v "Now...{a} Which do you like more? Cats or dogs?"
+choice
+{
+	-Cats
+		v "A cat person, huh?"
+		v "You must appreciate independence."
+	-Dogs
+		v "Dogs, huh?"
+		v "Why is that?"
+		choice
+		{
+			-They're cute!
+				$v.affinity -= 10
+			-I guess I relate to them
+				$v.affinity += 10
+				v.SetSprite(face smug, layer=face)
+				v "Oh, I already knew that, {<mcName>}."
+		}
+		v.setsprite(face neutral, face)
+		v "Most people have dogs nowadays."
+		v "I suppose I see the appeal."
+	-It doesn't really matter
+		$v.affinity += 5
+		v "It doesn't?"
+		v "Small talk isn't your thing, is it."
+		choice
+		{
+			-Actually, I don't mind it
+				v "Good for you."
+			-Yeah, but I know you weren't small-talking
+				v "Smart {<mcName>}~"
+				v "In this case, answer me something more specific."
+				v "If you were an animal, would you be a cat or a dog?"
+				choice
+				{
+					-A cat
+						v "No ruffling your feathers then, huh?"
+						v "Good to know."
+						$v.affinity -= 5
+					-A dog
+						$v.affinity += 10
+						v.setsprite(face smug, face)
+						v "..."
+						v "Very good to know, {<mcName>}."
+				}
+		}
+		v.setsprite(face neutral, face)
+		v "Well then~"
+		v "Your answers were not that bad."
+}
+
+v "Now, the test results."
+v "Let's see..."
+
+if ($v.affinity < 5)
+{
+	v.setsprite(face annoyed, face)
+	v "I woulnd't say I'm ecstatic about your answers."
+	v.setsprite(face neutral, face)
+	v "But to each their own as they say, huh?"
+}
+else if ($v.affinity > 5)
+{
+	if ($v.affinity >= 15)
+	{
+		v.setsprite(face flustered, face)
+		v "You're... {a}interesting."
+		v "Let's leave it at that."
+		v.setsprite(face neutral, face)
+	}
+	else
+	{
+		v.setsprite(face smug, face)
+		v "You're pretty fun, {<mcName>}. I wouldn't mind testing you more."
+		v.setsprite(face neutral, face)
+	}	
+}
+else
+{
+	v "...Although on second thought, I'm not sure there's anything to say."
+	v "I don't dislike you, but I'm not sure I want to ask you more questions either."
+	eg.setsprite(whiny)
+	eg "Whaaa? This answer is even worse than the other one where {<mcName>} irritates you."
+	v.setsprite(face smug, face)
+	v "You're not wrong. After all, {<mcName>} was <i>so</i> close to acing this. Weren't they?"
+	v.setsprite(face neutral, face)
+}
+
+v "Let's move on to testing something else now."
+
 PlayMusic(Day, volume=0.01)
-eg.SetSprite(name=Laugh), eg.SetPosition(x=0), eg.Flip()
+eg.SetSprite(name=Laugh)
+wait eg.SetPosition(x=0), eg.Flip()
 wait(0.5)
 eg.SetPosition(x=1), eg.Flip()
 eg "Yay! Random music testing!" PlaySFX(warp, loop=true, volume=0.01)
@@ -32,4 +155,3 @@ v "Much better."
 m "Void's going feral again." m.SetExpression(crazy)
 m "Although that's not an entirely bad thing."
 "Haha! You guys are funny!"
-

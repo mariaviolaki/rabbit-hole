@@ -36,7 +36,7 @@ namespace History
 				{
 					foreach (CharacterSpriteLayer layer in spriteCharacter.SpriteLayers.Values)
 					{
-						HistorySpriteCharacter.HistorySpriteLayer layerData = new(layer.LayerType, layer.LayerSprite.name);
+						HistorySpriteCharacter.HistorySpriteLayer layerData = new(layer.LayerType, layer.SpriteName);
 						((HistorySpriteCharacter)historyCharacter).spriteLayers.Add(layerData);
 					}
 				}
@@ -47,7 +47,7 @@ namespace History
 			}
 		}
 
-		public void Apply(CharacterManager characterManager, GameOptionsSO gameOptions)
+		public void Load(CharacterManager characterManager, GameOptionsSO gameOptions)
 		{
 			float fadeSpeed = gameOptions.General.SkipTransitionSpeed;
 
@@ -80,8 +80,8 @@ namespace History
 					foreach (var historySpriteLayer in historySpriteChar.spriteLayers)
 					{
 						CharacterSpriteLayer spriteLayer = spriteChar.SpriteLayers[historySpriteLayer.layerType];
-						if (spriteLayer.LayerSprite.name != historySpriteLayer.spriteName)
-							spriteChar.SetSprite(historySpriteLayer.layerType, historySpriteLayer.spriteName, false, fadeSpeed);
+						if (spriteLayer.SpriteName != historySpriteLayer.spriteName)
+							spriteChar.SetSprite(historySpriteLayer.spriteName, historySpriteLayer.layerType, false, fadeSpeed);
 					}
 				}
 				else if (character is Model3DCharacter model3DChar && historyCharacter is HistoryModel3DCharacter historyModel3DChar)

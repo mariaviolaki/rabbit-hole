@@ -1081,6 +1081,10 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 5155102456163269139}
+    - target: {fileID: 5126270124594283969, guid: 7c9475cc1dba3104cbae19f45d8bebbf, type: 3}
+      propertyPath: dialogueSystem
+      value: 
+      objectReference: {fileID: 5432078242979581622}
     - target: {fileID: 5416868981649103304, guid: 7c9475cc1dba3104cbae19f45d8bebbf, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1281,6 +1285,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8048741686597472758, guid: 7c9475cc1dba3104cbae19f45d8bebbf, type: 3}
+      propertyPath: inputManager
+      value: 
+      objectReference: {fileID: 11400000, guid: 9b3fa728f456aeb4bb05c35c62b6cfc2, type: 2}
     - target: {fileID: 8048741686597472758, guid: 7c9475cc1dba3104cbae19f45d8bebbf, type: 3}
       propertyPath: overlayControlsCanvas
       value: 
