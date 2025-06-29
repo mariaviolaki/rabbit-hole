@@ -18,8 +18,8 @@ namespace UI
 
 		ScriptTagManager scriptTagManager;
 		const string InputTagName = "input";
-		bool isImmediate = false;
 		string lastInput = "";
+		Coroutine visibilityCoroutine;
 
 		public event Action OnClose;
 
@@ -32,31 +32,46 @@ namespace UI
 		override protected void OnEnable()
 		{
 			base.OnEnable();
-			SubscribeListeners();
+			PrepareOpen();
 		}
 
 		override protected void OnDisable()
 		{
 			base.OnDisable();
-			UnsubscribeListeners();
+			CompleteClose();
 		}
 
 		public Coroutine Show(string title, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			if (IsVisible) return null;
-
+			
 			base.fadeSpeed = fadeSpeed;
-			this.isImmediate = isImmediate;
-			PrepareInputPanel(title);
+			base.isImmediateTransition = isImmediate;
+			StopProcess();
 
-			return SetVisible(isImmediate, fadeSpeed);
+			visibilityCoroutine = StartCoroutine(ShowProcess(title, isImmediate, fadeSpeed));
+			return visibilityCoroutine;
 		}
 
 		public Coroutine ForceHide(bool isImmediate = false)
 		{
-			this.isImmediate = isImmediate;
 			fadeSpeed = gameOptions.General.SkipTransitionSpeed;
-			return StartCoroutine(HideAndClose());
+
+			StopProcess();
+			visibilityCoroutine = StartCoroutine(HideProcess(isImmediate, fadeSpeed));
+			return visibilityCoroutine;
+		}
+
+		public IEnumerator OpenProcess(string title, bool isImmediate = false, float speed = 0)
+		{
+			titleText.text = title;
+			yield return FadeIn(isImmediate, speed);
+		}
+
+		public IEnumerator CloseProcess(bool isImmediate = false, float speed = 0)
+		{
+			yield return FadeOut(isImmediate, speed);
+			OnClose?.Invoke();
 		}
 
 		void SubmitInput()
@@ -67,7 +82,9 @@ namespace UI
 			scriptTagManager.SetTagValue(InputTagName, lastInput);
 
 			inputManager.OnSubmitInput?.Invoke(lastInput);
-			StartCoroutine(HideAndClose());
+
+			StopProcess();
+			visibilityCoroutine = StartCoroutine(HideProcess(isImmediateTransition, fadeSpeed));
 		}
 
 		void SetButtonVisibility(string input)
@@ -81,9 +98,20 @@ namespace UI
 				submitButton.gameObject.SetActive(false);
 		}
 
-		void PrepareInputPanel(string title)
+		IEnumerator ShowProcess(string title, bool isImmediate = false, float speed = 0)
 		{
-			titleText.text = title;
+			yield return OpenProcess(title, isImmediate, speed);
+			visibilityCoroutine = null;
+		}
+
+		IEnumerator HideProcess(bool isImmediate = false, float speed = 0)
+		{
+			yield return CloseProcess(isImmediate, speed);
+			visibilityCoroutine = null;
+		}
+
+		void PrepareOpen()
+		{
 			inputField.text = string.Empty;
 			inputField.Select();
 			inputField.ActivateInputField();
@@ -92,7 +120,23 @@ namespace UI
 				submitButton.gameObject.SetActive(false);
 
 			inputManager.IsInputPanelOpen = true;
+			
+			SubscribeListeners();
 			inputManager.OnClearInput?.Invoke();
+		}
+
+		void CompleteClose()
+		{
+			UnsubscribeListeners();
+			inputManager.IsInputPanelOpen = false;
+		}
+
+		void StopProcess()
+		{
+			if (visibilityCoroutine == null) return;
+
+			StopCoroutine(visibilityCoroutine);
+			visibilityCoroutine = null;
 		}
 
 		void SubscribeListeners()
@@ -105,14 +149,6 @@ namespace UI
 		{
 			inputField.onValueChanged.RemoveListener(SetButtonVisibility);
 			submitButton.onClick.RemoveListener(SubmitInput);
-		}
-
-		IEnumerator HideAndClose()
-		{
-			inputField.text = string.Empty;
-			inputManager.IsInputPanelOpen = false;
-			yield return SetHidden(isImmediate, fadeSpeed);
-			OnClose?.Invoke();
 		}
 	}
 }

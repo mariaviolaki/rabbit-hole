@@ -7,151 +7,54 @@ wait CreateCharacters(v, eg, v1:v, m, mc)
 SetBackgroundImage(Green-Forest-Back, 1, immediate=true), SetBackgroundImage(Green-Forest-Front, immediate=true)
 PlayMusic(night, volume=0.01)
 
-v.Setposition(0, 0.5, immediate=true), eg.setPosition(1, 0.5, immediate=true), m.setposition(0.5, 0.5, immediate=true)
+v.Setposition(0.5, 0.5, immediate=true), eg.setPosition(0.5, 0.5, immediate=true), m.setposition(0.5, 0.5, immediate=true)
+
 v.show(immediate=true), eg.show(immediate=true), m.show(immediate=true)
 
-v "Testing history states now, {<mcName>}."
+v "Alright, let's go over the transitions again."
+setcharacterpriority(v, m, eg)
 v "1"
+setcharacterpriority(eg, m, v)
 v "2"
+setcharacterpriority(v, m, eg)
 v "3"
-eg.SetSprite(name=Playful)
-SetBackgroundImage(snow-back)
-eg "Ah! That's for saving and loading, right?!"
-eg "Right?!?"
-m.SetExpression(evil)
-m "Not yet. Let's start from the Log, and later on, maybe..."
-v.SetSprite(layer=face, name=face Smug), m.SetExpression("")
-v "No maybes. That's where we're heading. Right, {<mcName>}?"
-"Yup!"
-
-input "test"
-
-v "Let me test you then."
-v "But before we start, you should know that..."
-if ($v.affinity < -5)
-//random code!
-//random code!
-//random code!
-{
-
-//random code!
-	v "...I'm not particularly interested in what I find out."
-	
-//random code!
-}
-
-//random code!
-else if ($v.affinity > 5)
-//random code!
-//random code!
-{
-	v "...You're pretty fun to talk to."
-}
-else
-{
-	v "...I'm vaguely curious about your answer."
-}
-
-v.setsprite(face neutral, face)
-v "Now...{a} Which do you like more? Cats or dogs?"
-choice
-{
-	-Cats
-		v "A cat person, huh?"
-		v "You must appreciate independence."
-	-Dogs
-		v "Dogs, huh?"
-		v "Why is that?"
-		choice
-		{
-			-They're cute!
-				$v.affinity -= 10
-			-I guess I relate to them
-				$v.affinity += 10
-				v.SetSprite(face smug, layer=face)
-				v "Oh, I already knew that, {<mcName>}."
-		}
-		v.setsprite(face neutral, face)
-		v "Most people have dogs nowadays."
-		v "I suppose I see the appeal."
-	-It doesn't really matter
-		$v.affinity += 5
-		v "It doesn't?"
-		v "Small talk isn't your thing, is it."
-		choice
-		{
-			-Actually, I don't mind it
-				v "Good for you."
-			-Yeah, but I know you weren't small-talking
-				v "Smart {<mcName>}~"
-				v "In this case, answer me something more specific."
-				v "If you were an animal, would you be a cat or a dog?"
-				choice
-				{
-					-A cat
-						v "No ruffling your feathers then, huh?"
-						v "Good to know."
-						$v.affinity -= 5
-					-A dog
-						$v.affinity += 10
-						v.setsprite(face smug, face)
-						v "..."
-						v "Very good to know, {<mcName>}."
-				}
-		}
-		v.setsprite(face neutral, face)
-		v "Well then~"
-		v "Your answers were not that bad."
-}
-
-v "Now, the test results."
-v "Let's see..."
-
-if ($v.affinity < 5)
-{
-	v.setsprite(face annoyed, face)
-	v "I woulnd't say I'm ecstatic about your answers."
-	v.setsprite(face neutral, face)
-	v "But to each their own as they say, huh?"
-}
-else if ($v.affinity > 5)
-{
-	if ($v.affinity >= 15)
-	{
-		v.setsprite(face flustered, face)
-		v "You're... {a}interesting."
-		v "Let's leave it at that."
-		v.setsprite(face neutral, face)
-	}
-	else
-	{
-		v.setsprite(face smug, face)
-		v "You're pretty fun, {<mcName>}. I wouldn't mind testing you more."
-		v.setsprite(face neutral, face)
-	}	
-}
-else
-{
-	v "...Although on second thought, I'm not sure there's anything to say."
-	v "I don't dislike you, but I'm not sure I want to ask you more questions either."
-	eg.setsprite(whiny)
-	eg "Whaaa? This answer is even worse than the other one where {<mcName>} irritates you."
-	v.setsprite(face smug, face)
-	v "You're not wrong. After all, {<mcName>} was <i>so</i> close to acing this. Weren't they?"
-	v.setsprite(face neutral, face)
-}
-
-v "Let's move on to testing something else now."
-
-PlayMusic(Day, volume=0.01)
-eg.SetSprite(name=Laugh)
-wait eg.SetPosition(x=0), eg.Flip()
-wait(0.5)
-eg.SetPosition(x=1), eg.Flip()
-eg "Yay! Random music testing!" PlaySFX(warp, loop=true, volume=0.01)
-v "Let's change the background too then." StopSFX()
-SetBackgroundImage(arena-back)
-v "Much better."
-m "Void's going feral again." m.SetExpression(crazy)
-m "Although that's not an entirely bad thing."
-"Haha! You guys are funny!"
+setcharacterpriority(eg, m, v)
+v "4"
+v.Setposition(0, 0.5, immediate=true), eg.setPosition(1, 0.5, immediate=true), m.setposition(0.5, 0.5, immediate=true)
+eg.setanimation(hop, true)
+v "5"
+eg.setanimation(hop, false)
+v "6"
+eg.setanimation(hop, true)
+v "7"
+eg.setanimation(hop, false)
+v "8"
+eg.setanimation(hoponce)
+v "9"
+m.setmotion(kiss)
+v "10"
+wait v.setposition(x=1), wait eg.setposition(x=0)
+eg.setposition(x=0.75), v.setposition(x=0.25)
+wait(1)
+m.setposition(0), m.setposition(1), m.setposition(0.5)
+wait(1)
+v.setposition(x=0), eg.setposition(x=1)
+wait(1)
+v.setcolor(#009A31), eg.setcolor(#009A31), m.setcolor(#009A31)
+wait(1)
+v.unhighlight(), eg.unhighlight(), m.unhighlight()
+wait(1)
+v.highlight(), eg.highlight(), m.highlight()
+wait(1)
+v.setcolor(#FFFFFF), eg.setcolor(#FFFFFF), m.setcolor(#FFFFFF)
+wait(1)
+v.setcolor(#009A31), eg.setcolor(#009A31), m.setcolor(#009A31)
+wait(1)
+v.setcolor(#FFFFFF), eg.setcolor(#FFFFFF), m.setcolor(#FFFFFF)
+wait(1)
+v.setsprite(face smug, face), eg.setsprite(sick), m.setexpression(evil)
+wait(1)
+v.setsprite(face neutral, face), eg.setsprite(whiny), m.setexpression(crazy)
+wait(1)
+v.setsprite(face flustered, face), eg.setsprite(laugh), m.setexpression("")
+v "The end"

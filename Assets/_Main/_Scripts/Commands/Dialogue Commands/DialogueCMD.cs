@@ -1,7 +1,7 @@
 using Dialogue;
 using System;
-using System.Collections;
 using UI;
+using UnityEngine;
 
 namespace Commands
 {
@@ -16,50 +16,50 @@ namespace Commands
 			CommandBank bank = commandManager.GetBank(CommandManager.MainBankName);
 
 			// Show UI
-			bank.AddCommand("ShowVN", new Func<DialogueCommandArguments, IEnumerator>(ShowVN), CommandSkipType.Transition);
-			bank.AddCommand("ShowDialogue", new Func<DialogueCommandArguments, IEnumerator>(ShowDialogue), CommandSkipType.Transition);
+			bank.AddCommand("ShowVN", new Func<DialogueCommandArguments, Coroutine>(ShowVN), CommandSkipType.Transition);
+			bank.AddCommand("ShowDialogue", new Func<DialogueCommandArguments, Coroutine>(ShowDialogue), CommandSkipType.Transition);
 
 			// Hide UI
-			bank.AddCommand("HideVN", new Func<DialogueCommandArguments, IEnumerator>(HideVN), CommandSkipType.Transition);
-			bank.AddCommand("HideDialogue", new Func<DialogueCommandArguments, IEnumerator>(HideDialogue), CommandSkipType.Transition);
+			bank.AddCommand("HideVN", new Func<DialogueCommandArguments, Coroutine>(HideVN), CommandSkipType.Transition);
+			bank.AddCommand("HideDialogue", new Func<DialogueCommandArguments, Coroutine>(HideDialogue), CommandSkipType.Transition);
 		}
 
 
 		/***** Show Dialogue UI *****/
 
-		static IEnumerator ShowVN(DialogueCommandArguments args)
+		static Coroutine ShowVN(DialogueCommandArguments args)
 		{
 			bool isImmediate = args.Get(0, "immediate", false);
 			float fadeSpeed = args.Get(1, "speed", 0f);
 
-			yield return visualNovelUI.Show(isImmediate, fadeSpeed);
+			return visualNovelUI.Show(isImmediate, fadeSpeed);
 		}
 
-		static IEnumerator ShowDialogue(DialogueCommandArguments args)
+		static Coroutine ShowDialogue(DialogueCommandArguments args)
 		{
 			bool isImmediate = args.Get(0, "immediate", false);
 			float fadeSpeed = args.Get(1, "speed", 0f);
 
-			yield return visualNovelUI.ShowDialogue(isImmediate, fadeSpeed);
+			return visualNovelUI.ShowDialogue(isImmediate, fadeSpeed);
 		}
 
 
 		/***** Hide Dialogue UI *****/
 
-		static IEnumerator HideVN(DialogueCommandArguments args)
+		static Coroutine HideVN(DialogueCommandArguments args)
 		{
 			bool isImmediate = args.Get(0, "immediate", false);
 			float fadeSpeed = args.Get(1, "speed", 0f);
 
-			yield return visualNovelUI.Hide(isImmediate, fadeSpeed);
+			return visualNovelUI.Hide(isImmediate, fadeSpeed);
 		}
 
-		static IEnumerator HideDialogue(DialogueCommandArguments args)
+		static Coroutine HideDialogue(DialogueCommandArguments args)
 		{
 			bool isImmediate = args.Get(0, "immediate", false);
 			float fadeSpeed = args.Get(1, "speed", 0f);
 
-			yield return visualNovelUI.HideDialogue(isImmediate, fadeSpeed);
+			return visualNovelUI.HideDialogue(isImmediate, fadeSpeed);
 		}
 	}
 }

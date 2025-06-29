@@ -32,7 +32,7 @@ namespace History
 				{
 					type = ScriptVariableType.Tag,
 					name = tag.Name,
-					dataType = ScriptVariableDataType.String,
+					dataType = DataTypeEnum.String,
 					value = tag.CurrentValue
 				};
 				variables.Add(historyVariable);

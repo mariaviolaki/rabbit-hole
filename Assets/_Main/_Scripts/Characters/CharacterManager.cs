@@ -18,6 +18,7 @@ namespace Characters
 		[SerializeField] Transform model3DContainer;
 
 		Dictionary<string, Character> characters = new Dictionary<string, Character>();
+		Coroutine creationCoroutine;
 
 		public GameOptionsSO GameOptions { get { return gameOptions; } }
 		public CharacterBankSO Bank { get { return characterBank; } }
@@ -34,59 +35,21 @@ namespace Characters
 		public Dictionary<string, Character> GetCharacters() => characters;
 		public bool HasCharacter(string shortName) => characters.ContainsKey(shortName);
 
-		public IEnumerator CreateCharacters(List<string> names)
+		public Coroutine CreateCharacters(List<string> names)
 		{
-			int completedCharacterCount = 0;
+			if (creationCoroutine != null) return null;
 
-			IEnumerator MarkCharacterCompletion(string shortName, string castShortName)
-			{
-				yield return CreateCharacter(shortName, castShortName);
-				completedCharacterCount++;
-			}
-
-			for (int i = 0; i < names.Count; i++)
-			{
-				string[] nameParts = names[i].Split(CharacterCastDelimiter);
-				string shortName = nameParts[0].Trim();
-				string castShortName = nameParts.Length > 1 ? nameParts[1] : shortName;
-
-				StartCoroutine(MarkCharacterCompletion(shortName, castShortName));
-			}
-
-			while (completedCharacterCount != names.Count) yield return null;
+			creationCoroutine = StartCoroutine(CreateCharactersProcess(names));
+			return creationCoroutine;
 		}
 
-		public IEnumerator CreateCharacter(string shortName) => CreateCharacter(shortName, shortName);
-		public IEnumerator CreateCharacter(string shortName, string castShortName)
+		public Coroutine CreateCharacter(string shortName) => CreateCharacter(shortName, shortName);
+		public Coroutine CreateCharacter(string shortName, string castShortName)
 		{
-			if (characters.ContainsKey(shortName))
-			{
-				Debug.LogWarning($"Unable to create character '{shortName}' because they already exist.");
-				yield break;
-			}
+			if (creationCoroutine != null) return null;
 
-			castShortName = string.IsNullOrWhiteSpace(castShortName) ? shortName : castShortName;
-			if (!IsValidShortName(shortName) || !IsValidShortName(castShortName))
-			{
-				Debug.LogWarning($"Unable to create character '{shortName}' because their short name is invalid.");
-				yield break;
-			}
-	
-			CharacterData data = characterBank.GetCharacterData(shortName, castShortName, gameOptions);
-
-			switch (data.Type)
-			{
-				case CharacterType.Model3D:
-					yield return Character.Create<Model3DCharacter>(this, data);
-					break;
-				case CharacterType.Sprite:
-					yield return Character.Create<SpriteCharacter>(this, data);
-					break;
-				case CharacterType.Text:
-				default:
-					yield return Character.Create<TextCharacter>(this, data);
-					break;
-			}
+			creationCoroutine = StartCoroutine(CreateSingleCharacterProcess(shortName, castShortName));
+			return creationCoroutine;
 		}
 
 		public Character GetCharacter(string shortName)
@@ -168,6 +131,67 @@ namespace Characters
 			characters[newShortName] = characters[oldShortName];
 			characters.Remove(oldShortName);
 			return true;
+		}
+
+		IEnumerator CreateCharactersProcess(List<string> names)
+		{
+			int completedCharacterCount = 0;
+
+			IEnumerator MarkCharacterCompletion(string shortName, string castShortName)
+			{
+				yield return CreateCharacterProcess(shortName, castShortName);
+				completedCharacterCount++;
+			}
+
+			for (int i = 0; i < names.Count; i++)
+			{
+				string[] nameParts = names[i].Split(CharacterCastDelimiter);
+				string shortName = nameParts[0].Trim();
+				string castShortName = nameParts.Length > 1 ? nameParts[1] : shortName;
+
+				StartCoroutine(MarkCharacterCompletion(shortName, castShortName));
+			}
+
+			while (completedCharacterCount != names.Count) yield return null;
+			creationCoroutine = null;
+		}
+
+		IEnumerator CreateSingleCharacterProcess(string shortName, string castShortName)
+		{
+			yield return CreateCharacterProcess(shortName, castShortName);
+			creationCoroutine = null;
+		}
+
+		IEnumerator CreateCharacterProcess(string shortName, string castShortName)
+		{
+			if (characters.ContainsKey(shortName))
+			{
+				Debug.LogWarning($"Unable to create character '{shortName}' because they already exist.");
+				yield break;
+			}
+
+			castShortName = string.IsNullOrWhiteSpace(castShortName) ? shortName : castShortName;
+			if (!IsValidShortName(shortName) || !IsValidShortName(castShortName))
+			{
+				Debug.LogWarning($"Unable to create character '{shortName}' because their short name is invalid.");
+				yield break;
+			}
+
+			CharacterData data = characterBank.GetCharacterData(shortName, castShortName, gameOptions);
+
+			switch (data.Type)
+			{
+				case CharacterType.Model3D:
+					yield return Character.Create<Model3DCharacter>(this, data);
+					break;
+				case CharacterType.Sprite:
+					yield return Character.Create<SpriteCharacter>(this, data);
+					break;
+				case CharacterType.Text:
+				default:
+					yield return Character.Create<TextCharacter>(this, data);
+					break;
+			}
 		}
 
 		// Called when a character is initialized asyncronously

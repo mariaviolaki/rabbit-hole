@@ -1,10 +1,11 @@
 using Logic;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UI
 {
-	public class GameplayControlsUI : FadeableUI
+	public class GameplayControlsUI : BaseFadeableUI
 	{
 		[SerializeField] InputPanelUI inputPanel;
 		[SerializeField] ChoicePanelUI choicePanel;
@@ -53,6 +54,18 @@ namespace UI
 		public Coroutine ForceHideChoices(bool isImmediate = false)
 		{
 			return choicePanel.ForceHide(isImmediate);
+		}
+
+		public override IEnumerator FadeOut(bool isImmediate = false, float speed = 0)
+		{
+			List<IEnumerator> closeProcesses = new()
+			{
+				inputPanel.CloseProcess(isImmediate, speed),
+				choicePanel.CloseProcess(isImmediate, speed)
+			};
+
+			yield return Utilities.RunConcurrentProcesses(closeProcesses);
+			yield return base.FadeOut(isImmediate, speed);
 		}
 
 		void CloseInput()

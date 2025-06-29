@@ -15,23 +15,22 @@ namespace Commands
 
 			CommandBank bank = commandManager.GetBank(CommandManager.MainBankName);
 
-			bank.AddCommand("Wait", new Func<DialogueCommandArguments, IEnumerator>(Wait));
-			bank.AddCommand("Load", new Func<DialogueCommandArguments, IEnumerator>(Load));
+			bank.AddCommand("Wait", new Func<DialogueCommandArguments, Coroutine>(Wait));
+			bank.AddCommand("Load", new Func<DialogueCommandArguments, Coroutine>(Load));
 		}
 
-		static IEnumerator Wait(DialogueCommandArguments args)
+		static Coroutine Wait(DialogueCommandArguments args)
 		{
 			float time = args.Get(0, "time", 1f);
 
-			yield return new WaitForSeconds(time);
+			return dialogueSystem.Wait(time);
 		}
 
-		static IEnumerator Load(DialogueCommandArguments args)
+		static Coroutine Load(DialogueCommandArguments args)
 		{
 			string path = args.Get(0, "path", "");
 
-			yield return dialogueSystem.LoadDialogue(path);
-			yield return dialogueSystem.ReadDialogue(DialogueReadMode.None);
+			return dialogueSystem.ReplaceDialogue(path);
 		}
 	}
 }

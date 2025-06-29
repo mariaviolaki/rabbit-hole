@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Characters
@@ -7,33 +9,39 @@ namespace Characters
 	{
 		const float MoveSpeedMultiplier = 100f;
 
+		readonly Dictionary<string, string> animationNames = new(StringComparer.OrdinalIgnoreCase);
+
+		Vector2 currentPos = Vector2.zero;
+		protected CanvasGroup rootCanvasGroup;
+		protected Animator animator;
+		protected bool isFacingRight;
+		protected bool isHighlighted = true;
+
 		Coroutine moveCoroutine;
 		protected Coroutine directionCoroutine;
 		protected Coroutine visibilityCoroutine;
 		protected Coroutine colorCoroutine;
 		protected Coroutine brightnessCoroutine;
 
-		protected CanvasGroup rootCanvasGroup;
-		protected Animator animator;
-		protected bool isFacingRight;
-		protected bool isHighlighted = true;
-
-		private Vector2 currentPos = Vector2.zero;
+		Coroutine skippedMoveCoroutine;
+		protected Coroutine skippedDirectionCoroutine;
+		protected Coroutine skippedVisibilityCoroutine;
+		protected Coroutine skippedColorCoroutine;
+		protected Coroutine skippedBrightnessCoroutine;
 
 		protected UITransitionHandler TransitionHandler { get; private set; }
-		protected Color DisplayColor { get { return isHighlighted ? LightColor : DarkColor; } }
-		protected Color DarkColor { get { return GetDarkColor(LightColor); } }
 		public Color LightColor { get; protected set; } = Color.white;
-
-		public abstract Coroutine Flip(bool isImmediate = false, float speed = 0);
-		public abstract Coroutine Highlight(bool isImmediate = false, float speed = 0);
-		public abstract Coroutine Unhighlight(bool isImmediate = false, float speed = 0);
-		public abstract Coroutine SetColor(Color color, bool isImmediate = false, float speed = 0);
-
+		public Color DisplayColor => isHighlighted ? LightColor : DarkColor;
+		protected Color DarkColor => GetDarkColor(LightColor);
 		public int HierarchyPriority => root.GetSiblingIndex();
 		public Vector2 Position => currentPos;
 		public bool IsHighlighted => isHighlighted;
 		public bool IsFacingRight => isFacingRight;
+		public Animator RootAnimator => animator;
+
+		public abstract Coroutine Flip(bool isImmediate = false, float speed = 0);
+		public abstract Coroutine SetHighlighted(bool isHighlighted, bool isImmediate = false, float speed = 0);
+		public abstract Coroutine SetColor(Color color, bool isImmediate = false, float speed = 0);
 
 		protected override IEnumerator Init()
 		{
@@ -44,7 +52,7 @@ namespace Characters
 			if (prefab == null) yield break;
 
 			TransitionHandler = new UITransitionHandler(manager.GameOptions);
-			GameObject rootGameObject = Object.Instantiate(prefab, manager.Container);
+			GameObject rootGameObject = UnityEngine.Object.Instantiate(prefab, manager.Container);
 			root = rootGameObject.GetComponent<RectTransform>();
 			rootCanvasGroup = root.GetComponent<CanvasGroup>();
 			animator = root.GetComponentInChildren<Animator>();
@@ -52,7 +60,13 @@ namespace Characters
 			root.name = data.Name;
 			rootCanvasGroup.alpha = 0f;
 			isFacingRight = manager.GameOptions.Characters.AreSpritesFacingRight;
+			CacheAnimationNames();
 		}
+
+		public Coroutine Highlight(bool isImmediate = false, float speed = 0) => SetHighlighted(true, isImmediate, speed);
+		public Coroutine Unhighlight(bool isImmediate = false, float speed = 0) => SetHighlighted(false, isImmediate, speed);
+		public Coroutine Show(bool isImmediate = false, float speed = 0) => SetVisibility(true, isImmediate, speed);
+		public Coroutine Hide(bool isImmediate = false, float speed = 0) => SetVisibility(false, isImmediate, speed);
 
 		public void SetPriority(int index)
 		{
@@ -63,72 +77,48 @@ namespace Characters
 
 		public Coroutine SetVisibility(bool isVisible, bool isImmediate = false, float speed = 0)
 		{
-			if (isVisible == IsVisible) return null;
-
-			if (isVisible)
-				return Show(isImmediate, speed);
-			else
-				return Hide(isImmediate, speed);
-		}
-
-		public Coroutine SetHighlighted(bool isHighlighted, bool isImmediate = false, float speed = 0)
-		{
-			if (isHighlighted == IsHighlighted) return null;
-
-			if (isHighlighted)
-				return Highlight(isImmediate, speed);
-			else
-				return Unhighlight(isImmediate, speed);
-		}
-
-		public Coroutine Show(bool isImmediate = false, float speed = 0)
-		{
+			if (isVisible == this.isVisible || skippedVisibilityCoroutine != null) return null;
 			bool isSkipped = manager.StopProcess(ref visibilityCoroutine);
 
 			if (isImmediate)
 			{
-				SetVisibility(true);
+				SetVisibilityImmediate(isVisible);
 				return null;
+			}
+			else if (isSkipped)
+			{
+				skippedVisibilityCoroutine = manager.StartCoroutine(TransitionVisibility(isVisible, speed, isSkipped));
+				return skippedVisibilityCoroutine;
 			}
 			else
 			{
-				visibilityCoroutine = manager.StartCoroutine(TransitionVisibility(true, speed, isSkipped));
-				return visibilityCoroutine;
-			}
-		}
-		
-		public Coroutine Hide(bool isImmediate = false, float speed = 0)
-		{
-			bool isSkipped = manager.StopProcess(ref visibilityCoroutine);
-
-			if (isImmediate)
-			{
-				SetVisibility(false);
-				return null;
-			}
-			else
-			{
-				visibilityCoroutine = manager.StartCoroutine(TransitionVisibility(false, speed, isSkipped));
+				visibilityCoroutine = manager.StartCoroutine(TransitionVisibility(isVisible, speed, isSkipped));
 				return visibilityCoroutine;
 			}
 		}
 
 		public Coroutine SetPosition(float x, float y, bool isImmediate = false, float speed = 0)
 		{
-			bool isSkipped = manager.StopProcess(ref moveCoroutine);
-
 			if (float.IsNaN(x)) x = currentPos.x;
 			if (float.IsNaN(y)) y = currentPos.y;
-			currentPos = new Vector2(x, y);
+			Vector2 inputPos = new(x, y);
+
+			if (Utilities.AreApproximatelyEqual(inputPos, currentPos) || skippedMoveCoroutine != null) return null;
+			bool isSkipped = manager.StopProcess(ref moveCoroutine);
 
 			if (isImmediate)
 			{
-				root.anchoredPosition = GetTargetPosition(currentPos);
+				SetPositionImmediate(inputPos);
 				return null;
+			}
+			else if (isSkipped)
+			{
+				skippedMoveCoroutine = manager.StartCoroutine(TransitionPosition(inputPos, speed, isSkipped));
+				return skippedMoveCoroutine;
 			}
 			else
 			{
-				moveCoroutine = manager.StartCoroutine(TransitionPosition(currentPos, speed, isSkipped));
+				moveCoroutine = manager.StartCoroutine(TransitionPosition(inputPos, speed, isSkipped));
 				return moveCoroutine;
 			}
 		}
@@ -147,35 +137,34 @@ namespace Characters
 
 		public void SetAnimation(string animationName)
 		{
-			animator.SetTrigger(animationName);
+			if (!animationNames.TryGetValue(animationName, out string cachedName))
+			{
+				Debug.LogWarning($"Animation '{animationName}' not found for character '{data.Name}'.");
+				return;
+			}
+
+			animator.SetTrigger(cachedName);
 		}
 
 		public void SetAnimation(string animationName, bool isPlaying)
 		{
-			animator.SetBool(animationName, isPlaying);
+			if (!animationNames.TryGetValue(animationName, out string cachedName))
+			{
+				Debug.LogWarning($"Animation '{animationName}' not found for character '{data.Name}'.");
+				return;
+			}
+
+			animator.SetBool(cachedName, isPlaying);
 		}
 
-		protected float GetTransitionSpeed(float speedInput, float defaultSpeed, bool isTransitionSkipped)
+		void SetPositionImmediate(Vector2 inputPos)
 		{
-			if (isTransitionSkipped || manager.Dialogue.ReadMode == Dialogue.DialogueReadMode.Skip)
-				return manager.GameOptions.General.SkipTransitionSpeed;
-			else if (speedInput <= 0)
-				return defaultSpeed;
-			else
-				return speedInput;
+			Vector2 targetPos = GetTargetPosition(inputPos);
+			root.anchoredPosition = targetPos;
+			currentPos = inputPos;
 		}
 
-		protected Color GetDarkColor(Color lightColor)
-		{
-			return new Color(
-				lightColor.r * manager.GameOptions.Characters.DarkenBrightness,
-				lightColor.g * manager.GameOptions.Characters.DarkenBrightness,
-				lightColor.b * manager.GameOptions.Characters.DarkenBrightness,
-				lightColor.a
-			);
-		}
-
-		void SetVisibility(bool isVisible)
+		void SetVisibilityImmediate(bool isVisible)
 		{
 			rootCanvasGroup.alpha = isVisible ? 1f : 0f;
 			this.isVisible = isVisible;
@@ -186,18 +175,24 @@ namespace Characters
 			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
 
 			yield return TransitionHandler.SetVisibility(rootCanvasGroup, isVisible, speed);
-
 			this.isVisible = isVisible;
-			visibilityCoroutine = null;
+
+			if (isSkipped) skippedVisibilityCoroutine = null;
+			else visibilityCoroutine = null;
 		}
 
-		IEnumerator TransitionPosition(Vector2 normalizedPos, float speed, bool isSkipped)
+		IEnumerator TransitionPosition(Vector2 inputPos, float speed, bool isSkipped)
 		{
 			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.MoveSpeed, isSkipped);
 
 			Vector2 startPos = root.anchoredPosition;
-			Vector2 endPos = GetTargetPosition(normalizedPos);
+			Vector2 endPos = GetTargetPosition(inputPos);
 			float distance = Vector2.Distance(startPos, endPos);
+			if (distance <= Mathf.Epsilon)
+			{
+				moveCoroutine = null;
+				yield break;
+			}
 
 			float distancePercent = 0f;
 			while (distancePercent < 1f)
@@ -213,7 +208,10 @@ namespace Characters
 			}
 
 			root.anchoredPosition = endPos;
-			moveCoroutine = null;
+			currentPos = inputPos;
+
+			if (isSkipped) skippedMoveCoroutine = null;
+			else moveCoroutine = null;
 		}
 
 		Vector2 GetTargetPosition(Vector2 normalizedPos)
@@ -240,6 +238,34 @@ namespace Characters
 
 			// Return position relative to anchor center
 			return targetPos - anchorOffset;
+		}
+
+		public float GetTransitionSpeed(float speedInput, float defaultSpeed, bool isTransitionSkipped)
+		{
+			if (isTransitionSkipped || manager.Dialogue.ReadMode == Dialogue.DialogueReadMode.Skip)
+				return manager.GameOptions.General.SkipTransitionSpeed;
+			else if (speedInput <= 0)
+				return defaultSpeed;
+			else
+				return speedInput;
+		}
+
+		protected Color GetDarkColor(Color lightColor)
+		{
+			return new Color(
+				lightColor.r * manager.GameOptions.Characters.DarkenBrightness,
+				lightColor.g * manager.GameOptions.Characters.DarkenBrightness,
+				lightColor.b * manager.GameOptions.Characters.DarkenBrightness,
+				lightColor.a
+			);
+		}
+
+		void CacheAnimationNames()
+		{
+			foreach (AnimatorControllerParameter parameter in animator.parameters)
+			{
+				animationNames[parameter.name] = parameter.name;
+			}
 		}
 	}
 }

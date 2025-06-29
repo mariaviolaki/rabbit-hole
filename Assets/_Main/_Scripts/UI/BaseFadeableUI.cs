@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace UI
@@ -9,9 +10,9 @@ namespace UI
 
 		UITransitionHandler transitionHandler;
 		CanvasGroup canvasGroup;
-		Coroutine fadeCoroutine;
 
 		protected float fadeSpeed;
+		protected bool isImmediateTransition;
 
 		public bool IsVisible => canvasGroup.alpha == 1f;
 		public bool IsHidden => canvasGroup.alpha == 0f;
@@ -26,53 +27,42 @@ namespace UI
 			canvasGroup = GetComponent<CanvasGroup>();
 			transitionHandler = new UITransitionHandler(gameOptions);
 
-			SetHidden(true);
+			SetHiddenImmediate();
 		}
 
-		protected Coroutine SetVisible(bool isImmediate = false, float speed = 0)
-		{
-			if (IsVisible) return null;
+		public void SetVisibleImmediate() => canvasGroup.alpha = 1f;
+		public void SetHiddenImmediate() => canvasGroup.alpha = 0f;
 
-			StopFadeCoroutine();
+		public virtual IEnumerator FadeIn(bool isImmediate = false, float speed = 0)
+		{
+			if (IsVisible) yield break;
 
 			if (isImmediate)
 			{
-				canvasGroup.alpha = 1f;
-				return null;
+				SetVisibleImmediate();
+				yield break;
 			}
 			else
 			{
 				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
-				fadeCoroutine = StartCoroutine(transitionHandler.SetVisibility(canvasGroup, true, fadeSpeed));
-				return fadeCoroutine;
+				yield return transitionHandler.SetVisibility(canvasGroup, true, fadeSpeed);
 			}
 		}
 
-		protected Coroutine SetHidden(bool isImmediate = false, float speed = 0)
+		public virtual IEnumerator FadeOut(bool isImmediate = false, float speed = 0)
 		{
-			if (IsHidden) return null;
-
-			StopFadeCoroutine();
+			if (IsHidden) yield break;
 
 			if (isImmediate)
 			{
-				canvasGroup.alpha = 0f;
-				return null;
+				SetHiddenImmediate();
+				yield break;
 			}
 			else
 			{
 				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
-				fadeCoroutine = StartCoroutine(transitionHandler.SetVisibility(canvasGroup, false, fadeSpeed));
-				return fadeCoroutine;
+				yield return transitionHandler.SetVisibility(canvasGroup, false, fadeSpeed);
 			}
-		}
-
-		void StopFadeCoroutine()
-		{
-			if (fadeCoroutine == null) return;
-
-			StopCoroutine(fadeCoroutine);
-			fadeCoroutine = null;
 		}
 	}
 }

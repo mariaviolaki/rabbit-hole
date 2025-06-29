@@ -57,20 +57,23 @@ namespace Characters
 			if (sprite == null) return null;
 
 			CharacterSpriteLayer layer = spriteLayers[layerType];
-			bool isSkipped = layer.IsChangingSprite;
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
-
 			return layer.SetSprite(sprite, isImmediate, speed);
 		}
 
 		public override Coroutine Flip(bool isImmediate = false, float speed = 0)
 		{
+			if (skippedDirectionCoroutine != null) return null;
 			bool isSkipped = manager.StopProcess(ref directionCoroutine);
 
 			if (isImmediate)
 			{
 				FlipDirectionImmediate();
 				return null;	
+			}
+			else if (isSkipped)
+			{
+				skippedDirectionCoroutine = manager.StartCoroutine(TransitionDirection(speed, isSkipped));
+				return skippedDirectionCoroutine;
 			}
 			else
 			{
@@ -79,40 +82,31 @@ namespace Characters
 			}
 		}
 
-		public override Coroutine Highlight(bool isImmediate = false, float speed = 0)
+		public override Coroutine SetHighlighted(bool isHighlighted, bool isImmediate = false, float speed = 0)
 		{
+			if (isHighlighted == this.isHighlighted || skippedBrightnessCoroutine != null) return null;
 			bool isSkipped = manager.StopProcess(ref brightnessCoroutine);
 
 			if (isImmediate)
 			{
-				SetBrightnessImmediate(true);
+				SetBrightnessImmediate(isHighlighted);
 				return null;
+			}
+			else if (isSkipped)
+			{
+				skippedBrightnessCoroutine = manager.StartCoroutine(TransitionBrightness(isHighlighted, speed, isSkipped));
+				return skippedBrightnessCoroutine;
 			}
 			else
 			{
-				brightnessCoroutine = manager.StartCoroutine(TransitionBrightness(true, speed, isSkipped));
-				return brightnessCoroutine;
-			}
-		}
-
-		public override Coroutine Unhighlight(bool isImmediate = false, float speed = 0)
-		{
-			bool isSkipped = manager.StopProcess(ref brightnessCoroutine);
-
-			if (isImmediate)
-			{
-				SetBrightnessImmediate(false);
-				return null;
-			}
-			else
-			{
-				brightnessCoroutine = manager.StartCoroutine(TransitionBrightness(false, speed, isSkipped));
+				brightnessCoroutine = manager.StartCoroutine(TransitionBrightness(isHighlighted, speed, isSkipped));
 				return brightnessCoroutine;
 			}
 		}
 
 		public override Coroutine SetColor(Color color, bool isImmediate = false, float speed = 0)
 		{
+			if (color == LightColor || skippedColorCoroutine != null) return null;
 			bool isSkipped = manager.StopProcess(ref colorCoroutine);
 
 			if (isImmediate)
@@ -120,19 +114,16 @@ namespace Characters
 				SetColorImmediate(color);
 				return null;
 			}
+			else if (isSkipped)
+			{
+				skippedColorCoroutine = manager.StartCoroutine(TransitionColor(color, speed, isSkipped));
+				return skippedColorCoroutine;
+			}
 			else
 			{
 				colorCoroutine = manager.StartCoroutine(TransitionColor(color, speed, isSkipped));
 				return colorCoroutine;
 			}
-		}
-
-		public string GetRawSpriteName(string spriteName)
-		{
-			if (string.IsNullOrWhiteSpace(spriteName)) return string.Empty;
-
-			if (!spriteName.EndsWith("(Clone)")) return spriteName;
-			return spriteName.Substring(0, spriteName.Length - "(Clone)".Length);
 		}
 
 		void FlipDirectionImmediate()
@@ -150,22 +141,76 @@ namespace Characters
 
 		void SetBrightnessImmediate(bool isHighlighted)
 		{
-			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
-			{
-				layer.SetBrightness(isHighlighted ? LightColor : DarkColor, true);
-			}
-
+			ForEachLayer(layer => layer.SetBrightness(isHighlighted ? LightColor : DarkColor, true));
 			this.isHighlighted = isHighlighted;
 		}
 
 		void SetColorImmediate(Color color)
 		{
-			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
-			{
-				layer.SetColor(color, true);
-			}
+			ForEachLayer(layer => layer.SetColor(color, true));
+			LightColor = color;
+		}
+
+		IEnumerator TransitionDirection(float speed, bool isSkipped)
+		{
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
+
+			ForEachLayer(layer => manager.StartCoroutine(SetLayerImageDirection(layer, speed)));
+
+			yield return null;
+			while (spriteLayers.Values.Any(layer => layer.IsChangingDirection)) yield return null;
+
+			isFacingRight = !isFacingRight;
+			if (isSkipped) skippedDirectionCoroutine = null;
+			else directionCoroutine = null;
+		}
+
+		IEnumerator TransitionBrightness(bool isHighlighted, float speed, bool isSkipped)
+		{
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.BrightnessTransitionSpeed, isSkipped);
+			Color targetColor = isHighlighted ? LightColor : DarkColor;
+
+			ForEachLayer(layer => manager.StartCoroutine(SetLayerImageBrightness(layer, targetColor, speed)));
+
+			yield return null;
+			while (spriteLayers.Values.Any(layer => layer.IsChangingBrightness)) yield return null;
+
+			this.isHighlighted = isHighlighted;
+			if (isSkipped) skippedBrightnessCoroutine = null;
+			else brightnessCoroutine = null;
+		}
+
+		IEnumerator TransitionColor(Color color, float speed, bool isSkipped)
+		{
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.ColorTransitionSpeed, isSkipped);
+			Color targetColor = isHighlighted ? color : GetDarkColor(color);
+
+			ForEachLayer(layer => manager.StartCoroutine(ColorLayerImage(layer, targetColor, speed)));
+
+			yield return null;
+			while (spriteLayers.Values.Any(layer => layer.IsChangingColor)) yield return null;
 
 			LightColor = color;
+			if (isSkipped) skippedColorCoroutine = null;
+			else colorCoroutine = null;
+		}
+
+		IEnumerator SetLayerImageDirection(CharacterSpriteLayer layer, float speed)
+		{
+			if (isFacingRight)
+				yield return layer.FaceLeft(false, speed);
+			else
+				yield return layer.FaceRight(false, speed);
+		}
+
+		IEnumerator SetLayerImageBrightness(CharacterSpriteLayer layer, Color targetColor, float speed)
+		{
+			yield return layer.SetBrightness(targetColor, false, speed);
+		}
+
+		IEnumerator ColorLayerImage(CharacterSpriteLayer layer, Color targetColor, float speed)
+		{
+			yield return layer.SetColor(targetColor, false, speed);
 		}
 
 		Sprite GetSprite(SpriteLayerType layerType, string spriteName)
@@ -185,72 +230,20 @@ namespace Characters
 			return sprite;
 		}
 
-		IEnumerator TransitionDirection(float speed, bool isSkipped)
+		void ForEachLayer(Action<CharacterSpriteLayer> action)
 		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
-
-			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
+			foreach (CharacterSpriteLayer spriteLayer in spriteLayers.Values)
 			{
-				manager.StartCoroutine(SetLayerImageDirection(layer, speed));
+				action(spriteLayer);
 			}
-
-			yield return null;
-			while (spriteLayers.Values.Any(layer => layer.IsChangingDirection)) yield return null;
-
-			isFacingRight = !isFacingRight;
-			directionCoroutine = null;
 		}
 
-		IEnumerator TransitionBrightness(bool isHighlighted, float speed, bool isSkipped)
+		public string GetRawSpriteName(string spriteName)
 		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.BrightnessTransitionSpeed, isSkipped);
-			Color targetColor = isHighlighted ? LightColor : DarkColor;
+			if (string.IsNullOrWhiteSpace(spriteName)) return string.Empty;
 
-			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
-			{
-				manager.StartCoroutine(SetLayerImageBrightness(layer, targetColor, speed));
-			}
-
-			yield return null;
-			while (spriteLayers.Values.Any(layer => layer.IsChangingBrightness)) yield return null;
-
-			this.isHighlighted = isHighlighted;
-			brightnessCoroutine = null;
-		}
-
-		IEnumerator TransitionColor(Color color, float speed, bool isSkipped)
-		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.ColorTransitionSpeed, isSkipped);
-			Color targetColor = isHighlighted ? color : GetDarkColor(color);
-
-			foreach (CharacterSpriteLayer layer in spriteLayers.Values)
-			{
-				manager.StartCoroutine(ColorLayerImage(layer, targetColor, speed));
-			}
-
-			yield return null;
-			while (spriteLayers.Values.Any(layer => layer.IsChangingColor)) yield return null;
-
-			LightColor = color;
-			colorCoroutine = null;
-		}
-
-		IEnumerator SetLayerImageDirection(CharacterSpriteLayer layer, float speed)
-		{
-			if (isFacingRight)
-				yield return layer.FaceLeft(false, speed);
-			else
-				yield return layer.FaceRight(false, speed);
-		}
-
-		IEnumerator SetLayerImageBrightness(CharacterSpriteLayer layer, Color targetColor, float speed)
-		{
-			yield return layer.SetBrightness(targetColor, false, speed);
-		}
-
-		IEnumerator ColorLayerImage(CharacterSpriteLayer layer, Color targetColor, float speed)
-		{
-			yield return layer.SetColor(targetColor, false, speed);
+			if (!spriteName.EndsWith("(Clone)")) return spriteName;
+			return spriteName.Substring(0, spriteName.Length - "(Clone)".Length);
 		}
 	}
 }

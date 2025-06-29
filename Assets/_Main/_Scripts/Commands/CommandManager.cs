@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Audio;
 using Characters;
 using Dialogue;
@@ -16,15 +14,19 @@ namespace Commands
 	{
 		class CommandInputData
 		{
-			public string Bank { get; private set; }
-			public string Command { get; private set; }
-			public DialogueCommandArguments Arguments { get; private set; }
+			readonly string bank;
+			readonly string command;
+			readonly DialogueCommandArguments arguments;
+
+			public string Bank => bank;
+			public string Command => command;
+			public DialogueCommandArguments Arguments => arguments;
 
 			public CommandInputData(string bankName, string commandName, DialogueCommandArguments arguments)
 			{
-				Bank = bankName;
-				Command = commandName;
-				Arguments = arguments;
+				this.bank = bankName;
+				this.command = commandName;
+				this.arguments = arguments;
 			}
 		}
 
@@ -39,20 +41,17 @@ namespace Commands
 		public static readonly string Model3DCharacterBankName = "Model3DCharacters";
 		const char CommandBankIdentifier = '.';
 
+		[SerializeField] DialogueSystem dialogueSystem;
 		CharacterManager characterManager;
 		VisualGroupManager visualGroupManager;
 		AudioManager audioManager;
-		DialogueSystem dialogueSystem;
 
 		// The grouping of all dialogue commands available to be run (divided into categories)
 		Dictionary<string, CommandBank> commandDirectories = new();
 
 		// Keep track of all the processes that may run simultaneously
-		readonly Dictionary<Guid, CommandProcess> blockingProcesses = new();
 		readonly Dictionary<Guid, CommandProcess> processes = new();
 		readonly HashSet<string> blockingProcessNames = new();
-
-		public bool IsIdle => blockingProcesses.Count == 0;
 
 		public CharacterManager Characters => characterManager;
 		public VisualGroupManager Visuals => visualGroupManager;
@@ -61,11 +60,29 @@ namespace Commands
 
 		void Start()
 		{
-			characterManager = FindObjectOfType<CharacterManager>();
-			visualGroupManager = FindObjectOfType<VisualGroupManager>();
-			audioManager = FindObjectOfType<AudioManager>();
-			dialogueSystem = FindObjectOfType<DialogueSystem>();
+			characterManager = dialogueSystem.Characters;
+			visualGroupManager = dialogueSystem.Visuals;
+			audioManager = dialogueSystem.Audio;
 			InitBank();
+		}
+
+		public bool IsIdle()
+		{
+			bool isIdle = true;
+			List<Guid> removedProcessIds = new();
+
+			foreach (CommandProcess process in processes.Values)
+			{
+				bool isBlockingProcess = process.IsBlocking && !process.IsCompleted;
+
+				if (isBlockingProcess || !process.IsSkipCompleted)
+					isIdle = false;
+				else if (process.IsCompleted && process.IsSkipCompleted)
+					removedProcessIds.Add(process.Id);
+			}
+
+			RemoveProcesses(removedProcessIds);
+			return isIdle;
 		}
 
 		public CommandProcess Execute(string fullCommandName, DialogueCommandArguments inputArguments)
@@ -93,7 +110,7 @@ namespace Commands
 				command.DynamicInvoke(inputData.Arguments);
 				return null;
 			}
-			else if (command.Method.ReturnType == typeof(IEnumerator) || command.Method.ReturnType == typeof(Task))
+			else if (command.Method.ReturnType == typeof(Coroutine))
 			{
 				CommandProcess process = ExecuteProcess(command, inputData.Command, inputData.Arguments, skipType);
 				return process;
@@ -104,11 +121,17 @@ namespace Commands
 
 		public void SkipCommands()
 		{
-			// Iterate over a copy of the list to avoid conflicts in case the processes change in the meantime
-			foreach (CommandProcess process in processes.Values.ToList())
+			List<Guid> removedProcessIds = new();
+
+			foreach (CommandProcess process in processes.Values)
 			{
-				process.Stop();
+				if (process.IsCompleted && process.IsSkipCompleted)
+					removedProcessIds.Add(process.Id);
+				else if (!process.IsCompleted && !process.IsBlocking)
+					process.Stop();
 			}
+
+			RemoveProcesses(removedProcessIds);
 		}
 
 		public CommandBank GetBank(string bankName)
@@ -119,29 +142,24 @@ namespace Commands
 			return commandDirectories[bankName];
 		}
 
-		void DeleteProcess(Guid processId, bool isBlocking)
-		{
-			if (isBlocking)
-				blockingProcesses.Remove(processId);
-			else
-				processes.Remove(processId);
-		}
-
 		CommandProcess ExecuteProcess(Delegate command, string commandName, DialogueCommandArguments arguments, CommandSkipType skipType)
 		{
 			Guid processId = Guid.NewGuid();
 			bool isBlocking = blockingProcessNames.Contains(commandName);
 
-			CommandProcess commandProcess = new CommandProcess(commandName, arguments, command, this, skipType, isBlocking);
-			commandProcess.OnFullyCompleted += () => DeleteProcess(processId, isBlocking);
+			CommandProcess commandProcess = new(processId, commandName, arguments, command, this, skipType, isBlocking);
+			processes.Add(processId, commandProcess);
 			commandProcess.Start();
 
-			if (isBlocking)
-				blockingProcesses.Add(processId, commandProcess);
-			else
-				processes.Add(processId, commandProcess);
-
 			return commandProcess;
+		}
+
+		void RemoveProcesses(List<Guid> processIds)
+		{
+			foreach (Guid processId in processIds)
+			{
+				processes.Remove(processId);
+			}
 		}
 
 		CommandInputData GetCommandInputData(string fullCommandName, DialogueCommandArguments arguments)

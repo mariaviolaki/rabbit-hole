@@ -1,6 +1,7 @@
 using Characters;
 using System.Collections.Generic;
 using UnityEngine;
+using Variables;
 
 namespace History
 {
@@ -14,6 +15,7 @@ namespace History
 		public Color color;
 		public bool isHighlighted;
 		public bool isFacingRight;
+		public List<HistoryAnimationData> animations;
 
 		// Character Data
 		public CharacterType type;
@@ -44,5 +46,13 @@ namespace History
 	public class HistoryModel3DCharacter : HistoryCharacterBase
 	{
 		public string expression;
+	}
+
+	[System.Serializable]
+	public class HistoryAnimationData
+	{
+		public DataTypeEnum type;
+		public string name;
+		public string value;
 	}
 }

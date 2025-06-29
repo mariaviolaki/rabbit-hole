@@ -42,19 +42,19 @@ namespace Variables
 			}
 		}
 
-		public void SetTyped(string name, string value, ScriptVariableDataType dataType, Func<object> getter = null, Action<object> setter = null)
+		public void SetTyped(string name, string value, DataTypeEnum dataType, Func<object> getter = null, Action<object> setter = null)
 		{
-			if (dataType == ScriptVariableDataType.Int)
+			if (dataType == DataTypeEnum.Int)
 			{
 				int.TryParse(value, out int intValue);
 				Set(name, intValue, getter, setter);
 			}
-			else if (dataType == ScriptVariableDataType.Float)
+			else if (dataType == DataTypeEnum.Float)
 			{
 				float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float floatValue);
 				Set(name, floatValue, getter, setter);
 			}
-			else if (dataType == ScriptVariableDataType.Bool)
+			else if (dataType == DataTypeEnum.Bool)
 			{
 				bool.TryParse(value, out bool boolValue);
 				Set(name, boolValue, getter, setter);

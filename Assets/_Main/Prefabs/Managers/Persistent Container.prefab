@@ -585,6 +585,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3753191582054923610}
     m_Modifications:
+    - target: {fileID: 1105207542397972330, guid: 6d478a8963173154388216d920a17490, type: 3}
+      propertyPath: dialogueSystem
+      value: 
+      objectReference: {fileID: 5432078242979581622}
     - target: {fileID: 1387484711045368190, guid: 6d478a8963173154388216d920a17490, type: 3}
       propertyPath: m_Name
       value: Command Manager

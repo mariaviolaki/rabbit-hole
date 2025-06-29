@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using Characters;
 using Dialogue;
 using UnityEngine;
@@ -22,8 +21,9 @@ namespace Commands
 			CommandBank model3DCharactersDir = commandManager.GetBank(CommandManager.Model3DCharacterBankName);
 
 			// All Characters (cannot be called on specific ones)
-			mainDir.AddCommand("CreateCharacters", new Func<DialogueCommandArguments, IEnumerator>(CreateCharacters));
-			mainDir.AddCommand("CreateCharacter", new Func<DialogueCommandArguments, IEnumerator>(CreateCharacter));
+			mainDir.AddCommand("CreateCharacters", new Func<DialogueCommandArguments, Coroutine>(CreateCharacters));
+			mainDir.AddCommand("CreateCharacter", new Func<DialogueCommandArguments, Coroutine>(CreateCharacter));
+			mainDir.AddCommand("SetCharacterPriority", new Action<DialogueCommandArguments>(SetCharacterPriority));
 
 			// All Characters
 			charactersDir.AddCommand("SetName", new Action<DialogueCommandArguments>(SetName));
@@ -32,42 +32,42 @@ namespace Commands
 			// Graphics Characters
 			graphicsCharactersDir.AddCommand("SetPriority", new Action<DialogueCommandArguments>(SetPriority));
 			graphicsCharactersDir.AddCommand("SetAnimation", new Action<DialogueCommandArguments>(SetAnimation));
-			graphicsCharactersDir.AddCommand("Show", new Func<DialogueCommandArguments, IEnumerator>(Show), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("Hide", new Func<DialogueCommandArguments, IEnumerator>(Hide), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("SetPosition", new Func<DialogueCommandArguments, IEnumerator>(SetPosition), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("Flip", new Func<DialogueCommandArguments, IEnumerator>(Flip), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("FaceLeft", new Func<DialogueCommandArguments, IEnumerator>(FaceLeft), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("FaceRight", new Func<DialogueCommandArguments, IEnumerator>(FaceRight), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("Highlight", new Func<DialogueCommandArguments, IEnumerator>(Highlight), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("Unhighlight", new Func<DialogueCommandArguments, IEnumerator>(Unhighlight), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("SetColor", new Func<DialogueCommandArguments, IEnumerator>(SetColor), CommandSkipType.Transition);
+			graphicsCharactersDir.AddCommand("Show", new Func<DialogueCommandArguments, Coroutine>(Show), CommandSkipType.Transition);
+			graphicsCharactersDir.AddCommand("Hide", new Func<DialogueCommandArguments, Coroutine>(Hide), CommandSkipType.Transition);
+			graphicsCharactersDir.AddCommand("SetPosition", new Func<DialogueCommandArguments, Coroutine>(SetPosition), CommandSkipType.Transition);
+			graphicsCharactersDir.AddCommand("Flip", new Func<DialogueCommandArguments, Coroutine>(Flip), CommandSkipType.Transition);
+			graphicsCharactersDir.AddCommand("FaceLeft", new Func<DialogueCommandArguments, Coroutine>(FaceLeft), CommandSkipType.Transition);
+			graphicsCharactersDir.AddCommand("FaceRight", new Func<DialogueCommandArguments, Coroutine>(FaceRight), CommandSkipType.Transition);
+			graphicsCharactersDir.AddCommand("Highlight", new Func<DialogueCommandArguments, Coroutine>(Highlight), CommandSkipType.Transition);
+			graphicsCharactersDir.AddCommand("Unhighlight", new Func<DialogueCommandArguments, Coroutine>(Unhighlight), CommandSkipType.Transition);
+			graphicsCharactersDir.AddCommand("SetColor", new Func<DialogueCommandArguments, Coroutine>(SetColor), CommandSkipType.Transition);
 
 			// Sprite Characters
-			spriteCharactersDir.AddCommand("SetSprite", new Func<DialogueCommandArguments, IEnumerator>(SetSprite), CommandSkipType.Transition);
+			spriteCharactersDir.AddCommand("SetSprite", new Func<DialogueCommandArguments, Coroutine>(SetSprite), CommandSkipType.Transition);
 
 			// Model3D Characters
-			model3DCharactersDir.AddCommand("SetExpression", new Func<DialogueCommandArguments, IEnumerator>(SetExpression), CommandSkipType.Transition);
+			model3DCharactersDir.AddCommand("SetExpression", new Func<DialogueCommandArguments, Coroutine>(SetExpression), CommandSkipType.Transition);
 			model3DCharactersDir.AddCommand("SetMotion", new Action<DialogueCommandArguments>(SetMotion));
 		}
 
 
 		/***** All Characters *****/
 
-		static IEnumerator CreateCharacters(DialogueCommandArguments args)
+		static Coroutine CreateCharacters(DialogueCommandArguments args)
 		{
-			if (args.IndexedArguments.Count == 0) yield break;
+			if (args.IndexedArguments.Count == 0) return null;
 
-			yield return characterManager.CreateCharacters(args.IndexedArguments);
+			return characterManager.CreateCharacters(args.IndexedArguments);
 		}
 
-		static IEnumerator CreateCharacter(DialogueCommandArguments args)
+		static Coroutine CreateCharacter(DialogueCommandArguments args)
 		{
 			string shortName = args.Get(0, "shortName", "");
 			string castShortName = args.Get(1, "castShortName", "");
 
-			if (string.IsNullOrWhiteSpace(shortName)) yield break;
+			if (string.IsNullOrWhiteSpace(shortName)) return null;
 
-			yield return characterManager.CreateCharacter(shortName, castShortName);
+			return characterManager.CreateCharacter(shortName, castShortName);
 		}
 
 		static void SetName(DialogueCommandArguments args)
@@ -93,6 +93,13 @@ namespace Commands
 
 		/***** Graphics Characters *****/
 
+		static void SetCharacterPriority(DialogueCommandArguments args)
+		{
+			if (args.IndexedArguments.Count == 0) return;
+
+			characterManager.SetPriority(args.IndexedArguments.ToArray());
+		}
+
 		static void SetPriority(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
@@ -116,137 +123,137 @@ namespace Commands
 				character.SetAnimation(name); // one-time
 		}
 
-		static IEnumerator Show(DialogueCommandArguments args)
+		static Coroutine Show(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) yield break;
+			if (character == null) return null;
 
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			yield return character.Show(isImmediate, speed);
+			return character.Show(isImmediate, speed);
 		}
 
-		static IEnumerator Hide(DialogueCommandArguments args)
+		static Coroutine Hide(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) yield break;
+			if (character == null) return null;
 
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			yield return character.Hide(isImmediate, speed);
+			return character.Hide(isImmediate, speed);
 		}
 
-		static IEnumerator SetPosition(DialogueCommandArguments args)
+		static Coroutine SetPosition(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) yield break;
+			if (character == null) return null;
 
 			float xPos = args.Get(1, "x", float.NaN);
 			float yPos = args.Get(2, "y", float.NaN);
 			bool isImmediate = args.Get(3, "immediate", false);
 			float speed = args.Get(4, "speed", 0f);
 
-			yield return character.SetPosition(xPos, yPos, isImmediate, speed);
+			return character.SetPosition(xPos, yPos, isImmediate, speed);
 		}
 
-		static IEnumerator Flip(DialogueCommandArguments args)
+		static Coroutine Flip(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) yield break;
+			if (character == null) return null;
 
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			yield return character.Flip(isImmediate, speed);
+			return character.Flip(isImmediate, speed);
 		}
 
-		static IEnumerator FaceLeft(DialogueCommandArguments args)
+		static Coroutine FaceLeft(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) yield break;
+			if (character == null) return null;
 
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			yield return character.FaceLeft(isImmediate, speed);
+			return character.FaceLeft(isImmediate, speed);
 		}
 
-		static IEnumerator FaceRight(DialogueCommandArguments args)
+		static Coroutine FaceRight(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) yield break;
+			if (character == null) return null;
 
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			yield return character.FaceRight(isImmediate, speed);
+			return character.FaceRight(isImmediate, speed);
 		}
 
-		static IEnumerator Highlight(DialogueCommandArguments args)
+		static Coroutine Highlight(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) yield break;
+			if (character == null) return null;
 
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			yield return character.Highlight(isImmediate, speed);
+			return character.Highlight(isImmediate, speed);
 		}
 
-		static IEnumerator Unhighlight(DialogueCommandArguments args)
+		static Coroutine Unhighlight(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) yield break;
+			if (character == null) return null;
 
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			yield return character.Unhighlight(isImmediate, speed);
+			return character.Unhighlight(isImmediate, speed);
 		}
 
-		static IEnumerator SetColor(DialogueCommandArguments args)
+		static Coroutine SetColor(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) yield break;
+			if (character == null) return null;
 
 			string hexColor = args.Get(1, "color", "");
 			bool isImmediate = args.Get(2, "immediate", false);
 			float speed = args.Get(3, "speed", 0f);
 
-			yield return character.SetColor(Utilities.GetColorFromHex(hexColor), isImmediate, speed);
+			return character.SetColor(Utilities.GetColorFromHex(hexColor), isImmediate, speed);
 		}
 
 
 		/***** Sprite Characters *****/
 
-		static IEnumerator SetSprite(DialogueCommandArguments args)
+		static Coroutine SetSprite(DialogueCommandArguments args)
 		{
 			SpriteCharacter character = GetCharacterFromArgs<SpriteCharacter>(args);
-			if (character == null) yield break;
+			if (character == null) return null;
 
 			string spriteName = args.Get(1, "name", "");
 			SpriteLayerType layerType = args.Get(2, "layer", SpriteLayerType.None);
 			bool isImmediate = args.Get(3, "immediate", false);
 			float speed = args.Get(4, "speed", 0f);
 
-			yield return character.SetSprite(spriteName, layerType, isImmediate, speed);
+			return character.SetSprite(spriteName, layerType, isImmediate, speed);
 		}
 
 
 		/***** Model 3D Characters *****/
 
-		static IEnumerator SetExpression(DialogueCommandArguments args)
+		static Coroutine SetExpression(DialogueCommandArguments args)
 		{
 			Model3DCharacter character = GetCharacterFromArgs<Model3DCharacter>(args);
-			if (character == null) yield break;
+			if (character == null) return null;
 
 			string expressionName = args.Get(1, "name", "");
 			bool isImmediate = args.Get(2, "immediate", false);
 			float speed = args.Get(3, "speed", 0f);
 
-			yield return character.SetExpression(expressionName, isImmediate, speed);
+			return character.SetExpression(expressionName, isImmediate, speed);
 		}
 
 		static void SetMotion(DialogueCommandArguments args)

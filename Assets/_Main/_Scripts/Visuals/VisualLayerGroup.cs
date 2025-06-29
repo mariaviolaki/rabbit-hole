@@ -14,6 +14,7 @@ namespace Visuals
 		readonly Dictionary<int, VisualLayer> layers = new();
 		VisualGroupManager manager;
 		Coroutine clearCoroutine;
+		Coroutine skippedClearCoroutine;
 
 		public VisualType Type => visualType;
 		public RectTransform Root => root;
@@ -27,30 +28,27 @@ namespace Visuals
 
 		public Coroutine Clear(int depth = -1, bool isImmediate = false, float speed = 0)
 		{
-			VisualLayer[] layersToClear = GetLayersFromDepth(depth);
-			if (layersToClear == null) return null;
+			if (skippedClearCoroutine != null) return null;
+
+			List<VisualLayer> layersToClear = GetLayersFromDepth(depth);
+			if (layersToClear.Count == 0) return null;
+
+			bool areLayersIdle = layersToClear.All(layer => layer.IsIdle);
+			bool isSkipped = manager.StopProcess(ref clearCoroutine) || !areLayersIdle;
 
 			if (isImmediate)
 			{
-				foreach (VisualLayer layer in layersToClear)
-				{
-					layer.Clear(true);
-				}
+				ClearLayersImmediate(layersToClear, isSkipped);
 				return null;
+			}
+			else if (isSkipped)
+			{
+				skippedClearCoroutine = manager.StartCoroutine(ClearLayers(layersToClear, speed, isSkipped));
+				return skippedClearCoroutine;
 			}
 			else
 			{
-				bool isAnyProcessStopped = false;
-				foreach (VisualLayer layer in layersToClear)
-				{
-					if (layer.StopTransition())
-						isAnyProcessStopped = true;
-				}
-
-				bool isClearStopped = manager.StopProcess(ref clearCoroutine);
-				speed = manager.GetTransitionSpeed(speed, isClearStopped || isAnyProcessStopped);
-
-				clearCoroutine = manager.StartCoroutine(ClearLayers(layersToClear, speed));
+				clearCoroutine = manager.StartCoroutine(ClearLayers(layersToClear, speed, isSkipped));
 				return clearCoroutine;
 			}
 		}
@@ -94,27 +92,48 @@ namespace Visuals
 				Debug.LogWarning($"'Layer {depth}' was created as 'Layer {clampedIndex}' in {visualType.ToString()} layer group because it was out of bounds.");
 		}
 
-		VisualLayer[] GetLayersFromDepth(int depth)
-		{
-			if (depth < 0)
-				return layers.Values.ToArray();
-
-			VisualLayer layer = GetLayer(depth);
-			if (layer == null) return null;
-
-			return new VisualLayer[] { GetLayer(depth) };
-		}
-
-		IEnumerator ClearLayers(VisualLayer[] layersToClear, float speed)
+		void ClearLayersImmediate(List<VisualLayer> layersToClear, bool isSkipped)
 		{
 			foreach (VisualLayer layer in layersToClear)
 			{
-				layer.Clear(false, speed);
+				layer.ClearInGroupImmediate(isSkipped);
+			}
+		}
+
+		IEnumerator ClearLayers(List<VisualLayer> layersToClear, float speed, bool isSkipped)
+		{
+			List<IEnumerator> clearProcesses = new();
+			foreach (VisualLayer layer in layersToClear)
+			{
+				clearProcesses.Add(layer.ClearInGroup(false, speed, isSkipped));
 			}
 
-			while (!layersToClear.All(l => l.IsIdle)) yield return null;
+			yield return Utilities.RunConcurrentProcesses(clearProcesses);
+			if (isSkipped) skippedClearCoroutine = null;
+			else clearCoroutine = null;
+		}
 
-			clearCoroutine = null;
+		List<VisualLayer> GetLayersFromDepth(int depth)
+		{
+			List<VisualLayer> layersToClear = new();
+
+			if (depth < 0)
+			{
+				foreach (VisualLayer layer in layers.Values)
+				{
+					if (!layer.IsBusy)
+						layersToClear.Add(layer);
+				}
+				return layersToClear;
+			}
+			else
+			{
+				VisualLayer layerToClear = GetLayer(depth);
+				if (layerToClear != null && !layerToClear.IsBusy)
+					layersToClear.Add(layerToClear);
+			}
+
+			return layersToClear;
 		}
 	}
 }

@@ -73,8 +73,8 @@ namespace Variables
 		None, Tag, Variable
 	}
 
-	public enum ScriptVariableDataType
+	public enum DataTypeEnum
 	{
-		String, Int, Float, Bool
+		None, String, Int, Float, Bool
 	}
 }

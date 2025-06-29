@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Visuals
@@ -15,13 +16,17 @@ namespace Visuals
 		GameObject secondaryGameObject;
 		VisualContainer primaryContainer;
 		VisualContainer secondaryContainer;
-		Coroutine swapCoroutine;
+
+		Coroutine visualCoroutine;
+		Coroutine skippedVisualCoroutine;
+		bool isSwappingContainers;
 
 		public string VisualName => primaryContainer.VisualName;
 		public bool IsImage => primaryContainer.IsImage;
 		public bool IsMuted => primaryContainer.IsMuted;
 		public int Depth => depth;
-		public bool IsIdle => swapCoroutine == null && primaryContainer.IsIdle;
+		public bool IsIdle => visualCoroutine == null && skippedVisualCoroutine == null;
+		public bool IsBusy => skippedVisualCoroutine != null;
 
 		public VisualLayer(VisualLayerGroup layerGroup, GameObject layerObject, int depth)
 		{
@@ -54,75 +59,160 @@ namespace Visuals
 
 		public Coroutine Clear(bool isImmediate = false, float speed = 0)
 		{
-			layerGroup.Manager.StopProcess(ref swapCoroutine);
-			return primaryContainer.Clear(isImmediate, speed);
+			if (skippedVisualCoroutine != null) return null;
+			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine);
+			RestoreContainerAfterSkip(isSkipped);
+
+			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
+			if (isImmediate)
+			{
+				skippedVisualCoroutine = layerGroup.Manager.StartCoroutine(ClearVisual(isImmediate, speed, isSkipped));
+				return skippedVisualCoroutine;
+			}
+			else if (isSkipped)
+			{
+				skippedVisualCoroutine = layerGroup.Manager.StartCoroutine(ClearVisual(isImmediate, speed, isSkipped));
+				return skippedVisualCoroutine;
+			}
+			else
+			{
+				visualCoroutine = layerGroup.Manager.StartCoroutine(ClearVisual(isImmediate, speed, isSkipped));
+				return visualCoroutine;
+			}
 		}
 
 		public Coroutine SetImage(string name, bool isImmediate = false, float speed = 0)
 		{
-			if (primaryContainer.IsImage && primaryContainer.VisualName == name) return null;
-
-			layerGroup.Manager.StopProcess(ref swapCoroutine);
+			if (skippedVisualCoroutine != null) return null;
+			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine);
+			RestoreContainerAfterSkip(isSkipped);
 
 			if (isImmediate)
 			{
-				primaryContainer.SetImage(name, true);
-				return null;
+				skippedVisualCoroutine = layerGroup.Manager.StartCoroutine(SetImageImmediate(name));
+				return skippedVisualCoroutine;
+			}
+			else if (isSkipped)
+			{
+				skippedVisualCoroutine = layerGroup.Manager.StartCoroutine(SwapImage(name, speed, isSkipped));
+				return skippedVisualCoroutine;
 			}
 			else
 			{
-				swapCoroutine = layerGroup.Manager.StartCoroutine(SwapImage(name, speed));
-				return swapCoroutine;
+				visualCoroutine = layerGroup.Manager.StartCoroutine(SwapImage(name, speed, isSkipped));
+				return visualCoroutine;
 			}
 		}
 
 		public Coroutine SetVideo(string name, bool isMuted = false, bool isImmediate = false, float speed = 0)
 		{
-			if (!primaryContainer.IsImage && primaryContainer.VisualName == name) return null;
-
-			layerGroup.Manager.StopProcess(ref swapCoroutine);
+			if (skippedVisualCoroutine != null) return null;
+			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine);
+			RestoreContainerAfterSkip(isSkipped);
 
 			if (isImmediate)
 			{
 				primaryContainer.SetVideo(name, isMuted, true);
 				return null;
 			}
+			else if (isSkipped)
+			{
+				skippedVisualCoroutine = layerGroup.Manager.StartCoroutine(SwapVideo(name, isMuted, speed, isSkipped));
+				return skippedVisualCoroutine;
+			}
 			else
 			{
-				swapCoroutine = layerGroup.Manager.StartCoroutine(SwapVideo(name, isMuted, speed));
-				return swapCoroutine;
-			}	
+				visualCoroutine = layerGroup.Manager.StartCoroutine(SwapVideo(name, isMuted, speed, isSkipped));
+				return visualCoroutine;
+			}
 		}
 
-		public bool StopTransition()
+		public void ClearInGroupImmediate(bool isGroupSkipped)
 		{
-			return primaryContainer.StopTransition();
+			if (skippedVisualCoroutine != null) return;
+			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine) || isGroupSkipped;
+			RestoreContainerAfterSkip(isSkipped);
+
+			primaryContainer.ClearImmediate();
 		}
 
-		IEnumerator SwapImage(string name, float speed)
+		public IEnumerator ClearInGroup(bool isImmediate, float speed, bool isGroupSkipped)
 		{
+			if (skippedVisualCoroutine != null) yield break;
+			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine) || isGroupSkipped;
+			RestoreContainerAfterSkip(isSkipped);
+
+			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
+			yield return primaryContainer.Clear(isImmediate, speed);
+		}
+
+		IEnumerator ClearVisual(bool isImmediate, float speed, bool isSkipped)
+		{
+			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
+			yield return primaryContainer.Clear(isImmediate, speed);
+
+			if (isSkipped) skippedVisualCoroutine = null;
+			else visualCoroutine = null;
+		}
+
+		IEnumerator SetImageImmediate(string name)
+		{
+			yield return primaryContainer.SetImage(name, true);
+			skippedVisualCoroutine = null;
+		}
+
+		IEnumerator SwapImage(string name, float speed, bool isSkipped)
+		{
+			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
+
+			while (isSwappingContainers) yield return null;
+			isSwappingContainers = true;
+
 			ToggleSecondaryVisual(true);
 
-			secondaryContainer.SetImage(name, false, speed);
-			primaryContainer.Clear(false, speed);
-
-			while (!secondaryContainer.IsIdle || !primaryContainer.IsIdle) yield return null;
+			List<IEnumerator> processes = new()
+			{
+				secondaryContainer.SetImage(name, false, speed),
+				primaryContainer.Clear(false, speed)
+			};
+			yield return Utilities.RunConcurrentProcesses(processes);
 
 			ToggleSecondaryVisual(false);
-			swapCoroutine = null;
+
+			isSwappingContainers = false;
+			if (isSkipped) skippedVisualCoroutine = null;
+			else visualCoroutine = null;
 		}
 
-		IEnumerator SwapVideo(string name, bool isMuted, float speed)
+		IEnumerator SwapVideo(string name, bool isMuted, float speed, bool isSkipped)
 		{
+			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
+
+			while (isSwappingContainers) yield return null;
+			isSwappingContainers = true;
+
 			ToggleSecondaryVisual(true);
 
-			secondaryContainer.SetVideo(name, isMuted, false, speed);
-			primaryContainer.Clear(false, speed);
-
-			while (!secondaryContainer.IsIdle || !primaryContainer.IsIdle) yield return null;
+			List<IEnumerator> processes = new()
+			{
+				secondaryContainer.SetVideo(name, isMuted, false, speed),
+				primaryContainer.Clear(false, speed)
+			};
+			yield return Utilities.RunConcurrentProcesses(processes);
 
 			ToggleSecondaryVisual(false);
-			swapCoroutine = null;
+
+			isSwappingContainers = false;
+			if (isSkipped) skippedVisualCoroutine = null;
+			else visualCoroutine = null;
+		}
+
+		void RestoreContainerAfterSkip(bool isSkipped)
+		{
+			if (!isSkipped || primaryGameObject.activeSelf) return;
+
+			ToggleSecondaryVisual(false);
+			isSwappingContainers = false;
 		}
 
 		void ToggleSecondaryVisual(bool isActive)
@@ -131,7 +221,7 @@ namespace Visuals
 			{
 				// Swap the visual containers because the graphic is now in the second one
 				SwapContainers();
-				secondaryContainer.Clear(true);
+				secondaryContainer.ClearImmediate();
 			}
 
 			secondaryGameObject.SetActive(isActive);

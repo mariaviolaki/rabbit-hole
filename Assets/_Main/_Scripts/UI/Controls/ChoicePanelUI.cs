@@ -16,8 +16,8 @@ namespace UI
 		readonly List<ChoiceButtonUI> activeButtons = new();
 
 		const int poolSize = 5;
-		bool isImmediate = false;
 		DialogueChoice lastChoice;
+		Coroutine visibilityCoroutine;
 
 		public DialogueChoice LastChoice => lastChoice;
 
@@ -29,32 +29,86 @@ namespace UI
 			buttonPool = new ObjectPool<ChoiceButtonUI>(OnCreateButton, OnGetButton, OnReleaseButton, OnDestroyButton, maxSize: poolSize);
 		}
 
+		override protected void OnEnable()
+		{
+			base.OnEnable();
+			PrepareOpen();
+		}
+
+		override protected void OnDisable()
+		{
+			base.OnDisable();
+			CompleteClose();
+		}
+
 		public Coroutine Show(List<DialogueChoice> choices, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			if (IsVisible) return null;
 
 			base.fadeSpeed = fadeSpeed;
-			this.isImmediate = isImmediate;
+			StopProcess();
 
-			PrepareChoicePanel(choices);
-
-			return SetVisible(isImmediate, fadeSpeed);
+			visibilityCoroutine = StartCoroutine(ShowProcess(choices, isImmediate, fadeSpeed));
+			return visibilityCoroutine;
 		}
 
 		public Coroutine ForceHide(bool isImmediate = false)
 		{
-			this.isImmediate = isImmediate;
 			fadeSpeed = gameOptions.General.SkipTransitionSpeed;
 
-			return StartCoroutine(HideAndClear());
+			StopProcess();
+			visibilityCoroutine = StartCoroutine(HideProcess(isImmediate, fadeSpeed));
+			return visibilityCoroutine;
 		}
 
-		void PrepareChoicePanel(List<DialogueChoice> choices)
+		public IEnumerator OpenProcess(List<DialogueChoice> choices, bool isImmediate = false, float speed = 0)
+		{
+			CreateButtons(choices);
+
+			yield return FadeIn(isImmediate, speed);
+		}
+
+		public IEnumerator CloseProcess(bool isImmediate = false, float speed = 0)
+		{
+			foreach (ChoiceButtonUI choiceButton in activeButtons)
+			{
+				choiceButton.RemoveListeners();
+				choiceButton.OnSelect -= SelectChoice;
+			}
+
+			yield return FadeOut(isImmediate, speed);
+
+			for (int i = activeButtons.Count - 1; i >= 0; i--)
+				activeButtons[i].Release();
+
+			if (lastChoice != null)
+				inputManager.OnSelectChoice?.Invoke(lastChoice);
+
+			OnClose?.Invoke();
+		}
+
+		IEnumerator ShowProcess(List<DialogueChoice> choices, bool isImmediate = false, float speed = 0)
+		{
+			yield return OpenProcess(choices, isImmediate, speed);
+			visibilityCoroutine = null;
+		}
+
+		IEnumerator HideProcess(bool isImmediate = false, float speed = 0)
+		{
+			yield return CloseProcess(isImmediate, speed);
+			visibilityCoroutine = null;
+		}
+
+		void PrepareOpen()
 		{
 			lastChoice = null;
-			CreateButtons(choices);
 			inputManager.IsChoicePanelOpen = true;
 			inputManager.OnClearChoice?.Invoke();
+		}
+
+		void CompleteClose()
+		{
+			inputManager.IsChoicePanelOpen = false;
 		}
 
 		void CreateButtons(List<DialogueChoice> choices)
@@ -69,7 +123,8 @@ namespace UI
 		void SelectChoice(DialogueChoice choice)
 		{
 			lastChoice = choice;
-			StartCoroutine(HideAndClear());
+			StopProcess();
+			visibilityCoroutine = StartCoroutine(HideProcess(isImmediateTransition, fadeSpeed));
 		}
 
 		ChoiceButtonUI OnCreateButton()
@@ -81,10 +136,11 @@ namespace UI
 
 		void OnGetButton(ChoiceButtonUI choiceButton)
 		{
+			choiceButton.transform.SetParent(transform, false);
 			choiceButton.OnSelect += SelectChoice;
 			choiceButton.ClearData();
 			choiceButton.gameObject.SetActive(true);
-			choiceButton.Show(isImmediate, fadeSpeed);
+			choiceButton.Show(true);
 			activeButtons.Add(choiceButton);
 		}
 
@@ -99,23 +155,12 @@ namespace UI
 			Destroy(choiceButton.gameObject);
 		}
 
-		IEnumerator HideAndClear()
+		void StopProcess()
 		{
-			inputManager.IsChoicePanelOpen = false;
+			if (visibilityCoroutine == null) return;
 
-			foreach (ChoiceButtonUI choiceButton in activeButtons)
-			{
-				choiceButton.RemoveListeners();
-				choiceButton.OnSelect -= SelectChoice;
-			}
-
-			yield return SetHidden(isImmediate, fadeSpeed);
-
-			for (int i = activeButtons.Count - 1; i >= 0; i--)
-				activeButtons[i].Release();
-
-			inputManager.OnSelectChoice?.Invoke(lastChoice);
-			OnClose?.Invoke();
+			StopCoroutine(visibilityCoroutine);
+			visibilityCoroutine = null;
 		}
 	}
 }

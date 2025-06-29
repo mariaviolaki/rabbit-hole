@@ -139,7 +139,7 @@ namespace Dialogue
 				DialogueBlock dialogueBlock = dialogueStack.GetBlock();
 
 				// Wait for any previous skipped transitions to complete smoothly
-				while (!commandManager.IsIdle) yield return null;
+				while (!commandManager.IsIdle()) yield return null;
 
 				DialogueLine dialogueLine = DialogueParser.Parse(rawLine, logicSegmentManager);
 				if (dialogueLine.Logic == null)
@@ -289,8 +289,8 @@ namespace Dialogue
 				CommandProcess process = commandManager.Execute(command.Name, command.Arguments);
 				if (process == null) continue;
 
-				if (command.IsWaiting || command.Name.ToLower() == "wait")
-					processesToWait.Add(process);						
+				if (process.IsBlocking || command.IsWaiting || command.Name.ToLower() == "wait")
+					processesToWait.Add(process);
 			}
 
 			// Wait to execute all processes of this line concurrently

@@ -34,7 +34,8 @@ namespace Dialogue
 		LogicSegmentManager logicSegmentManager;
 		DialogueReader dialogueReader;
 		DialogueReadMode readMode = DialogueReadMode.Forward;
-		Coroutine dialogueProcess;
+		Coroutine dialogueCoroutine;
+		Coroutine waitCoroutine;
 
 		public GameOptionsSO Options => gameOptions;
 		public VisualNovelUI UI => visualNovelUI;
@@ -76,33 +77,40 @@ namespace Dialogue
 			// TODO start dialogue using other triggers
 			if (Input.GetKeyDown(KeyCode.KeypadEnter))
 			{
-				//StartCoroutine(RunTest());
-
-				StartCoroutine(LoadAndRead(dialogueFileName));
+				ReplaceDialogue(dialogueFileName);
 			}
 		}
 
 		public Coroutine LoadDialogue(string dialoguePath)
 		{
-			StopProcess(ref dialogueProcess);
-			dialogueProcess = StartCoroutine(LoadDialogueProcess(dialoguePath));
-			return dialogueProcess;
+			if (dialogueCoroutine != null) return null;
+
+			dialogueCoroutine = StartCoroutine(LoadDialogueProcess(dialoguePath));
+			return dialogueCoroutine;
 		}
 
 		public Coroutine ReadDialogue(DialogueReadMode dialogueReadMode)
 		{
+			if (dialogueCoroutine != null) return null;
+
 			// If no read mode is specified, use the current one
 			dialogueReadMode = dialogueReadMode == DialogueReadMode.None ? readMode : dialogueReadMode;
 
-			StopProcess(ref dialogueProcess);
-			dialogueProcess = StartCoroutine(ReadDialogueProcess(dialogueReadMode));
-			return dialogueProcess;
+			dialogueCoroutine = StartCoroutine(ReadDialogueProcess(dialogueReadMode));
+			return dialogueCoroutine;
+		}
+
+		public Coroutine ReplaceDialogue(string dialoguePath)
+		{
+			StopDialogue();
+			dialogueCoroutine = StartCoroutine(ReplaceDialogueProcess(dialoguePath));
+			return dialogueCoroutine;
 		}
 
 		public void StopDialogue()
 		{
 			dialogueReader.StopReading();
-			StopProcess(ref dialogueProcess);
+			StopProcess(ref dialogueCoroutine);
 		}
 
 		public Coroutine Say(string speakerName, List<string> lines)
@@ -111,31 +119,38 @@ namespace Dialogue
 			return dialogueReader.StartReading(DialogueReadMode.Forward);
 		}
 
+		public Coroutine Wait(float time)
+		{
+			if (waitCoroutine != null) return null;
+
+			waitCoroutine = StartCoroutine(WaitProcess(time));
+			return waitCoroutine;
+		}
+
+		IEnumerator ReplaceDialogueProcess(string dialoguePath)
+		{
+			yield return LoadDialogueProcess(dialoguePath);
+			yield return ReadDialogueProcess(DialogueReadMode.None);
+			dialogueCoroutine = null;
+		}
+
 		IEnumerator LoadDialogueProcess(string dialoguePath)
 		{
 			DialogueFile dialogueFile = new(this, dialoguePath);
 			yield return dialogueFile.Load();
-			dialogueProcess = null;
+			dialogueCoroutine = null;
 		}
 
 		IEnumerator ReadDialogueProcess(DialogueReadMode dialogueReadMode)
 		{
 			yield return dialogueReader.StartReading(dialogueReadMode);
-			dialogueProcess = null;
+			dialogueCoroutine = null;
 		}
 
-		// TODO Remove test function
-		public IEnumerator LoadAndRead(string dialoguePath)
+		IEnumerator WaitProcess(float time)
 		{
-			yield return LoadDialogue(dialoguePath);
-			yield return ReadDialogueProcess(DialogueReadMode.Forward);
-			dialogueProcess = null;
-		}
-
-		// TODO Remove test function
-		IEnumerator RunTest()
-		{
-			yield return null;
+			yield return new WaitForSeconds(time);
+			waitCoroutine = null;
 		}
 
 		public void ResetReadMode()

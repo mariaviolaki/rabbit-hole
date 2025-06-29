@@ -32,114 +32,112 @@ namespace UI
 			inputManager.IsInputPanelOpen = false;
 		}
 
-		public Coroutine Show(bool isImmediate = false, float fadeSpeed = 0)
-		{
-			StopFadeCoroutine();
-
-			if (isImmediate)
-			{
-				ToggleVisualNovelUI(true);
-				return null;
-			}
-			else
-			{
-				fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
-				fadeCoroutine = StartCoroutine(FadeVisualNovelUI(true, fadeSpeed));
-				return fadeCoroutine;
-			}
-		}
-
-		public Coroutine Hide(bool isImmediate = false, float fadeSpeed = 0)
-		{
-			StopFadeCoroutine();
-
-			if (isImmediate)
-			{
-				ToggleVisualNovelUI(false);
-				return null;
-			}
-			else
-			{
-				fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
-				fadeCoroutine = StartCoroutine(FadeVisualNovelUI(false, fadeSpeed));
-				return fadeCoroutine;
-			}
-		}
-
 		public Coroutine ShowSpeaker(CharacterData characterData, bool isImmediate = false, float fadeSpeed = 0)
-			=> dialogue.ShowSpeaker(characterData, isImmediate, fadeSpeed);
+		{
+			if (fadeCoroutine != null) return null;
+			return dialogue.ShowSpeaker(characterData, isImmediate, fadeSpeed);
+		}
 		public Coroutine HideSpeaker(bool isImmediate = false, float fadeSpeed = 0)
-			=> dialogue.HideSpeaker(isImmediate, fadeSpeed);
+		{
+			if (fadeCoroutine != null) return null;
+			return dialogue.HideSpeaker(isImmediate, fadeSpeed);
+		}
 
 		public Coroutine ShowDialogue(bool isImmediate = false, float fadeSpeed = 0)
-			=> dialogue.Show(isImmediate, fadeSpeed);
+		{
+			if (fadeCoroutine != null) return null;
+			return dialogue.Show(isImmediate, fadeSpeed);
+		}
 		public Coroutine HideDialogue(bool isImmediate = false, float fadeSpeed = 0)
-			=> dialogue.Hide(isImmediate, fadeSpeed);
+		{
+			if (fadeCoroutine != null) return null;
+			return dialogue.Hide(isImmediate, fadeSpeed);
+		}
 
 		public Coroutine ShowInput(string title, bool isImmediate = false, float fadeSpeed = 0)
-			=> gameplayControls.ShowInput(title, isImmediate, fadeSpeed);
+		{
+			if (fadeCoroutine != null) return null;
+			return gameplayControls.ShowInput(title, isImmediate, fadeSpeed);
+		}
 		public Coroutine ForceHideInput(bool isImmediate = false)
-			=> gameplayControls.ForceHideInput(isImmediate);
+		{
+			if (fadeCoroutine != null) return null;
+			return gameplayControls.ForceHideInput(isImmediate);
+		}
 
 		public Coroutine ShowChoices(List<DialogueChoice> choices, bool isImmediate = false, float fadeSpeed = 0)
-			=> gameplayControls.ShowChoices(choices, isImmediate, fadeSpeed);
-		public Coroutine ForceHideChoices(bool isImmediate = false)
-			=> gameplayControls.ForceHideChoices(isImmediate);
-
-		void StopFadeCoroutine()
 		{
-			if (fadeCoroutine == null) return;
+			if (fadeCoroutine != null) return null;
+			return gameplayControls.ShowChoices(choices, isImmediate, fadeSpeed);
+		}
+		public Coroutine ForceHideChoices(bool isImmediate = false)
+		{
+			if (fadeCoroutine != null) return null;
+			return gameplayControls.ForceHideChoices(isImmediate);
+		}
 
-			StopCoroutine(fadeCoroutine);
-			fadeCoroutine = null;
+		public Coroutine Show(bool isImmediate = false, float fadeSpeed = 0) => SetVisiblity(true, isImmediate, fadeSpeed);
+		public Coroutine Hide(bool isImmediate = false, float fadeSpeed = 0) => SetVisiblity(false, isImmediate, fadeSpeed);
+		Coroutine SetVisiblity(bool isVisible, bool isImmediate = false, float fadeSpeed = 0)
+		{
+			if (fadeCoroutine != null) return null;
+
+			if (isImmediate)
+			{
+				ToggleVisualNovelUI(isVisible);
+				return null;
+			}
+			else
+			{
+				fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
+				fadeCoroutine = StartCoroutine(FadeVisualNovelUI(isVisible, fadeSpeed));
+				return fadeCoroutine;
+			}
 		}
 
 		void ToggleVisualNovelUI(bool isShowing)
 		{
-			FadeableUI[] canvases = new[] { dialogue, background, sprites, foreground, gameplayControls };
+			BaseFadeableUI[] canvases = new BaseFadeableUI[] { dialogue, background, sprites, foreground, gameplayControls };
 
 			for (int i = 0; i < canvases.Length; i++)
 			{
-				FadeableUI canvasUI = canvases[i];
+				BaseFadeableUI canvasUI = canvases[i];
 
-				if (isShowing) canvasUI.Show(true);
-				else canvasUI.Hide(true);
+				if (isShowing) canvasUI.SetVisibleImmediate();
+				else canvasUI.SetHiddenImmediate();
 			}
-			ToggleOverlayControls(!isShowing);
-		}
 
-		void ToggleOverlayControls(bool isActive)
-		{
-			overlayControlsCanvas.gameObject.SetActive(isActive);
+			ToggleOverlayControls(!isShowing);
 		}
 
 		IEnumerator FadeVisualNovelUI(bool isFadeIn, float fadeSpeed = 0)
 		{
 			// When showing all visual novel canvases, don't include the dialogue box
-			FadeableUI[] canvases = isFadeIn
-				? new[] { background, sprites, foreground, gameplayControls }
-				: new[] { dialogue, background, sprites, foreground, gameplayControls };
+			BaseFadeableUI[] canvases = isFadeIn
+				? new BaseFadeableUI[] { background, sprites, foreground, gameplayControls }
+				: new BaseFadeableUI[] { dialogue, background, sprites, foreground, gameplayControls };
 
 			float speed = fadeSpeed < Mathf.Epsilon ? gameOptions.Dialogue.SceneFadeTransitionSpeed : fadeSpeed;
 			speed *= fadeMultiplier;
 
-			int fadedCount = 0;
-
-			IEnumerator MarkFadeCompletion(int canvasIndex)
+			List<IEnumerator> fadeProcesses = new();
+			foreach (BaseFadeableUI canvas in canvases)
 			{
-				FadeableUI canvasUI = canvases[canvasIndex];
-				yield return isFadeIn ? canvasUI.Show(false, fadeSpeed) : canvasUI.Hide(false, fadeSpeed);
-				fadedCount++;
+				if (isFadeIn)
+					fadeProcesses.Add(canvas.FadeIn(false, speed));
+				else
+					fadeProcesses.Add(canvas.FadeOut(false, speed));
 			}
 
-			for (int i = 0; i < canvases.Length; i++)
-			{
-				StartCoroutine(MarkFadeCompletion(i));
-			}
-
-			while (fadedCount != canvases.Length) yield return null;
-			fadeCoroutine = null;
+			yield return Utilities.RunConcurrentProcesses(fadeProcesses);
+			
 			ToggleOverlayControls(!isFadeIn);
+			fadeCoroutine = null;
+		}
+
+		void ToggleOverlayControls(bool isActive)
+		{
+			overlayControlsCanvas.gameObject.SetActive(isActive);
 		}
 	}
 }

@@ -1,30 +1,33 @@
 using Dialogue;
 using System;
 using System.Collections;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Commands
 {
 	public class CommandProcess
 	{
+		readonly Guid id;
 		readonly string name;
 		readonly DialogueCommandArguments arguments;
 		readonly Delegate command;
 		readonly CommandManager commandManager;
-		readonly bool isBlocking;
 		readonly CommandSkipType skipType;
+		readonly bool isBlocking;
 
 		Coroutine commandCoroutine;
 		Coroutine skipCommandCoroutine;
 
-		public Action OnFullyCompleted;
-
+		public Guid Id => id;
 		public string Name => name;
 		public bool IsCompleted => commandCoroutine == null;
+		public bool IsSkipCompleted => skipType == CommandSkipType.None || skipCommandCoroutine == null;
 
-		public CommandProcess(string name, DialogueCommandArguments arguments, Delegate command, CommandManager commandManager, CommandSkipType skipType, bool isBlocking)
+		public bool IsBlocking => isBlocking;
+
+		public CommandProcess(Guid id, string name, DialogueCommandArguments arguments, Delegate command, CommandManager commandManager, CommandSkipType skipType, bool isBlocking)
 		{
+			this.id = id;
 			this.name = name;
 			this.arguments = arguments;
 			this.command = command;
@@ -35,7 +38,7 @@ namespace Commands
 
 		public void Start()
 		{
-			commandCoroutine = commandManager.StartCoroutine(ExecuteProcess());
+			commandCoroutine = ExecuteProcess(false);
 		}
 
 		public void Stop()
@@ -45,49 +48,43 @@ namespace Commands
 			commandManager.StopCoroutine(commandCoroutine);
 			commandCoroutine = null;
 
-			skipCommandCoroutine = commandManager.StartCoroutine(ExecuteProcess());
-
-			if (skipType == CommandSkipType.None)
-				OnFullyCompleted?.Invoke();
-			else if (skipType == CommandSkipType.Immediate)
-				skipCommandCoroutine = commandManager.StartCoroutine(ExecuteImmediate());
-			else
-				skipCommandCoroutine = commandManager.StartCoroutine(ExecuteProcess());
+			if (skipType == CommandSkipType.Immediate)
+				skipCommandCoroutine = ExecuteImmediate(true);
+			else if (skipType == CommandSkipType.Transition)
+				skipCommandCoroutine = ExecuteProcess(true);
 		}
 
-		IEnumerator ExecuteProcess()
+		Coroutine ExecuteProcess(bool isSkipped)
 		{
-			if (command is Func<DialogueCommandArguments, IEnumerator>)
-				yield return command.DynamicInvoke(arguments);
-			else if (command is Func<DialogueCommandArguments, Task>)
-				yield return WaitForTask((Task)command.DynamicInvoke(arguments));
+			if (command is Func<DialogueCommandArguments, Coroutine> coroutineFunc)
+			{
+				Coroutine coroutine = coroutineFunc(arguments);
+				return commandManager.StartCoroutine(CoroutineRunner(coroutine, isSkipped));
+			}
 
-			if (commandCoroutine != null) commandCoroutine = null;
-			else skipCommandCoroutine = null;
-
-			OnFullyCompleted?.Invoke();
+			return null;
 		}
 
-		IEnumerator ExecuteImmediate()
+		Coroutine ExecuteImmediate(bool isSkipped)
 		{
 			arguments.AddNamedArgument("immediate", "true");
 
-			if (command is Func<DialogueCommandArguments, IEnumerator>)
-				yield return command.DynamicInvoke(arguments);
-			else if (command is Func<DialogueCommandArguments, Task>)
-				yield return WaitForTask((Task)command.DynamicInvoke(arguments));
+			if (command is Func<DialogueCommandArguments, Coroutine> coroutineFunc)
+			{
+				Coroutine coroutine = coroutineFunc(arguments);
+				return commandManager.StartCoroutine(CoroutineRunner(coroutine, isSkipped));
+			}
 
-			skipCommandCoroutine = null;
-
-			OnFullyCompleted?.Invoke();
+			return null;
 		}
 
-		IEnumerator WaitForTask(Task task)
+		IEnumerator CoroutineRunner(Coroutine wrappedCoroutine, bool isSkipped)
 		{
-			while (!task.IsCompleted) yield return null;
+			if (wrappedCoroutine != null)
+				yield return wrappedCoroutine;
 
-			if (task.IsFaulted)
-				Debug.LogWarning($"CommandProcess '{name}' error: {task.Exception}");
+			if (isSkipped) skipCommandCoroutine = null;
+			else commandCoroutine = null;
 		}
 	}
 }

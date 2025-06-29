@@ -6,7 +6,7 @@ namespace History
 	public class HistoryVariable
 	{
 		public ScriptVariableType type;
-		public ScriptVariableDataType dataType;
+		public DataTypeEnum dataType;
 		public string name;
 		public string value;
 	}

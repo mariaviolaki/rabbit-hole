@@ -2,6 +2,7 @@ using Characters;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Variables;
 
 namespace History
 {
@@ -31,6 +32,7 @@ namespace History
 				historyCharacter.color = graphicsCharacter.LightColor;
 				historyCharacter.isHighlighted = graphicsCharacter.IsHighlighted;
 				historyCharacter.isFacingRight = graphicsCharacter.IsFacingRight;
+				historyCharacter.animations = GetHistoryAnimations(graphicsCharacter.RootAnimator);
 
 				if (graphicsCharacter is SpriteCharacter spriteCharacter)
 				{
@@ -51,12 +53,13 @@ namespace History
 		{
 			float fadeSpeed = gameOptions.General.SkipTransitionSpeed;
 
-			SortedDictionary<int, string> characterPriorities = new();
+			List<KeyValuePair<int, string>> characterPriorities = new();
 			bool areSorted = true;
 
 			foreach (HistoryCharacterBase historyCharacter in historyCharacters)
 			{
 				GraphicsCharacter character = characterManager.GetCharacter(historyCharacter.shortName) as GraphicsCharacter;
+				characterPriorities.Add(new(historyCharacter.priority, historyCharacter.shortName));
 
 				if (historyCharacter.priority != character.HierarchyPriority)
 					areSorted = false;
@@ -75,6 +78,8 @@ namespace History
 				if (historyCharacter.displayName != character.Data.DisplayName)
 					character.SetDisplayName(historyCharacter.displayName);
 
+				LoadAnimations(character.RootAnimator, historyCharacter.animations);
+
 				if (character is SpriteCharacter spriteChar && historyCharacter is HistorySpriteCharacter historySpriteChar)
 				{
 					foreach (var historySpriteLayer in historySpriteChar.spriteLayers)
@@ -92,7 +97,10 @@ namespace History
 			}
 
 			if (!areSorted)
-				characterManager.SetPriority(characterPriorities.Values.ToArray());
+			{
+				string[] shortNames = characterPriorities.OrderByDescending(pair => pair.Key).Select(pair => pair.Value).ToArray();
+				characterManager.SetPriority(shortNames);
+			}
 		}
 
 		HistoryCharacterBase CreateHistoryCharacter(CharacterType characterType)
@@ -103,6 +111,62 @@ namespace History
 				case CharacterType.Model3D: return new HistoryModel3DCharacter();
 				default: return null;
 			} 
+		}
+
+		List<HistoryAnimationData> GetHistoryAnimations(Animator animator)
+		{
+			List<HistoryAnimationData> animations = new();
+
+			foreach (AnimatorControllerParameter animatorParameter in animator.parameters)
+			{
+				DataTypeEnum dataType = Utilities.GetDataTypeEnum(animatorParameter.type);
+				if (dataType == DataTypeEnum.None) continue;
+
+				HistoryAnimationData historyAnimation = new()
+				{
+					type = dataType,
+					name = animatorParameter.name,
+					value = GetAnimatorParameterValue(animator, animatorParameter.name, animatorParameter.type)
+				};
+				animations.Add(historyAnimation);
+			}
+
+			return animations;
+		}
+
+		void LoadAnimations(Animator animator, List<HistoryAnimationData> historyAnimations)
+		{
+			foreach (HistoryAnimationData historyAnimation in historyAnimations)
+			{
+				string value = historyAnimation.value;
+				switch (historyAnimation.type)
+				{
+					case DataTypeEnum.Bool:
+						animator.SetBool(historyAnimation.name, bool.Parse(value));
+						break;
+					case DataTypeEnum.Int:
+						animator.SetInteger(historyAnimation.name, int.Parse(value));
+						break;
+					case DataTypeEnum.Float:
+						animator.SetFloat(historyAnimation.name, float.Parse(value));
+						break;
+				}
+			}
+		}
+
+		string GetAnimatorParameterValue(Animator animator, string name, AnimatorControllerParameterType type)
+		{
+			switch (type)
+			{
+				case AnimatorControllerParameterType.Bool:
+					return animator.GetBool(name).ToString();
+				case AnimatorControllerParameterType.Int:
+					return animator.GetInteger(name).ToString();
+				case AnimatorControllerParameterType.Float:
+					return animator.GetFloat(name).ToString();
+				default:
+					return null;
+			}
 		}
 	}
 }

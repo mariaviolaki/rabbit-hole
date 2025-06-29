@@ -15,13 +15,12 @@ namespace Visuals
 		readonly VideoPlayer videoPlayer;
 		readonly AudioSource audioSource;
 
-		Coroutine transitionCoroutine;
 		RenderTexture renderTexture;
 		string visualName;
 		bool isImage;
 		bool isMuted;
+		bool isImmediate;
 
-		public bool IsIdle => transitionCoroutine == null;
 		public string VisualName => visualName;
 		public bool IsImage => isImage;
 		public bool IsMuted => isMuted;
@@ -50,60 +49,54 @@ namespace Visuals
 			rectTransform.offsetMax = Vector2.zero;
 		}
 
-		public Coroutine Clear(bool isImmediate = false, float speed = 0)
+		public void ClearImmediate()
 		{
-			bool isSkipped = layerGroup.Manager.StopProcess(ref transitionCoroutine);
+			UnloadVisual();
+			canvasGroup.alpha = 0;
+		}
+
+		public IEnumerator Clear(bool isImmediate, float speed)
+		{
+			this.isImmediate = isImmediate;
 
 			if (isImmediate)
 			{
-				UnloadVisual();
-				canvasGroup.alpha = 0;
-				return null;
+				ClearImmediate();
+				yield break;
 			}
 			else
 			{
-				transitionCoroutine = layerGroup.Manager.StartCoroutine(ClearVisual(speed, isSkipped));
-				return transitionCoroutine;
+				yield return ClearVisual(speed);
 			}
 		}
 
-		public Coroutine SetImage(string name, bool isImmediate = false, float fadeSpeed = 0)
+		public IEnumerator SetImage(string name, bool isImmediate = false, float fadeSpeed = 0)
 		{
-			if (isImage && visualName == name) return null;
+			if (isImage && visualName == name) yield break;
 
-			bool isSkipped = layerGroup.Manager.StopProcess(ref transitionCoroutine);
+			this.isImmediate = isImmediate;
 
 			if (isImmediate)
-			{
-				layerGroup.Manager.StartCoroutine(LoadImage(name));
-				return null;
-			}
+				yield return SetImageImmediate(name);
 			else
-			{
-				transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeVisual(name, fadeSpeed, isSkipped, true, true));
-				return transitionCoroutine;
-			}
+				yield return ChangeVisual(name, fadeSpeed, true, true);
 		}
 
-		public Coroutine SetVideo(string name, bool isMuted = false, bool isImmediate = false, float speed = 0)
+		public IEnumerator SetVideo(string name, bool isMuted = false, bool isImmediate = false, float speed = 0)
 		{
-			bool isSkipped = layerGroup.Manager.StopProcess(ref transitionCoroutine);
+			if (!isImage && visualName == name) yield break;
+
+			this.isImmediate = isImmediate;
 
 			if (isImmediate)
 			{
 				ApplyVideo(name, isMuted);
-				return null;
+				yield break;
 			}
 			else
 			{
-				transitionCoroutine = layerGroup.Manager.StartCoroutine(ChangeVisual(name, speed, isSkipped, false, isMuted));
-				return transitionCoroutine;
+				yield return ChangeVisual(name, speed, false, isMuted);
 			}
-		}
-
-		public bool StopTransition()
-		{
-			return layerGroup.Manager.StopProcess(ref transitionCoroutine);
 		}
 
 		void ApplyImage(string name, Sprite sprite)
@@ -134,19 +127,17 @@ namespace Visuals
 			videoPlayer.Prepare();
 		}
 
-		IEnumerator LoadImage(string name)
+		IEnumerator SetImageImmediate(string name)
 		{
 			yield return layerGroup.Manager.FileManager.LoadBackgroundImage(name);
 			Sprite sprite = layerGroup.Manager.FileManager.GetBackgroundImage(name);
 			if (sprite == null) yield break;
 
-			layerGroup.Manager.StopProcess(ref transitionCoroutine);
-
 			ApplyImage(name, sprite);
 			canvasGroup.alpha = 1f;
 		}
 
-		IEnumerator ChangeVisual(string name, float speed, bool isSkipped, bool isImage, bool isMuted)
+		IEnumerator ChangeVisual(string name, float speed, bool isImage, bool isMuted)
 		{
 			if (isImage)
 			{
@@ -160,14 +151,17 @@ namespace Visuals
 				ApplyVideo(name, isMuted);
 			}
 
-			yield return FadeVisual(true, speed, isSkipped);
-			transitionCoroutine = null;
+			yield return FadeVisual(true, speed);
 		}
 
-		IEnumerator FadeVisual(bool isFadeIn, float speed, bool isSkipped)
+		IEnumerator ClearVisual(float speed)
 		{
-			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
+			yield return FadeVisual(false, speed);
+			UnloadVisual();
+		}
 
+		IEnumerator FadeVisual(bool isFadeIn, float speed)
+		{
 			float startAlpha = canvasGroup.alpha;
 			float targetAlpha = isFadeIn ? 1f : 0f;
 
@@ -188,14 +182,6 @@ namespace Visuals
 			}
 
 			canvasGroup.alpha = targetAlpha;
-		}
-
-		IEnumerator ClearVisual(float speed, bool isSkipped)
-		{
-			yield return FadeVisual(false, speed, isSkipped);
-
-			UnloadVisual();
-			transitionCoroutine = null;
 		}
 
 		void UnloadVisual()
@@ -231,7 +217,7 @@ namespace Visuals
 			rawImage.texture = renderTexture;
 			this.videoPlayer.targetTexture = renderTexture;
 
-			if (transitionCoroutine == null)
+			if (isImmediate)
 			{
 				audioSource.volume = isMuted ? 0f : 1f;
 				canvasGroup.alpha = 1f;

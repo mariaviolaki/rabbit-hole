@@ -12,6 +12,7 @@ namespace Characters
 		readonly SpriteCharacter spriteCharacter;
 		readonly UITransitionHandler transitionHandler;
 		readonly SpriteLayerType layerType;
+		bool isSwappingContainers = false;
 
 		GameObject primaryImageContainer;
 		Image primaryImage;
@@ -25,22 +26,24 @@ namespace Characters
 		Coroutine directionCoroutine;
 		Coroutine brightnessCoroutine;
 		Coroutine colorCoroutine;
-		bool isFacingRight;
+
+		Coroutine skippedSpriteCoroutine;
+		Coroutine skippedDirectionCoroutine;
+		Coroutine skippedBrightnessCoroutine;
+		Coroutine skippedColorCoroutine;
 
 		public SpriteLayerType LayerType => layerType;
 		public string SpriteName => spriteCharacter.GetRawSpriteName(primaryImage.sprite.name);
 
-		public bool IsChangingDirection => directionCoroutine != null;
-		public bool IsChangingSprite => spriteCoroutine != null;
-		public bool IsChangingBrightness => brightnessCoroutine != null;
-		public bool IsChangingColor => colorCoroutine != null;
+		public bool IsChangingDirection => directionCoroutine != null || skippedDirectionCoroutine != null;
+		public bool IsChangingBrightness => brightnessCoroutine != null || skippedBrightnessCoroutine != null;
+		public bool IsChangingColor => colorCoroutine != null || skippedColorCoroutine != null;
 
 		public CharacterSpriteLayer(SpriteCharacter spriteCharacter, UITransitionHandler transitionHandler, SpriteLayerType layerType, Transform root, bool isFacingRight)
 		{
 			this.spriteCharacter = spriteCharacter;
 			this.transitionHandler = transitionHandler;
 			this.layerType = layerType;
-			this.isFacingRight = isFacingRight;
 
 			primaryImageContainer = root.GetChild(0).gameObject;
 			primaryImageContainer.name = primaryContainerName;
@@ -58,120 +61,182 @@ namespace Characters
 
 		public Coroutine SetSprite(Sprite sprite, bool isImmediate, float speed = 0)
 		{
-			spriteCharacter.Manager.StopProcess(ref spriteCoroutine);
+			if (skippedSpriteCoroutine != null) return null;
+			bool isSkipped = spriteCharacter.Manager.StopProcess(ref spriteCoroutine);
+			RestoreContainerAfterSkip(isSkipped);
 
 			if (isImmediate)
 			{
-				primaryImage.sprite = sprite;
+				SetSpriteImmediate(sprite);
 				return null;
+			}
+			else if (isSkipped)
+			{
+				skippedSpriteCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeSprite(sprite, speed, isSkipped));
+				return skippedSpriteCoroutine;
 			}
 			else
 			{
-				spriteCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeSprite(sprite, speed));
+				spriteCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeSprite(sprite, speed, isSkipped));
 				return spriteCoroutine;
 			}
 		}
 
-		public Coroutine FaceRight(bool isImmediate, float speed = 0)
-		{
-			if (isFacingRight) return null;
-			return Flip(isImmediate, speed);
-		}
-
-		public Coroutine FaceLeft(bool isImmediate, float speed = 0)
-		{
-			if (!isFacingRight) return null;
-			return Flip(isImmediate, speed);
-		}
-
+		public Coroutine FaceRight(bool isImmediate, float speed = 0) => Flip(isImmediate, speed);
+		public Coroutine FaceLeft(bool isImmediate, float speed = 0) => Flip(isImmediate, speed);
 		Coroutine Flip(bool isImmediate, float speed = 0)
 		{
-			spriteCharacter.Manager.StopProcess(ref directionCoroutine);
+			if (skippedDirectionCoroutine != null) return null;
+			bool isSkipped = spriteCharacter.Manager.StopProcess(ref directionCoroutine);
+			RestoreContainerAfterSkip(isSkipped);
 
 			if (isImmediate)
 			{
-				Vector3 currentLocalScale = primaryImage.transform.localScale;
-				primaryImage.transform.localScale = new Vector3(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
-				isFacingRight = !isFacingRight;
+				SetDirectionImmediate();
 				return null;
+			}
+			else if (isSkipped)
+			{
+				skippedDirectionCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeDirection(speed, isSkipped));
+				return skippedDirectionCoroutine;
 			}
 			else
 			{
-				directionCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeDirection(speed));
+				directionCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeDirection(speed, isSkipped));
 				return directionCoroutine;
 			}
 		}
 
 		public Coroutine SetBrightness(Color color, bool isImmediate, float speed = 0)
 		{
-			spriteCharacter.Manager.StopProcess(ref brightnessCoroutine);
+			if (skippedBrightnessCoroutine != null) return null;
+			bool isSkipped = spriteCharacter.Manager.StopProcess(ref brightnessCoroutine);
 
 			if (isImmediate)
 			{
-				primaryImage.color = color;
+				SetBrightnessImmediate(color);
 				return null;
+			}
+			else if (isSkipped)
+			{
+				skippedBrightnessCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeBrightness(color, speed, isSkipped));
+				return skippedBrightnessCoroutine;
 			}
 			else
 			{
-				brightnessCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeBrightness(color, speed));
+				brightnessCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeBrightness(color, speed, isSkipped));
 				return brightnessCoroutine;
 			}
 		}
 
 		public Coroutine SetColor(Color color, bool isImmediate, float speed = 0)
 		{
-			spriteCharacter.Manager.StopProcess(ref colorCoroutine);
+			if (skippedColorCoroutine != null) return null;
+			bool isSkipped = spriteCharacter.Manager.StopProcess(ref colorCoroutine);
 
 			if (isImmediate)
 			{
-				primaryImage.color = color;
+				SetColorImmediate(color);
 				return null;
+			}
+			else if (isSkipped)
+			{
+				skippedColorCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeColor(color, speed, isSkipped));
+				return skippedColorCoroutine;
 			}
 			else
 			{
-				colorCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeColor(color, speed));
+				colorCoroutine = spriteCharacter.Manager.StartCoroutine(ChangeColor(color, speed, isSkipped));
 				return colorCoroutine;
 			}
 		}
 
-		IEnumerator ChangeSprite(Sprite sprite, float speed)
+		void SetSpriteImmediate(Sprite sprite)
 		{
+			primaryImage.sprite = sprite;
+		}
+
+		void SetDirectionImmediate()
+		{
+			Vector3 currentLocalScale = primaryImage.transform.localScale;
+			Vector3 targetLocalScale = new(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
+			primaryImage.transform.localScale = targetLocalScale;
+		}
+
+		void SetBrightnessImmediate(Color color)
+		{
+			primaryImage.color = color;
+		}
+
+		void SetColorImmediate(Color color)
+		{
+			primaryImage.color = color;
+		}
+
+		IEnumerator ChangeSprite(Sprite sprite, float speed, bool isSkipped)
+		{
+			while (isSwappingContainers) yield return null;
+			isSwappingContainers = true;
+
 			ToggleSecondaryImage(true);
 
 			secondaryCanvasGroup.alpha = 0f;
 			secondaryImage.sprite = sprite;
-
 			yield return transitionHandler.Replace(primaryCanvasGroup, secondaryCanvasGroup, speed);
 
 			ToggleSecondaryImage(false);
-			spriteCoroutine = null;
+
+			isSwappingContainers = false;
+			if (isSkipped) skippedSpriteCoroutine = null;
+			else spriteCoroutine = null;
 		}
 
-		IEnumerator ChangeDirection(float speed)
+		IEnumerator ChangeDirection(float speed, bool isSkipped)
 		{
-			ToggleSecondaryImage(true);
+			float defaultSpeed = spriteCharacter.Manager.GameOptions.Characters.FadeTransitionSpeed;
+			speed = spriteCharacter.GetTransitionSpeed(speed, defaultSpeed, isSkipped);
 
 			Vector3 currentLocalScale = primaryImage.transform.localScale;
-			secondaryCanvasGroup.alpha = 0f;
-			secondaryImage.transform.localScale = new Vector3(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
-			isFacingRight = !isFacingRight;
+			Vector3 targetLocalScale = new(currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
 
+			while (isSwappingContainers) yield return null;
+			isSwappingContainers = true;
+
+			ToggleSecondaryImage(true);
+
+			secondaryCanvasGroup.alpha = 0f;
+			secondaryImage.transform.localScale = targetLocalScale;
 			yield return transitionHandler.Replace(primaryCanvasGroup, secondaryCanvasGroup, speed);
 
 			ToggleSecondaryImage(false);
-			directionCoroutine = null;
+
+			isSwappingContainers = false;
+			if (isSkipped) skippedDirectionCoroutine = null;
+			else directionCoroutine = null;
 		}
 
-		IEnumerator ChangeBrightness(Color color, float speed)
+		IEnumerator ChangeBrightness(Color color, float speed, bool isSkipped)
 		{
 			yield return transitionHandler.SetColor(primaryImage, color, speed);
-			brightnessCoroutine = null;
+
+			if (isSkipped) skippedBrightnessCoroutine = null;
+			else brightnessCoroutine = null;
 		}
 
-		IEnumerator ChangeColor(Color color, float speed)
+		IEnumerator ChangeColor(Color color, float speed, bool isSkipped)
 		{
 			yield return transitionHandler.SetColor(primaryImage, color, speed);
-			colorCoroutine = null;
+
+			if (isSkipped) skippedColorCoroutine = null;
+			else colorCoroutine = null;
+		}
+
+		void RestoreContainerAfterSkip(bool isSkipped)
+		{
+			if (!isSkipped || primaryImageContainer.activeSelf) return;
+
+			ToggleSecondaryImage(false);
+			isSwappingContainers = false;
 		}
 
 		void ToggleSecondaryImage(bool isActive)
