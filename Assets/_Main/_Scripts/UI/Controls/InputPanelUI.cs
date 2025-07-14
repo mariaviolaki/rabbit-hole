@@ -118,10 +118,10 @@ namespace UI
 
 			if (submitButton.gameObject.activeSelf)
 				submitButton.gameObject.SetActive(false);
-
-			inputManager.IsInputPanelOpen = true;
 			
 			SubscribeListeners();
+
+			inputManager.IsInputPanelOpen = true;
 			inputManager.OnClearInput?.Invoke();
 		}
 

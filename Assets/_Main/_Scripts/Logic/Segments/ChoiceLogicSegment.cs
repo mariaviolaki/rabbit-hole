@@ -40,7 +40,7 @@ namespace Logic
 
 			try
 			{
-				yield return visualNovelUI.ShowChoices(choices);
+				yield return visualNovelUI.GameplayControls.ShowChoices(choices);
 				while (choice == null) yield return null;
 				dialogueStack.AddBlock(choice.FilePath, choice.DialogueLines, choice.FileStartIndex, choice.FileEndIndex);
 			}
@@ -53,7 +53,7 @@ namespace Logic
 
 		public override IEnumerator ForceComplete()
 		{
-			yield return visualNovelUI.ForceHideChoices();
+			yield return visualNovelUI.GameplayControls.ForceHideChoices();
 		}
 
 		void HandleOnClearChoiceEvent() => HandleChoiceEvent(null);

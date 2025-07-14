@@ -2,6 +2,7 @@ using Characters;
 using Commands;
 using History;
 using Logic;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,18 +34,27 @@ namespace Dialogue
 		readonly InputManagerSO inputManager;
 		readonly HistoryManager historyManager;
 
-		Coroutine readProcess;
-		Coroutine directTextProcess;
-
 		TextBuilder.TextMode textMode;
 		float readSpeed;
-		public bool isRunning = false;
+		bool isReading = false;
+		bool isRunning = false;
+		bool isWaitingToAdvance = true;
+
+		public bool IsWaitingToAdvance => isWaitingToAdvance;
+		public bool IsRunning => isRunning;
+		public bool IsReading => isRunning && isReading;
 
 		public DialogueStack Stack => dialogueStack;
 		public ScriptValueParser ValueParser => valueParser;
 
-		public void PauseDialogue() => isRunning = false;
-		void AdvanceDialogue() => isRunning = true;
+		public void StartDialogue() => isRunning = true;
+		public void StopDialogue() => isRunning = false;
+
+		public void ContinueDialogue() => isReading = true;
+		public void PauseDialogue() => isReading = false;
+
+		public void SendAdvanceInput() => isWaitingToAdvance = false;
+		public void WaitForInput() => isWaitingToAdvance = true;
 
 		public DialogueReader(DialogueSystem dialogueSystem)
 		{
@@ -64,12 +74,12 @@ namespace Dialogue
 
 			textMode = gameOptions.Dialogue.TextMode;
 
-			inputManager.OnAdvance += AdvanceDialogue;
+			inputManager.OnAdvance += SendAdvanceInput;
 		}
 
 		public void Dispose()
 		{
-			inputManager.OnAdvance -= AdvanceDialogue;
+			inputManager.OnAdvance -= SendAdvanceInput;
 		}
 
 		public void UpdateReadMode(DialogueReadMode readMode)
@@ -82,55 +92,44 @@ namespace Dialogue
 			textBuilder.Speed = readSpeed;
 
 			if (readMode == DialogueReadMode.Auto || readMode == DialogueReadMode.Skip)
-				AdvanceDialogue();
+				SendAdvanceInput();
 		}
 
-		public Coroutine StartReading(DialogueReadMode dialogueReadMode)
+		public IEnumerator ReadImmediate(string dialogueText)
 		{
-			StopProcess(ref readProcess);
+			isReading = false;
 
-			PrepareDialogue(dialogueReadMode);
-			readProcess = dialogueSystem.StartCoroutine(Read());
-			return readProcess;
-		}
+			while (textBuilder.IsBuilding) yield return null;
+			isReading = true;
 
-		public Coroutine ReadDirectText(string dialogueText)
-		{
-			StopProcess(ref directTextProcess);
+			textBuilder.Speed = textBuilder.MaxSpeed;
+			textBuilder.Write(dialogueText, textMode);
 
-			directTextProcess = dialogueSystem.StartCoroutine(WriteDirectText(dialogueText));
-			return directTextProcess;
-		}
+			while (textBuilder.IsBuilding) yield return null;
 
-		public void StopReading()
-		{
-			StopProcess(ref readProcess);
-			StopProcess(ref directTextProcess);
-		}
-
-		void PrepareDialogue(DialogueReadMode dialogueReadMode)
-		{
-			// End any prior writing process
-			if (readProcess != null)
-				dialogueSystem.StopCoroutine(readProcess);
-			if (directTextProcess != null)
-				dialogueSystem.StopCoroutine(directTextProcess);
-
-			UpdateReadMode(dialogueReadMode);
+			continuePrompt.Show();
+			isReading = false;
 		}
 
 		// Read lines directly from dialogue files (each line includes: speaker, dialogue, commands)
-		IEnumerator Read()
+		public IEnumerator Read(DialogueReadMode dialogueReadMode)
 		{
-			while (!dialogueStack.IsEmpty)
+			UpdateReadMode(dialogueReadMode);
+			isReading = false;
+
+			while (isRunning)
 			{
+				while (isReading) yield return null;
+				isReading = true;
+
 				// Get the next non-null line and remove any blocks that are complete
 				string rawLine = dialogueStack.GetCurrentLine();
+				
 				while (rawLine == null)
 				{
 					// Don't end the dialogue if there are no lines left - check if the stack was refreshed
 					yield return WaitForStackUpdate();
-
+					
 					dialogueStack.Proceed(dialogueStack.GetBlock());
 					rawLine = dialogueStack.GetCurrentLine();
 				}
@@ -148,22 +147,17 @@ namespace Dialogue
 					yield return ProcessLogicSegment(dialogueLine);
 
 				yield return ProcessCompletedLine(dialogueBlock, dialogueLine);
+				isReading = false;
 			}
-
-			readProcess = null;
 		}
 
 		IEnumerator ProcessCompletedLine(DialogueBlock dialogueBlock, DialogueLine dialogueLine)
 		{
-			// Don't progress to new lines while the user is viewing history
-			if (historyManager.IsViewingHistory)
-			{
-				while (!isRunning) yield return null;
+			bool isHistoryUpdated = false;
 
-				// When the player goes forward again, apply the latest history state
-				yield return historyManager.GoForward();
-				yield break;
-			}
+			// Don't progress to new lines while the user is viewing history
+			yield return ProcessHistory(isUpdated => isHistoryUpdated = isUpdated);
+			if (isHistoryUpdated) yield break;
 
 			// If the player didn't view history and there was dialogue in this line, capture the latest history state
 			if (dialogueLine.Dialogue != null)
@@ -174,17 +168,73 @@ namespace Dialogue
 
 		IEnumerator WaitForStackUpdate()
 		{
-			while (true)
+			bool isHistoryUpdated = false;
+
+			while (!isHistoryUpdated)
+				yield return ProcessHistory(isUpdated => isHistoryUpdated = isUpdated);
+		}
+
+		IEnumerator ProcessHistory(Action<bool> isUpdated)
+		{
+			bool isHistoryUpdated = false;
+
+			if (inputManager.IsLogPanelOpen)
+				yield return ProcessLogPanelHistory(isUpdated => isHistoryUpdated = isUpdated);
+			else if (historyManager.HistoryNode != null)
+				yield return ProcessNavigationHistory(isUpdated => isHistoryUpdated = isUpdated);
+
+			isUpdated(isHistoryUpdated);
+		}
+
+		IEnumerator ProcessNavigationHistory(Action<bool> isUpdated)
+		{
+			// The player is navigating back to older states
+			while (isRunning && isWaitingToAdvance && !inputManager.IsLogPanelOpen) yield return null;
+
+			if (inputManager.IsLogPanelOpen)
 			{
-				if (historyManager.IsViewingHistory && isRunning)
+				bool isLogHistoryApplied = false;
+				yield return ProcessLogPanelHistory(isApplied => isLogHistoryApplied = isApplied);
+
+				isUpdated(isLogHistoryApplied);
+			}
+			else
+			{
+				// When the player goes forward again, apply the latest history state
+				bool isNavigationHistoryApplied = false;
+				yield return historyManager.ApplyHistory(isApplied => isNavigationHistoryApplied = isApplied);
+
+				if (isNavigationHistoryApplied)
 				{
-					// The stack has been updated, so the dialogue can continue
-					yield return historyManager.GoForward();
-					yield break;					
+					UpdateReadMode(DialogueReadMode.Forward);
+					DialogueBlock lastBlock = dialogueSystem.Reader.Stack.GetBlock();
+					dialogueSystem.Reader.Stack.Proceed(lastBlock);
 				}
 
-				yield return null;
+				isUpdated(isNavigationHistoryApplied);
 			}
+		}
+
+		IEnumerator ProcessLogPanelHistory(Action<bool> isUpdated)
+		{
+			while (inputManager.IsLogPanelOpen) yield return null;
+
+			if (historyManager.LogNode == null)
+			{
+				isUpdated(false);
+				yield break;
+			}
+
+			// If the player chose to rewind instead of closing the panel, apply the history
+			bool isHistoryApplied = false;
+			yield return historyManager.ApplyHistory(isApplied => isHistoryApplied = isApplied);
+
+			if (isHistoryApplied)
+			{
+				UpdateReadMode(DialogueReadMode.Forward);
+			}
+
+			isUpdated(isHistoryApplied);
 		}
 
 		IEnumerator ProcessDialogueLine(DialogueLine line)
@@ -225,13 +275,13 @@ namespace Dialogue
 		{
 			string dialogueText = valueParser.ParseText(segment.Text);
 
-			while (true)
+			while (isRunning)
 			{
 				float startTime = Time.time;
 
 				// Wait for a specified duration before showing the text (unless forced to continue)
 				if (segment != null && segment.IsAuto && dialogueSystem.ReadMode != DialogueReadMode.Skip)
-					while (!isRunning && Time.time < startTime + segment.WaitTime) yield return null;
+					while (isRunning && isWaitingToAdvance && Time.time < startTime + segment.WaitTime) yield return null;
 
 				continuePrompt.Hide();
 				textBuilder.Speed = readSpeed;
@@ -241,43 +291,13 @@ namespace Dialogue
 				else
 					textBuilder.Write(dialogueText, textMode);
 
-				PauseDialogue();
+				isWaitingToAdvance = true;
 				while (!CanContinueDialogue(nextSegment, dialogueText, startTime, textBuilder.IsBuilding)) yield return null;
 
 				continuePrompt.Show();
 
 				if (!textBuilder.IsBuilding) break;
 			}
-		}
-
-		IEnumerator WriteDirectText(string dialogueText)
-		{
-			while (textBuilder.IsBuilding) yield return null;
-
-			textBuilder.Speed = textBuilder.MaxSpeed;
-			textBuilder.Write(dialogueText, textMode);
-
-			while (textBuilder.IsBuilding) yield return null;
-
-			continuePrompt.Show();
-			directTextProcess = null;
-		}
-
-		public void SetSpeaker(DialogueSpeakerData speakerData)
-		{
-			if (speakerData == null || string.IsNullOrEmpty(speakerData.Name))
-			{
-				visualNovelUI.HideSpeaker();
-				return;
-			}
-
-			Character character = characterManager.GetCharacter(speakerData.Name);
-			speakerData.DisplayName = valueParser.ParseText(character.Data.Name);
-
-			ChangeSpeakerDisplayName(character, speakerData.DisplayName);
-			ChangeSpeakerPosition(character, speakerData.XPos, speakerData.YPos);
-			ChangeSpeakerGraphics(character, speakerData.Layers);
-			SetSpeakerName(character.Data);
 		}
 
 		public IEnumerator RunCommands(List<DialogueCommandData.Command> commandList)
@@ -296,12 +316,12 @@ namespace Dialogue
 			// Wait to execute all processes of this line concurrently
 			if (processesToWait.Count > 0)
 			{
-				PauseDialogue();
+				isWaitingToAdvance = true;
 				while (true)
 				{
 					// Stop when all processes end, or the user clicks to skip them
 					if (processesToWait.All(p => p.IsCompleted)) break;
-					else if (isRunning)
+					else if (!isRunning || !isWaitingToAdvance)
 					{
 						commandManager.SkipCommands();
 						break;
@@ -311,9 +331,26 @@ namespace Dialogue
 			}
 		}
 
+		public void SetSpeaker(DialogueSpeakerData speakerData)
+		{
+			if (speakerData == null || string.IsNullOrEmpty(speakerData.Name))
+			{
+				visualNovelUI.Dialogue.HideSpeaker();
+				return;
+			}
+
+			Character character = characterManager.GetCharacter(speakerData.Name);
+			speakerData.DisplayName = valueParser.ParseText(character.Data.Name);
+
+			ChangeSpeakerDisplayName(character, speakerData.DisplayName);
+			ChangeSpeakerPosition(character, speakerData.XPos, speakerData.YPos);
+			ChangeSpeakerGraphics(character, speakerData.Layers);
+			SetSpeakerName(character.Data);
+		}
+
 		public void SetSpeakerName(CharacterData characterData)
 		{
-			visualNovelUI.ShowSpeaker(characterData);
+			visualNovelUI.Dialogue.ShowSpeaker(characterData);
 		}
 
 		void ChangeSpeakerDisplayName(Character character, string displayName)
@@ -348,7 +385,7 @@ namespace Dialogue
 
 		bool CanContinueDialogue(DialogueTextData.Segment nextSegment, string text, float startTime, bool isBuildingText)
 		{
-			if (isRunning) return true;
+			if (!isRunning || !isWaitingToAdvance || historyManager.IsViewingHistory) return true;
 
 			bool canContinue = false;
 
@@ -379,14 +416,6 @@ namespace Dialogue
 			float speed = gameOptions.Dialogue.AutoDialogueSpeed;
 			float delay = (1 / speed) * SkipSpeedMultiplier;
 			return Mathf.Clamp(delay, MinSkipTime, MaxSkipTime);
-		}
-
-		void StopProcess(ref Coroutine coroutine)
-		{
-			if (coroutine == null) return;
-
-			dialogueSystem.StopCoroutine(coroutine);
-			coroutine = null;
 		}
 	}
 }

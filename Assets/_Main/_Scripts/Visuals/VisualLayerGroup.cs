@@ -108,7 +108,7 @@ namespace Visuals
 				clearProcesses.Add(layer.ClearInGroup(false, speed, isSkipped));
 			}
 
-			yield return Utilities.RunConcurrentProcesses(clearProcesses);
+			yield return Utilities.RunConcurrentProcesses(manager, clearProcesses);
 			if (isSkipped) skippedClearCoroutine = null;
 			else clearCoroutine = null;
 		}

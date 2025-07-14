@@ -31,6 +31,7 @@ namespace Audio
 
 			name = type.ToString();
 			root = new GameObject(name).transform;
+			root.transform.parent = manager.transform;
 		}
 
 		public void Play(string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false, bool isImmediate = false, float fadeSpeed = 0f, int layerNum = 0)

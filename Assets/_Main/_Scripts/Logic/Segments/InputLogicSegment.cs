@@ -29,7 +29,7 @@ namespace Logic
 
 			try
 			{
-				yield return visualNovelUI.ShowInput(title);
+				yield return visualNovelUI.GameplayControls.ShowInput(title);
 				while (input == null) yield return null;
 			}
 			finally
@@ -41,7 +41,7 @@ namespace Logic
 
 		public override IEnumerator ForceComplete()
 		{
-			yield return visualNovelUI.ForceHideInput();
+			yield return visualNovelUI.GameplayControls.ForceHideInput();
 		}
 
 		void HandleOnClearInputEvent() => HandleInputEvent(null);

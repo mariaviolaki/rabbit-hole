@@ -17,7 +17,7 @@ namespace Characters
 		[SerializeField] RectTransform characterContainer;
 		[SerializeField] Transform model3DContainer;
 
-		Dictionary<string, Character> characters = new Dictionary<string, Character>();
+		readonly Dictionary<string, Character> characters = new();
 		Coroutine creationCoroutine;
 
 		public GameOptionsSO GameOptions { get { return gameOptions; } }

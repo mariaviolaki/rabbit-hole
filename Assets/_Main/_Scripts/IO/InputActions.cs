@@ -71,6 +71,24 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""LogAction"",
+                    ""type"": ""Button"",
+                    ""id"": ""f01727a9-ed9c-488e-805b-e826ee8467b2"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ScrollAction"",
+                    ""type"": ""Value"",
+                    ""id"": ""ed94ecc6-4c59-4e89-9ab3-77525863e60f"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -150,6 +168,39 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""action"": ""BackAction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5b0c15b4-5a59-4634-a19a-bc072dfc555e"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LogAction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e35fa224-557d-4490-8ad3-74bd618411ec"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ScrollAction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5c645f04-db6c-4793-9c1e-a47234f61fe7"",
+                    ""path"": ""<Touchscreen>/primaryTouch/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ScrollAction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -163,6 +214,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_VN_SkipAction = m_VN.FindAction("SkipAction", throwIfNotFound: true);
         m_VN_SkipHoldAction = m_VN.FindAction("SkipHoldAction", throwIfNotFound: true);
         m_VN_BackAction = m_VN.FindAction("BackAction", throwIfNotFound: true);
+        m_VN_LogAction = m_VN.FindAction("LogAction", throwIfNotFound: true);
+        m_VN_ScrollAction = m_VN.FindAction("ScrollAction", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -229,6 +282,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_VN_SkipAction;
     private readonly InputAction m_VN_SkipHoldAction;
     private readonly InputAction m_VN_BackAction;
+    private readonly InputAction m_VN_LogAction;
+    private readonly InputAction m_VN_ScrollAction;
     public struct VNActions
     {
         private @InputActions m_Wrapper;
@@ -238,6 +293,8 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @SkipAction => m_Wrapper.m_VN_SkipAction;
         public InputAction @SkipHoldAction => m_Wrapper.m_VN_SkipHoldAction;
         public InputAction @BackAction => m_Wrapper.m_VN_BackAction;
+        public InputAction @LogAction => m_Wrapper.m_VN_LogAction;
+        public InputAction @ScrollAction => m_Wrapper.m_VN_ScrollAction;
         public InputActionMap Get() { return m_Wrapper.m_VN; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -262,6 +319,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @BackAction.started += instance.OnBackAction;
             @BackAction.performed += instance.OnBackAction;
             @BackAction.canceled += instance.OnBackAction;
+            @LogAction.started += instance.OnLogAction;
+            @LogAction.performed += instance.OnLogAction;
+            @LogAction.canceled += instance.OnLogAction;
+            @ScrollAction.started += instance.OnScrollAction;
+            @ScrollAction.performed += instance.OnScrollAction;
+            @ScrollAction.canceled += instance.OnScrollAction;
         }
 
         private void UnregisterCallbacks(IVNActions instance)
@@ -281,6 +344,12 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @BackAction.started -= instance.OnBackAction;
             @BackAction.performed -= instance.OnBackAction;
             @BackAction.canceled -= instance.OnBackAction;
+            @LogAction.started -= instance.OnLogAction;
+            @LogAction.performed -= instance.OnLogAction;
+            @LogAction.canceled -= instance.OnLogAction;
+            @ScrollAction.started -= instance.OnScrollAction;
+            @ScrollAction.performed -= instance.OnScrollAction;
+            @ScrollAction.canceled -= instance.OnScrollAction;
         }
 
         public void RemoveCallbacks(IVNActions instance)
@@ -305,5 +374,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnSkipAction(InputAction.CallbackContext context);
         void OnSkipHoldAction(InputAction.CallbackContext context);
         void OnBackAction(InputAction.CallbackContext context);
+        void OnLogAction(InputAction.CallbackContext context);
+        void OnScrollAction(InputAction.CallbackContext context);
     }
 }

@@ -10,7 +10,8 @@ namespace Dialogue
 		const string RootPath = "Dialogue/";
 		const string CommentLineDelimiter = "//";
 
-		readonly DialogueSystem dialogueSystem;
+		readonly FileManagerSO fileManager;
+		readonly DialogueStack dialogueStack;
 		readonly string addressablePath;
 		readonly List<string> lines = new();
 		string name;
@@ -19,18 +20,21 @@ namespace Dialogue
 		public List<string> Lines => lines;
 
 		// Used to load files in addressables using the file manager
-		public DialogueFile(DialogueSystem dialogueSystem, string addressablePath)
+		public DialogueFile(FileManagerSO fileManager, DialogueStack dialogueStack, string addressablePath)
 		{
 			addressablePath = GetNormalizedPath(addressablePath);
 
-			this.dialogueSystem = dialogueSystem;
+			this.fileManager = fileManager;
+			this.dialogueStack = dialogueStack;
 			this.addressablePath = addressablePath;
 		}
 
 		// Creates a custom dialogue to read based on the given lines
-		public DialogueFile(DialogueSystem dialogueSystem, string speaker, List<string> lines)
+		public DialogueFile(FileManagerSO fileManager, DialogueStack dialogueStack, string speaker, List<string> lines)
 		{
-			this.dialogueSystem = dialogueSystem;
+			this.fileManager = fileManager;
+			this.dialogueStack = dialogueStack;
+
 			CreateCustomDialogue(speaker, lines);
 		}
 
@@ -38,15 +42,15 @@ namespace Dialogue
 		{
 			if (string.IsNullOrWhiteSpace(addressablePath)) yield break;
 
-			yield return dialogueSystem.FileManager.LoadDialogue(addressablePath);
-			TextAsset dialogueAsset = dialogueSystem.FileManager.GetDialogueFile(addressablePath);
+			yield return fileManager.LoadDialogue(addressablePath);
+			TextAsset dialogueAsset = fileManager.GetDialogueFile(addressablePath);
 			if (dialogueAsset == null) yield break;
 
 			name = dialogueAsset.name;
 			ParseLines(dialogueAsset);
 
-			dialogueSystem.Reader.Stack.Clear();
-			dialogueSystem.Reader.Stack.AddBlock(addressablePath, lines);
+			dialogueStack.Clear();
+			dialogueStack.AddBlock(addressablePath, lines);
 		}
 
 		void ParseLines(TextAsset dialogueAsset)
@@ -72,8 +76,8 @@ namespace Dialogue
 				}
 			}
 
-			dialogueSystem.Reader.Stack.Clear();
-			dialogueSystem.Reader.Stack.AddBlock(null, lines);
+			dialogueStack.Clear();
+			dialogueStack.AddBlock(null, lines);
 		}
 
 		string GetNormalizedPath(string path)

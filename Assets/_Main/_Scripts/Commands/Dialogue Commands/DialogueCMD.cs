@@ -40,7 +40,7 @@ namespace Commands
 			bool isImmediate = args.Get(0, "immediate", false);
 			float fadeSpeed = args.Get(1, "speed", 0f);
 
-			return visualNovelUI.ShowDialogue(isImmediate, fadeSpeed);
+			return visualNovelUI.Dialogue.Show(isImmediate, fadeSpeed);
 		}
 
 
@@ -59,7 +59,7 @@ namespace Commands
 			bool isImmediate = args.Get(0, "immediate", false);
 			float fadeSpeed = args.Get(1, "speed", 0f);
 
-			return visualNovelUI.HideDialogue(isImmediate, fadeSpeed);
+			return visualNovelUI.Dialogue.Hide(isImmediate, fadeSpeed);
 		}
 	}
 }

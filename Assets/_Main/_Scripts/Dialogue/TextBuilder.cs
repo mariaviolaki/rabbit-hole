@@ -135,7 +135,7 @@ namespace Dialogue
 				yield return null;
 			}
 
-			CompleteProcess();
+			buildProcess = null;
 		}
 
 		IEnumerator StartTyping(float maxTime, float timePerCharacter, int newTextLength, int charactersPerIteration)
@@ -157,7 +157,7 @@ namespace Dialogue
 				yield return null;
 			}
 
-			CompleteProcess();
+			buildProcess = null;
 		}
 
 		IEnumerator StartFadingIn(float maxTime, int preTextLength, int newTextLength, int charactersPerIteration)
@@ -200,11 +200,10 @@ namespace Dialogue
 					newestAlpha = FadeInText(transparencyValues, minRange, maxRange, preTextLength, transparencyStep);
 				}
 
-
 				yield return null;
 			}
 
-			CompleteProcess();
+			buildProcess = null;
 		}
 
 		void CompleteProcess()

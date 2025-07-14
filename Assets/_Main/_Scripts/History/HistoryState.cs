@@ -13,6 +13,8 @@ namespace History
 		[SerializeField] HistoryCharacterData characterData;
 		[SerializeField] HistoryVariableData variableData;
 
+		public HistoryDialogueData Dialogue => dialogueData;
+
 		public HistoryState(DialogueSystem dialogueSystem)
 		{
 			dialogueData = new(dialogueSystem.Reader.Stack, dialogueSystem.UI.Dialogue);
@@ -23,18 +25,21 @@ namespace History
 		}
 
 		// Safely traverses older state
-		public void Load(DialogueSystem dialogueSystem, FontBankSO fontBank)
+		public IEnumerator Load(DialogueSystem dialogueSystem, FontBankSO fontBank, bool isApplyingHistory)
 		{
-			dialogueData.Load(dialogueSystem.UI.Dialogue, dialogueSystem.Reader, dialogueSystem.Options, fontBank);
 			audioData.Load(dialogueSystem.Audio, dialogueSystem.Options);
-			visualData.Load(dialogueSystem.Visuals, dialogueSystem.Options);
-			characterData.Load(dialogueSystem.Characters, dialogueSystem.Options);
+			yield return visualData.Load(dialogueSystem.Visuals, dialogueSystem.Options);
+			yield return characterData.Load(dialogueSystem.Characters, dialogueSystem.Options);
+
+			if (isApplyingHistory) yield break;
+
+			yield return dialogueData.Load(dialogueSystem.UI.Dialogue, dialogueSystem.Reader, dialogueSystem.Options, fontBank);
 		}
 
 		// Resets progress to an older state
 		public IEnumerator Apply(DialogueSystem dialogueSystem, FontBankSO fontBank)
 		{
-			Load(dialogueSystem, fontBank);
+			yield return Load(dialogueSystem, fontBank, true);
 			variableData.Apply(dialogueSystem.VariableManager, dialogueSystem.TagManager);
 			yield return dialogueData.Apply(dialogueSystem);
 		}

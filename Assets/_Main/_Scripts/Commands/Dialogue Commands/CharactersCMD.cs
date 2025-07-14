@@ -8,7 +8,6 @@ namespace Commands
 	public class CharactersCMD : DialogueCommand
 	{
 		static CharacterManager characterManager;
-		public new static readonly string[] blockingProcesses = new string[] { "CreateCharacters", "CreateCharacter" };
 
 		public new static void Register(CommandManager commandManager)
 		{
@@ -21,8 +20,8 @@ namespace Commands
 			CommandBank model3DCharactersDir = commandManager.GetBank(CommandManager.Model3DCharacterBankName);
 
 			// All Characters (cannot be called on specific ones)
-			mainDir.AddCommand("CreateCharacters", new Func<DialogueCommandArguments, Coroutine>(CreateCharacters));
-			mainDir.AddCommand("CreateCharacter", new Func<DialogueCommandArguments, Coroutine>(CreateCharacter));
+			mainDir.AddCommand("CreateCharacters", new Func<DialogueCommandArguments, Coroutine>(CreateCharacters), CommandSkipType.None);
+			mainDir.AddCommand("CreateCharacter", new Func<DialogueCommandArguments, Coroutine>(CreateCharacter), CommandSkipType.None);
 			mainDir.AddCommand("SetCharacterPriority", new Action<DialogueCommandArguments>(SetCharacterPriority));
 
 			// All Characters

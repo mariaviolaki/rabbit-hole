@@ -53,29 +53,21 @@ public static class Utilities
 		};
 	}
 
-	public static IEnumerator RunConcurrentProcesses(List<IEnumerator> processes)
+	public static IEnumerator RunConcurrentProcesses(MonoBehaviour owner, List<IEnumerator> processes)
 	{
-		bool[] runningProcesses = new bool[processes.Count];
+		int completedCount = 0;
 
-		for (int i = 0; i < processes.Count; i++)
+		IEnumerator MarkProcessCompletion(IEnumerator process)
 		{
-			runningProcesses[i] = processes[i] != null;
+			yield return process;
+			completedCount++;
 		}
 
-		while (true)
+		foreach (IEnumerator process in processes)
 		{
-			bool areProcessesRunning = false;
-			for (int i = 0; i < processes.Count; i++)
-			{
-
-				if (!runningProcesses[i]) continue;
-
-				runningProcesses[i] = processes[i].MoveNext();
-				areProcessesRunning = true;
-			}
-
-			if (!areProcessesRunning) break;
-			yield return null;
+			owner.StartCoroutine(MarkProcessCompletion(process));
 		}
+
+		while (completedCount < processes.Count) yield return null;
 	}
 }

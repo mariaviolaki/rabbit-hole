@@ -1,4 +1,5 @@
 using Dialogue;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,9 @@ namespace History
 		[SerializeField] Color dialogueColor;
 		[SerializeField] string speakerFont;
 		[SerializeField] string dialogueFont;
+
+		public string SpeakerText => speakerText;
+		public string DialogueText => dialogueText;
 
 		public HistoryDialogueData(DialogueStack dialogueStack, DialogueUI dialogueUI)
 		{
@@ -43,7 +47,7 @@ namespace History
 			}
 		}
 
-		public void Load(DialogueUI dialogueUI, DialogueReader dialogueReader, GameOptionsSO gameOptions, FontBankSO fontBank)
+		public IEnumerator Load(DialogueUI dialogueUI, DialogueReader dialogueReader, GameOptionsSO gameOptions, FontBankSO fontBank)
 		{
 			if (dialogueUI.SpeakerText.text != speakerText)
 			{
@@ -53,7 +57,7 @@ namespace History
 			if (dialogueUI.DialogueText.text != dialogueText)
 			{
 				// Rewrite the text in the dialogue box
-				dialogueReader.ReadDirectText(dialogueText);
+				yield return dialogueReader.ReadImmediate(dialogueText);
 			}
 		}
 
@@ -61,14 +65,17 @@ namespace History
 		{
 			if (dialogueBlocks.Count == 0) yield break;
 
-			dialogueSystem.StopDialogue();
-
 			// Load the file and add its parsed contents to the bottom of the stack
 			HistoryDialogueBlock mainHistoryBlock = dialogueBlocks.Last();
-			yield return dialogueSystem.LoadDialogue(mainHistoryBlock.filePath);
+			Guid dialogueId = Guid.NewGuid();
+
+			dialogueSystem.LoadDialogue(mainHistoryBlock.filePath, dialogueId);
+			while (dialogueSystem.CurrentDialogueId != dialogueId) yield return null;
 
 			// Move the progress of the main block to the right point in the history state
 			DialogueBlock mainBlock = dialogueSystem.Reader.Stack.GetBlock();
+			if (mainBlock == null) yield break;
+
 			mainBlock.LoadProgress(mainHistoryBlock.progress, mainHistoryBlock.fileStartIndex, mainHistoryBlock.fileEndIndex);
 
 			for (int i = dialogueBlocks.Count - 2; i >= 0; i--)

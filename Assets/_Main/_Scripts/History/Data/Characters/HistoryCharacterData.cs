@@ -1,4 +1,5 @@
 using Characters;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -49,7 +50,7 @@ namespace History
 			}
 		}
 
-		public void Load(CharacterManager characterManager, GameOptionsSO gameOptions)
+		public IEnumerator Load(CharacterManager characterManager, GameOptionsSO gameOptions)
 		{
 			float fadeSpeed = gameOptions.General.SkipTransitionSpeed;
 
@@ -64,15 +65,15 @@ namespace History
 				if (historyCharacter.priority != character.HierarchyPriority)
 					areSorted = false;
 				if (historyCharacter.isVisible != character.IsVisible)
-					character.SetVisibility(historyCharacter.isVisible, false, fadeSpeed);
+					yield return character.SetVisibility(historyCharacter.isVisible, false, fadeSpeed);
 				if (historyCharacter.position != character.Position)
-					character.SetPosition(historyCharacter.position.x, historyCharacter.position.y, false, fadeSpeed);
+					yield return character.SetPosition(historyCharacter.position.x, historyCharacter.position.y, false, fadeSpeed);
 				if (historyCharacter.color != character.LightColor)
-					character.SetColor(historyCharacter.color, false, fadeSpeed);
+					yield return character.SetColor(historyCharacter.color, false, fadeSpeed);
 				if (historyCharacter.isHighlighted != character.IsHighlighted)
-					character.SetHighlighted(historyCharacter.isHighlighted, false, fadeSpeed);
+					yield return character.SetHighlighted(historyCharacter.isHighlighted, false, fadeSpeed);
 				if (historyCharacter.isFacingRight != character.IsFacingRight)
-					character.Flip(false, fadeSpeed);
+					yield return character.Flip(false, fadeSpeed);
 				if (historyCharacter.name != character.Data.Name)
 					character.SetName(historyCharacter.name);
 				if (historyCharacter.displayName != character.Data.DisplayName)
@@ -86,13 +87,13 @@ namespace History
 					{
 						CharacterSpriteLayer spriteLayer = spriteChar.SpriteLayers[historySpriteLayer.layerType];
 						if (spriteLayer.SpriteName != historySpriteLayer.spriteName)
-							spriteChar.SetSprite(historySpriteLayer.spriteName, historySpriteLayer.layerType, false, fadeSpeed);
+							yield return spriteChar.SetSprite(historySpriteLayer.spriteName, historySpriteLayer.layerType, false, fadeSpeed);
 					}
 				}
 				else if (character is Model3DCharacter model3DChar && historyCharacter is HistoryModel3DCharacter historyModel3DChar)
 				{
 					if (historyModel3DChar.expression != model3DChar.Expression)
-						model3DChar.SetExpression(historyModel3DChar.expression, false, fadeSpeed);
+						yield return model3DChar.SetExpression(historyModel3DChar.expression, false, fadeSpeed);
 				}
 			}
 

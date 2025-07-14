@@ -1,5 +1,3 @@
-using Characters;
-using Logic;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,59 +19,11 @@ namespace UI
 		Coroutine fadeCoroutine;
 
 		public DialogueUI Dialogue => dialogue;
-		public InputPanelUI InputPanel => gameplayControls.InputPanel;
-		public ChoicePanelUI ChoicePanel => gameplayControls.ChoicePanel;
+		public GameplayControlsUI GameplayControls => gameplayControls;
 
 		void Start()
 		{
 			ToggleOverlayControls(false);
-
-			inputManager.IsChoicePanelOpen = false;
-			inputManager.IsInputPanelOpen = false;
-		}
-
-		public Coroutine ShowSpeaker(CharacterData characterData, bool isImmediate = false, float fadeSpeed = 0)
-		{
-			if (fadeCoroutine != null) return null;
-			return dialogue.ShowSpeaker(characterData, isImmediate, fadeSpeed);
-		}
-		public Coroutine HideSpeaker(bool isImmediate = false, float fadeSpeed = 0)
-		{
-			if (fadeCoroutine != null) return null;
-			return dialogue.HideSpeaker(isImmediate, fadeSpeed);
-		}
-
-		public Coroutine ShowDialogue(bool isImmediate = false, float fadeSpeed = 0)
-		{
-			if (fadeCoroutine != null) return null;
-			return dialogue.Show(isImmediate, fadeSpeed);
-		}
-		public Coroutine HideDialogue(bool isImmediate = false, float fadeSpeed = 0)
-		{
-			if (fadeCoroutine != null) return null;
-			return dialogue.Hide(isImmediate, fadeSpeed);
-		}
-
-		public Coroutine ShowInput(string title, bool isImmediate = false, float fadeSpeed = 0)
-		{
-			if (fadeCoroutine != null) return null;
-			return gameplayControls.ShowInput(title, isImmediate, fadeSpeed);
-		}
-		public Coroutine ForceHideInput(bool isImmediate = false)
-		{
-			if (fadeCoroutine != null) return null;
-			return gameplayControls.ForceHideInput(isImmediate);
-		}
-
-		public Coroutine ShowChoices(List<DialogueChoice> choices, bool isImmediate = false, float fadeSpeed = 0)
-		{
-			if (fadeCoroutine != null) return null;
-			return gameplayControls.ShowChoices(choices, isImmediate, fadeSpeed);
-		}
-		public Coroutine ForceHideChoices(bool isImmediate = false)
-		{
-			if (fadeCoroutine != null) return null;
-			return gameplayControls.ForceHideChoices(isImmediate);
 		}
 
 		public Coroutine Show(bool isImmediate = false, float fadeSpeed = 0) => SetVisiblity(true, isImmediate, fadeSpeed);
@@ -129,7 +79,7 @@ namespace UI
 					fadeProcesses.Add(canvas.FadeOut(false, speed));
 			}
 
-			yield return Utilities.RunConcurrentProcesses(fadeProcesses);
+			yield return Utilities.RunConcurrentProcesses(this, fadeProcesses);
 			
 			ToggleOverlayControls(!isFadeIn);
 			fadeCoroutine = null;

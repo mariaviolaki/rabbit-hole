@@ -7,7 +7,7 @@ namespace Characters
 {
 	public abstract class GraphicsCharacter : Character
 	{
-		const float MoveSpeedMultiplier = 100f;
+		const float MoveSpeedMultiplier = 135000f;
 
 		readonly Dictionary<string, string> animationNames = new(StringComparer.OrdinalIgnoreCase);
 
@@ -187,7 +187,8 @@ namespace Characters
 
 			Vector2 startPos = root.anchoredPosition;
 			Vector2 endPos = GetTargetPosition(inputPos);
-			float distance = Vector2.Distance(startPos, endPos);
+			float distance = (endPos - startPos).sqrMagnitude;
+
 			if (distance <= Mathf.Epsilon)
 			{
 				moveCoroutine = null;

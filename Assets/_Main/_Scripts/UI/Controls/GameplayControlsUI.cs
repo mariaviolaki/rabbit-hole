@@ -7,21 +7,33 @@ namespace UI
 {
 	public class GameplayControlsUI : BaseFadeableUI
 	{
+		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] InputPanelUI inputPanel;
 		[SerializeField] ChoicePanelUI choicePanel;
-
-		public InputPanelUI InputPanel => inputPanel;
-		public ChoicePanelUI ChoicePanel => choicePanel;
+		[SerializeField] LogPanelUI logPanel;
 
 		protected override void Awake()
 		{
 			base.Awake();
 
+			inputManager.OnOpenLog += ShowLogDefault;
+
 			inputPanel.OnClose += CloseInput;
 			choicePanel.OnClose += CloseChoices;
+			logPanel.OnClose += CloseLog;
+		}
+
+		protected override void Start()
+		{
+			base.Start();
 
 			CloseInput();
 			CloseChoices();
+			CloseLog();
+
+			inputManager.IsChoicePanelOpen = false;
+			inputManager.IsInputPanelOpen = false;
+			inputManager.IsLogPanelOpen = false;
 		}
 
 		protected override void OnDestroy()
@@ -30,6 +42,7 @@ namespace UI
 
 			inputPanel.OnClose -= CloseInput;
 			choicePanel.OnClose -= CloseChoices;
+			logPanel.OnClose -= CloseLog;
 		}
 
 		public Coroutine ShowInput(string title, bool isImmediate = false, float fadeSpeed = 0)
@@ -46,6 +59,14 @@ namespace UI
 			return choicePanel.Show(choices, isImmediate, fadeSpeed);
 		}
 
+		public void ShowLogDefault() => ShowLog();
+		public Coroutine ShowLog(bool isImmediate = false, float fadeSpeed = 0)
+		{
+			logPanel.gameObject.SetActive(true);
+
+			return logPanel.Show(isImmediate, fadeSpeed);
+		}
+
 		public Coroutine ForceHideInput(bool isImmediate = false)
 		{
 			return inputPanel.ForceHide(isImmediate);
@@ -56,15 +77,21 @@ namespace UI
 			return choicePanel.ForceHide(isImmediate);
 		}
 
+		public Coroutine HideLog(bool isImmediate = false, float fadeSpeed = 0)
+		{
+			return logPanel.Hide(isImmediate, fadeSpeed);
+		}
+
 		public override IEnumerator FadeOut(bool isImmediate = false, float speed = 0)
 		{
 			List<IEnumerator> closeProcesses = new()
 			{
 				inputPanel.CloseProcess(isImmediate, speed),
-				choicePanel.CloseProcess(isImmediate, speed)
+				choicePanel.CloseProcess(isImmediate, speed),
+				logPanel.CloseProcess(isImmediate, speed)
 			};
 
-			yield return Utilities.RunConcurrentProcesses(closeProcesses);
+			yield return Utilities.RunConcurrentProcesses(this, closeProcesses);
 			yield return base.FadeOut(isImmediate, speed);
 		}
 
@@ -76,6 +103,11 @@ namespace UI
 		void CloseChoices()
 		{
 			choicePanel.gameObject.SetActive(false);
+		}
+
+		void CloseLog()
+		{
+			logPanel.gameObject.SetActive(false);
 		}
 	}
 }

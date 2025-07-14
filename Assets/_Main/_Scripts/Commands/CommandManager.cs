@@ -51,7 +51,6 @@ namespace Commands
 
 		// Keep track of all the processes that may run simultaneously
 		readonly Dictionary<Guid, CommandProcess> processes = new();
-		readonly HashSet<string> blockingProcessNames = new();
 
 		public CharacterManager Characters => characterManager;
 		public VisualGroupManager Visuals => visualGroupManager;
@@ -75,9 +74,9 @@ namespace Commands
 			{
 				bool isBlockingProcess = process.IsBlocking && !process.IsCompleted;
 
-				if (isBlockingProcess || !process.IsSkipCompleted)
+				if (isBlockingProcess)
 					isIdle = false;
-				else if (process.IsCompleted && process.IsSkipCompleted)
+				else if (process.IsCompleted)
 					removedProcessIds.Add(process.Id);
 			}
 
@@ -125,7 +124,7 @@ namespace Commands
 
 			foreach (CommandProcess process in processes.Values)
 			{
-				if (process.IsCompleted && process.IsSkipCompleted)
+				if (process.IsCompleted)
 					removedProcessIds.Add(process.Id);
 				else if (!process.IsCompleted && !process.IsBlocking)
 					process.Stop();
@@ -145,9 +144,8 @@ namespace Commands
 		CommandProcess ExecuteProcess(Delegate command, string commandName, DialogueCommandArguments arguments, CommandSkipType skipType)
 		{
 			Guid processId = Guid.NewGuid();
-			bool isBlocking = blockingProcessNames.Contains(commandName);
 
-			CommandProcess commandProcess = new(processId, commandName, arguments, command, this, skipType, isBlocking);
+			CommandProcess commandProcess = new(processId, commandName, arguments, command, this, skipType);
 			processes.Add(processId, commandProcess);
 			commandProcess.Start();
 
@@ -229,17 +227,6 @@ namespace Commands
 					registerMethod.Invoke(null, new object[] { this });
 				else
 					Debug.LogError($"Register function not found in {commandType.Name}!");
-
-				// If any unskippable processes are included, cache them in a hash set
-				FieldInfo blockingProcessesField = commandType.GetField("blockingProcesses", BindingFlags.Static | BindingFlags.Public);
-				if (blockingProcessesField != null)
-				{
-					string[] blockingProcessNames = (string[])blockingProcessesField.GetValue(null);
-					foreach (string processName in blockingProcessNames)
-					{
-						this.blockingProcessNames.Add(processName);
-					}
-				}
 			}
 		}
 	}

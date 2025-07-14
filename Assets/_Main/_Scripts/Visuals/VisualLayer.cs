@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using UnityEngine;
 
 namespace Visuals
@@ -20,10 +21,16 @@ namespace Visuals
 		Coroutine visualCoroutine;
 		Coroutine skippedVisualCoroutine;
 		bool isSwappingContainers;
+		string visualName;
+		bool isImage;
+		bool isMuted;
+		bool isImmediate;
 
-		public string VisualName => primaryContainer.VisualName;
-		public bool IsImage => primaryContainer.IsImage;
-		public bool IsMuted => primaryContainer.IsMuted;
+		public VisualLayerGroup LayerGroup => layerGroup;
+		public string VisualName => visualName;
+		public bool IsImage => isImage;
+		public bool IsMuted => isMuted;
+		public bool IsImmediate => isImmediate;
 		public int Depth => depth;
 		public bool IsIdle => visualCoroutine == null && skippedVisualCoroutine == null;
 		public bool IsBusy => skippedVisualCoroutine != null;
@@ -47,12 +54,12 @@ namespace Visuals
 
 			primaryGameObject = new GameObject(primaryContainerName, typeof(RectTransform));
 			primaryGameObject.transform.SetParent(layerObject.transform, false);
-			primaryContainer = new VisualContainer(layerGroup, primaryGameObject);
+			primaryContainer = new VisualContainer(this, primaryGameObject);
 
 			// Create a secondary visual container for smooth transitions
 			secondaryGameObject = new GameObject(secondaryContainerName, typeof(RectTransform));
 			secondaryGameObject.transform.SetParent(layerObject.transform, false);
-			secondaryContainer = new VisualContainer(layerGroup, secondaryGameObject);
+			secondaryContainer = new VisualContainer(this, secondaryGameObject);
 
 			secondaryGameObject.SetActive(false);
 		}
@@ -62,6 +69,9 @@ namespace Visuals
 			if (skippedVisualCoroutine != null) return null;
 			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine);
 			RestoreContainerAfterSkip(isSkipped);
+
+			this.visualName = null;
+			this.isImmediate = true;
 
 			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
 			if (isImmediate)
@@ -87,6 +97,10 @@ namespace Visuals
 			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine);
 			RestoreContainerAfterSkip(isSkipped);
 
+			this.isImage = true;
+			this.visualName = name;
+			this.isImmediate = isImmediate;
+
 			if (isImmediate)
 			{
 				skippedVisualCoroutine = layerGroup.Manager.StartCoroutine(SetImageImmediate(name));
@@ -109,6 +123,11 @@ namespace Visuals
 			if (skippedVisualCoroutine != null) return null;
 			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine);
 			RestoreContainerAfterSkip(isSkipped);
+
+			this.isImage = false;
+			this.visualName = name;
+			this.isMuted = isMuted;
+			this.isImmediate = isImmediate;
 
 			if (isImmediate)
 			{
@@ -133,6 +152,9 @@ namespace Visuals
 			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine) || isGroupSkipped;
 			RestoreContainerAfterSkip(isSkipped);
 
+			this.visualName = null;
+			this.isImmediate = true;
+
 			primaryContainer.ClearImmediate();
 		}
 
@@ -141,6 +163,9 @@ namespace Visuals
 			if (skippedVisualCoroutine != null) yield break;
 			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine) || isGroupSkipped;
 			RestoreContainerAfterSkip(isSkipped);
+
+			this.visualName = null;
+			this.isImmediate = isImmediate;
 
 			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
 			yield return primaryContainer.Clear(isImmediate, speed);
@@ -175,7 +200,7 @@ namespace Visuals
 				secondaryContainer.SetImage(name, false, speed),
 				primaryContainer.Clear(false, speed)
 			};
-			yield return Utilities.RunConcurrentProcesses(processes);
+			yield return Utilities.RunConcurrentProcesses(layerGroup.Manager, processes);
 
 			ToggleSecondaryVisual(false);
 
@@ -198,7 +223,7 @@ namespace Visuals
 				secondaryContainer.SetVideo(name, isMuted, false, speed),
 				primaryContainer.Clear(false, speed)
 			};
-			yield return Utilities.RunConcurrentProcesses(processes);
+			yield return Utilities.RunConcurrentProcesses(layerGroup.Manager, processes);
 
 			ToggleSecondaryVisual(false);
 

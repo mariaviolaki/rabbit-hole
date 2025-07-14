@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Characters
@@ -59,16 +58,6 @@ namespace Characters
 			if (string.IsNullOrEmpty(displayName)) return;
 
 			data.DisplayName = displayName;
-		}
-
-		public Coroutine Say(string dialogueLine)
-		{
-			return Say(new List<string> { dialogueLine });
-		}
-
-		public Coroutine Say(List<string> dialogueLines)
-		{
-			return manager.Dialogue.Say(Data.Name, dialogueLines);
 		}
 	}
 }

@@ -29,13 +29,13 @@ namespace Commands
 			if (!HasSkipCommand(commandName))
 			{
 				Debug.LogError($"{commandName} is not registered to the Skip Command Bank!");
-				return CommandSkipType.None;
+				return CommandSkipType.Default;
 			}
 
 			return commandSkipTypes[commandName];
 		}
 
-		public void AddCommand(string commandName, Delegate command, CommandSkipType skipType = CommandSkipType.None)
+		public void AddCommand(string commandName, Delegate command, CommandSkipType skipType = CommandSkipType.Default)
 		{
 			if (HasCommand(commandName))
 			{

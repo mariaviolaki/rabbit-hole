@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Visuals;
@@ -30,7 +31,7 @@ namespace History
 			}
 		}
 
-		public void Load(VisualGroupManager visualManager, GameOptionsSO gameOptions)
+		public IEnumerator Load(VisualGroupManager visualManager, GameOptionsSO gameOptions)
 		{
 			float fadeSpeed = gameOptions.General.SkipTransitionSpeed;
 
@@ -50,16 +51,16 @@ namespace History
 
 					if (historyVisual == null)
 					{
-						visualManager.Clear(visualGroup.Type, visualLayer.Depth, false, fadeSpeed);
+						yield return visualManager.Clear(visualGroup.Type, visualLayer.Depth, false, fadeSpeed);
 					}
 					else if (historyVisual.isImage)
 					{
-						visualManager.SetImage(
+						yield return visualManager.SetImage(
 							historyVisual.visualType, historyVisual.layerDepth, historyVisual.visualName, false, fadeSpeed);
 					}
 					else
 					{
-						visualManager.SetVideo(
+						yield return visualManager.SetVideo(
 							historyVisual.visualType, historyVisual.layerDepth, historyVisual.visualName, historyVisual.isMuted, false, fadeSpeed);
 					}
 				}

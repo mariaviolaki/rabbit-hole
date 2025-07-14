@@ -62,7 +62,7 @@ namespace Commands
 {
 	public enum CommandSkipType
 	{
-		None, Immediate, Transition
+		Default, None, Immediate, Transition
 	}
 }
 

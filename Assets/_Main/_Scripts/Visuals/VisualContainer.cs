@@ -9,25 +9,17 @@ namespace Visuals
 	{
 		const float FadeSpeedMultiplier = 10f;
 
-		readonly VisualLayerGroup layerGroup;
+		readonly VisualLayer visualLayer;
 		readonly CanvasGroup canvasGroup;
 		readonly RawImage rawImage;
 		readonly VideoPlayer videoPlayer;
 		readonly AudioSource audioSource;
 
 		RenderTexture renderTexture;
-		string visualName;
-		bool isImage;
-		bool isMuted;
-		bool isImmediate;
 
-		public string VisualName => visualName;
-		public bool IsImage => isImage;
-		public bool IsMuted => isMuted;
-
-		public VisualContainer(VisualLayerGroup layerGroup, GameObject layerObject)
+		public VisualContainer(VisualLayer visualLayer, GameObject layerObject)
 		{
-			this.layerGroup = layerGroup;
+			this.visualLayer = visualLayer;
 
 			RectTransform rectTransform = layerObject.GetComponent<RectTransform>();
 			canvasGroup = layerObject.AddComponent<CanvasGroup>();
@@ -57,8 +49,6 @@ namespace Visuals
 
 		public IEnumerator Clear(bool isImmediate, float speed)
 		{
-			this.isImmediate = isImmediate;
-
 			if (isImmediate)
 			{
 				ClearImmediate();
@@ -72,10 +62,6 @@ namespace Visuals
 
 		public IEnumerator SetImage(string name, bool isImmediate = false, float fadeSpeed = 0)
 		{
-			if (isImage && visualName == name) yield break;
-
-			this.isImmediate = isImmediate;
-
 			if (isImmediate)
 				yield return SetImageImmediate(name);
 			else
@@ -84,10 +70,6 @@ namespace Visuals
 
 		public IEnumerator SetVideo(string name, bool isMuted = false, bool isImmediate = false, float speed = 0)
 		{
-			if (!isImage && visualName == name) yield break;
-
-			this.isImmediate = isImmediate;
-
 			if (isImmediate)
 			{
 				ApplyVideo(name, isMuted);
@@ -99,15 +81,12 @@ namespace Visuals
 			}
 		}
 
-		void ApplyImage(string name, Sprite sprite)
+		void ApplyImage(Sprite sprite)
 		{
 			if (sprite == null) return;
 
 			UnloadVisual();
 
-			isImage = true;
-			isMuted = true;
-			visualName = name;
 			rawImage.texture = sprite.texture;
 		}
 
@@ -115,25 +94,21 @@ namespace Visuals
 		{
 			UnloadVisual();
 
-			isImage = false;
-			this.isMuted = isMuted;
-			visualName = name;
-
 			audioSource.mute = isMuted;
 			audioSource.volume = 0;
 
-			videoPlayer.url = layerGroup.Manager.FileManager.GetVideoUrl(name);
+			videoPlayer.url = visualLayer.LayerGroup.Manager.FileManager.GetVideoUrl(name);
 			videoPlayer.prepareCompleted += OnVideoPrepared;
 			videoPlayer.Prepare();
 		}
 
 		IEnumerator SetImageImmediate(string name)
 		{
-			yield return layerGroup.Manager.FileManager.LoadBackgroundImage(name);
-			Sprite sprite = layerGroup.Manager.FileManager.GetBackgroundImage(name);
+			yield return visualLayer.LayerGroup.Manager.FileManager.LoadBackgroundImage(name);
+			Sprite sprite = visualLayer.LayerGroup.Manager.FileManager.GetBackgroundImage(name);
 			if (sprite == null) yield break;
 
-			ApplyImage(name, sprite);
+			ApplyImage(sprite);
 			canvasGroup.alpha = 1f;
 		}
 
@@ -141,10 +116,10 @@ namespace Visuals
 		{
 			if (isImage)
 			{
-				yield return layerGroup.Manager.FileManager.LoadBackgroundImage(name);
-				Sprite sprite = layerGroup.Manager.FileManager.GetBackgroundImage(name);
+				yield return visualLayer.LayerGroup.Manager.FileManager.LoadBackgroundImage(name);
+				Sprite sprite = visualLayer.LayerGroup.Manager.FileManager.GetBackgroundImage(name);
 				if (sprite != null)
-					ApplyImage(name, sprite);
+					ApplyImage(sprite);
 			}
 			else
 			{
@@ -167,6 +142,7 @@ namespace Visuals
 
 			float timeElapsed = 0;
 			float duration = (1f / speed) * FadeSpeedMultiplier * Mathf.Abs(targetAlpha - startAlpha);
+
 			while (timeElapsed < duration)
 			{
 				timeElapsed += Time.deltaTime;
@@ -175,7 +151,7 @@ namespace Visuals
 				float transitionValue = Mathf.Lerp(startAlpha, targetAlpha, smoothPercentage);
 				canvasGroup.alpha = transitionValue;
 
-				if (!isImage && !isMuted)
+				if (!visualLayer.IsImage && !visualLayer.IsMuted)
 					audioSource.volume = transitionValue;
 
 				yield return null;
@@ -186,11 +162,11 @@ namespace Visuals
 
 		void UnloadVisual()
 		{
-			if (visualName == null) return;
+			if (visualLayer.VisualName == null) return;
 
-			if (isImage)
+			if (visualLayer.IsImage)
 			{
-				layerGroup.Manager.FileManager.UnloadBackgroundImage(visualName);
+				visualLayer.LayerGroup.Manager.FileManager.UnloadBackgroundImage(visualLayer.VisualName);
 			}
 			else
 			{
@@ -206,7 +182,6 @@ namespace Visuals
 			}
 
 			rawImage.texture = null;
-			visualName = null;
 		}
 
 		void OnVideoPrepared(VideoPlayer videoPlayer)
@@ -217,9 +192,9 @@ namespace Visuals
 			rawImage.texture = renderTexture;
 			this.videoPlayer.targetTexture = renderTexture;
 
-			if (isImmediate)
+			if (visualLayer.IsImmediate)
 			{
-				audioSource.volume = isMuted ? 0f : 1f;
+				audioSource.volume = visualLayer.IsMuted ? 0f : 1f;
 				canvasGroup.alpha = 1f;
 			}
 
