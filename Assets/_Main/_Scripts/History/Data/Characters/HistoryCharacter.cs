@@ -6,7 +6,7 @@ using Variables;
 namespace History
 {
 	[System.Serializable]
-	public abstract class HistoryCharacterBase
+	public class HistoryCharacter
 	{
 		// Character
 		public int priority;
@@ -15,37 +15,32 @@ namespace History
 		public Color color;
 		public bool isHighlighted;
 		public bool isFacingRight;
-		public List<HistoryAnimationData> animations;
+		public List<HistoryAnimationData> animations = new();
 
 		// Character Data
 		public CharacterType type;
 		public string shortName;
 		public string name;
 		public string displayName;
-	}
 
-	[System.Serializable]
-	public class HistorySpriteCharacter : HistoryCharacterBase
-	{
-		public class HistorySpriteLayer
-		{
-			public SpriteLayerType layerType;
-			public string spriteName;
-
-			public HistorySpriteLayer(SpriteLayerType layerType, string spriteName)
-			{
-				this.layerType = layerType;
-				this.spriteName = spriteName;
-			}
-		}
-
+		// Sprite Character Data
 		public List<HistorySpriteLayer> spriteLayers = new();
+
+		// 3D Model Character Data
+		public string modelExpression;
 	}
 
 	[System.Serializable]
-	public class HistoryModel3DCharacter : HistoryCharacterBase
+	public class HistorySpriteLayer
 	{
-		public string expression;
+		public SpriteLayerType layerType;
+		public string spriteName;
+
+		public HistorySpriteLayer(SpriteLayerType layerType, string spriteName)
+		{
+			this.layerType = layerType;
+			this.spriteName = spriteName;
+		}
 	}
 
 	[System.Serializable]

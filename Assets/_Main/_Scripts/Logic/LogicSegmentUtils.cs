@@ -31,9 +31,9 @@ namespace Logic
 
 		readonly ScriptValueParser scriptValueParser;
 
-		public LogicSegmentUtils(DialogueSystem dialogueSystem)
+		public LogicSegmentUtils(DialogueManager dialogueManager)
 		{
-			scriptValueParser = dialogueSystem.Reader.ValueParser;
+			scriptValueParser = dialogueManager.Reader.LineReader.ValueParser;
 		}
 
 		public LogicBlock ParseBlock(DialogueBlock dialogueBlock, int progressStartIndex)

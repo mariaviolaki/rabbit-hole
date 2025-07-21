@@ -1,3 +1,4 @@
+using IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -67,7 +68,7 @@ namespace UI
 				? new BaseFadeableUI[] { background, sprites, foreground, gameplayControls }
 				: new BaseFadeableUI[] { dialogue, background, sprites, foreground, gameplayControls };
 
-			float speed = fadeSpeed < Mathf.Epsilon ? gameOptions.Dialogue.SceneFadeTransitionSpeed : fadeSpeed;
+			float speed = fadeSpeed < Mathf.Epsilon ? gameOptions.General.SceneFadeTransitionSpeed : fadeSpeed;
 			speed *= fadeMultiplier;
 
 			List<IEnumerator> fadeProcesses = new();

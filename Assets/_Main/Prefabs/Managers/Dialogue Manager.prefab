@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4372357478083127185}
   - component: {fileID: 6154280304512614437}
   m_Layer: 0
-  m_Name: Dialogue System
+  m_Name: Dialogue Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -57,17 +57,3 @@ MonoBehaviour:
   continuePrompt: {fileID: 0}
   readModeIndicator: {fileID: 0}
   dialogueFileName: Main
-  historyState:
-    dialogueData:
-      speakerText: 
-      dialogueText: 
-      speakerColor: {r: 0, g: 0, b: 0, a: 0}
-      dialogueColor: {r: 0, g: 0, b: 0, a: 0}
-      speakerFont: 
-      dialogueFont: 
-    audioData:
-      audioTracks: []
-    visualData:
-      visuals: []
-    variableData:
-      variables: []

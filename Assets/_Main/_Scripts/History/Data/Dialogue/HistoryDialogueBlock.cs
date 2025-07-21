@@ -1,5 +1,6 @@
 namespace History
 {
+	[System.Serializable]
 	public class HistoryDialogueBlock
 	{
 		public string filePath;

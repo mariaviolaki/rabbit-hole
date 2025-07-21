@@ -4,137 +4,114 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Interactions;
 
-[CreateAssetMenu(fileName = "InputManager", menuName = "Scriptable Objects/Input Manager")]
-public class InputManagerSO : ScriptableObject, InputActions.IVNActions
+namespace IO
 {
-	const float InputDelayFast = 0.2f;
-	const float InputDelaySlow = 0.3f;
-
-	// Triggered by the InputActions asset
-	public Action OnForward;
-	public Action OnBack;
-	public Action OnAuto;
-	public Action OnSkip;
-	public Action OnSkipHold;
-	public Action OnSkipHoldEnd;
-	public Action OnOpenLog;
-	public Action<float> OnScroll;
-
-	// Triggered by UI components
-	public Action OnClearInput;
-	public Action<string> OnSubmitInput;
-	public Action OnClearChoice;
-	public Action<DialogueChoice> OnSelectChoice;
-
-	// Triggered by the Dialogue System
-	public Action OnAdvance;
-
-	InputActions inputActions;
-	float lastInputTime;
-	bool isHoldPerformed = false;
-	bool IsDialoguePanelOpen => IsInputPanelOpen || IsChoicePanelOpen || IsLogPanelOpen;
-
-	public bool IsInputPanelOpen { get; set; } = false;
-	public bool IsChoicePanelOpen { get; set; } = false;
-	public bool IsLogPanelOpen { get; set; } = false;
-
-	void OnEnable()
+	[CreateAssetMenu(fileName = "InputManager", menuName = "Scriptable Objects/Input Manager")]
+	public class InputManagerSO : ScriptableObject, InputActions.IVNActions
 	{
-		if (inputActions != null) return;
+		// Triggered by the InputActions asset
+		public Action OnForward;
+		public Action OnBack;
+		public Action OnAuto;
+		public Action OnSkip;
+		public Action OnSkipHold;
+		public Action OnSkipHoldEnd;
+		public Action OnOpenLog;
+		public Action<float> OnScroll;
 
-		inputActions = new InputActions();
-		inputActions.VN.SetCallbacks(this);
-		inputActions.VN.Enable();
-		lastInputTime = Time.time;
-	}
+		// Triggered by UI components
+		public Action OnClearInput;
+		public Action<string> OnSubmitInput;
+		public Action OnClearChoice;
+		public Action<DialogueChoice> OnSelectChoice;
 
-	public void OnForwardAction(InputAction.CallbackContext context)
-	{
-		if (IsDialoguePanelOpen) return;
-		if (context.phase != InputActionPhase.Performed) return;
-		if (IsOnInputCooldown(InputDelaySlow)) return;
+		InputActions inputActions;
+		bool isHoldPerformed = false;
+		bool IsDialoguePanelOpen => IsInputPanelOpen || IsChoicePanelOpen || IsLogPanelOpen;
 
-		OnForward?.Invoke();
-	}
+		public bool IsInputPanelOpen { get; set; } = false;
+		public bool IsChoicePanelOpen { get; set; } = false;
+		public bool IsLogPanelOpen { get; set; } = false;
 
-	public void OnBackAction(InputAction.CallbackContext context)
-	{
-		if (IsLogPanelOpen) return;
-		if (context.phase != InputActionPhase.Performed) return;
-		if (IsOnInputCooldown(InputDelaySlow)) return;
-
-		OnBack?.Invoke();
-	}
-
-	public void OnAutoAction(InputAction.CallbackContext context)
-	{
-		if (IsDialoguePanelOpen) return;
-		if (context.phase != InputActionPhase.Performed) return;
-		if (IsOnInputCooldown(InputDelayFast)) return;
-
-		OnAuto?.Invoke();
-	}
-
-	public void OnSkipAction(InputAction.CallbackContext context)
-	{
-		if (IsDialoguePanelOpen) return;
-		if (IsOnInputCooldown(InputDelayFast)) return;
-
-		// Only trigger successful button presses
-		if (context.interaction is not PressInteraction || context.phase != InputActionPhase.Performed) return;
-
-		OnSkip?.Invoke();
-	}
-
-	public void OnSkipHoldAction(InputAction.CallbackContext context)
-	{
-		if (IsDialoguePanelOpen) return;
-		if (IsOnInputCooldown(InputDelayFast)) return;
-
-		// Only proceed if the player is holding down the button
-		if (context.interaction is not HoldInteraction) return;
-
-		if (context.phase == InputActionPhase.Performed)
+		void OnEnable()
 		{
-			isHoldPerformed = true;
-			OnSkipHold?.Invoke();
+			if (inputActions != null) return;
+
+			inputActions = new InputActions();
+			inputActions.VN.SetCallbacks(this);
+			inputActions.VN.Enable();
 		}
-		else if (context.phase == InputActionPhase.Canceled && isHoldPerformed)
+
+		public void OnForwardAction(InputAction.CallbackContext context)
 		{
-			isHoldPerformed = false;
-			OnSkipHoldEnd?.Invoke();
+			if (IsDialoguePanelOpen) return;
+			if (context.phase != InputActionPhase.Performed) return;
+
+			OnForward?.Invoke();
 		}
-	}
 
-	public void OnLogAction(InputAction.CallbackContext context)
-	{
-		if (IsDialoguePanelOpen) return;
-		if (context.phase != InputActionPhase.Performed) return;
-		if (IsOnInputCooldown(InputDelayFast)) return;
+		public void OnBackAction(InputAction.CallbackContext context)
+		{
+			if (IsLogPanelOpen) return;
+			if (context.phase != InputActionPhase.Performed) return;
 
-		OnOpenLog?.Invoke();
-	}
+			OnBack?.Invoke();
+		}
 
-	public void OnScrollAction(InputAction.CallbackContext context)
-	{
-		if (!IsLogPanelOpen) return;
-		if (context.phase != InputActionPhase.Performed) return;
-		if (IsOnInputCooldown(InputDelayFast)) return;
+		public void OnAutoAction(InputAction.CallbackContext context)
+		{
+			if (IsDialoguePanelOpen) return;
+			if (context.phase != InputActionPhase.Performed) return;
 
-		Vector2 scrollValue = context.ReadValue<Vector2>();
+			OnAuto?.Invoke();
+		}
 
-		if (scrollValue.y > 0.1f)
-			OnScroll?.Invoke(1f); // scroll up
-		else if (scrollValue.y < -0.1f)
-			OnScroll?.Invoke(-1f); // scroll down
-	}
+		public void OnSkipAction(InputAction.CallbackContext context)
+		{
+			if (IsDialoguePanelOpen) return;
 
-	bool IsOnInputCooldown(float delay)
-	{
-		float currentTime = Time.time;
-		if (currentTime < lastInputTime + delay) return true;
+			// Only trigger successful button presses
+			if (context.interaction is not PressInteraction || context.phase != InputActionPhase.Performed) return;
+			OnSkip?.Invoke();
+		}
 
-		lastInputTime = currentTime;
-		return false;
+		public void OnSkipHoldAction(InputAction.CallbackContext context)
+		{
+			if (IsDialoguePanelOpen) return;
+			// Only proceed if the player is holding down the button
+			if (context.interaction is not HoldInteraction) return;
+
+			if (context.phase == InputActionPhase.Performed)
+			{
+				isHoldPerformed = true;
+				OnSkipHold?.Invoke();
+			}
+			else if (context.phase == InputActionPhase.Canceled && isHoldPerformed)
+			{
+				isHoldPerformed = false;
+				OnSkipHoldEnd?.Invoke();
+			}
+		}
+
+		public void OnLogAction(InputAction.CallbackContext context)
+		{
+			if (IsDialoguePanelOpen) return;
+			if (context.phase != InputActionPhase.Performed) return;
+
+			OnOpenLog?.Invoke();
+		}
+
+		public void OnScrollAction(InputAction.CallbackContext context)
+		{
+			if (!IsLogPanelOpen) return;
+			if (context.phase != InputActionPhase.Performed) return;
+
+			Vector2 scrollValue = context.ReadValue<Vector2>();
+
+			if (scrollValue.y > 0.1f)
+				OnScroll?.Invoke(1f); // scroll up
+			else if (scrollValue.y < -0.1f)
+				OnScroll?.Invoke(-1f); // scroll down
+		}
 	}
 }

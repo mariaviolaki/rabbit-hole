@@ -11,9 +11,9 @@ namespace Variables
 
 		public DialogueTagBankSO TagBank => tagBank;
 
-		public ScriptTagManager(DialogueSystem dialogueSystem)
+		public ScriptTagManager(DialogueManager dialogueManager)
 		{
-			tagBank = dialogueSystem.TagBank;
+			tagBank = dialogueManager.TagBank;
 		}
 
 		public string GetTagValue(string tagName)

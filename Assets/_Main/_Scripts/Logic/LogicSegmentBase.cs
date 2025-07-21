@@ -8,13 +8,13 @@ namespace Logic
 		public static bool Matches(string rawLine) => false;
 
 		protected string rawLine;
-		protected DialogueSystem dialogueSystem;
+		protected DialogueManager dialogueManager;
 
 		public virtual bool IsBlocking => false;
 
-		public LogicSegmentBase(DialogueSystem dialogueSystem, string rawLine)
+		public LogicSegmentBase(DialogueManager dialogueManager, string rawLine)
 		{
-			this.dialogueSystem = dialogueSystem;
+			this.dialogueManager = dialogueManager;
 			this.rawLine = rawLine;
 		}	
 
@@ -26,14 +26,14 @@ namespace Logic
 
 	public abstract class BlockingLogicSegmentBase : LogicSegmentBase
 	{
-		protected BlockingLogicSegmentBase(DialogueSystem dialogueSystem, string rawLine) : base(dialogueSystem, rawLine) { }
+		protected BlockingLogicSegmentBase(DialogueManager dialogueManager, string rawLine) : base(dialogueManager, rawLine) { }
 		public abstract IEnumerator Execute();
 		public abstract IEnumerator ForceComplete();
 	}
 
 	public abstract class NonBlockingLogicSegmentBase : LogicSegmentBase
 	{
-		protected NonBlockingLogicSegmentBase(DialogueSystem dialogueSystem, string rawLine) : base(dialogueSystem, rawLine) { }
+		protected NonBlockingLogicSegmentBase(DialogueManager dialogueManager, string rawLine) : base(dialogueManager, rawLine) { }
 		public abstract void Execute();
 	}
 }

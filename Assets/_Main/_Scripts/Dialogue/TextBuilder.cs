@@ -6,24 +6,22 @@ namespace Dialogue
 {
 	public class TextBuilder
 	{
-		public enum TextMode { Instant, Typed, InstantFade, TypedFade }
 		enum BuildMode { Write, Append }
 
-		const float maxSpeed = 15f;
-		const float minWaitTime = 0.02f;
-		const float instantSpeedMultiplier = 5f;
-		const float typeSpeedMultiplier = 0.1f;
-		const float fadeSpeedMultiplier = 0.095f;
+		public const float MaxSpeed = 15f;
+		const float MinWaitTime = 0.02f;
+		const float InstantSpeedMultiplier = 5f;
+		const float TypeSpeedMultiplier = 0.1f;
+		const float FadeSpeedMultiplier = 0.095f;
 
 		Coroutine buildProcess;
 
 		// Configurable from outside
 		TMP_Text tmpText;
-		TextMode textType;
+		TextBuildMode textType;
 		float speed;
 
 		public bool IsBuilding { get { return buildProcess != null; } }
-		public float MaxSpeed { get { return maxSpeed; } }
 		public float Speed { get { return speed; } set { speed = Mathf.Clamp(value, 1f, MaxSpeed); } }
 
 		public TextBuilder(TMP_Text tmpText)
@@ -33,12 +31,12 @@ namespace Dialogue
 			speed = MaxSpeed / 2;
 		}
 
-		public bool Write(string newText, TextMode textType)
+		public bool Write(string newText, TextBuildMode textType)
 		{
 			return StartProcess(newText, BuildMode.Write, textType);
 		}
 
-		public bool Append(string newText, TextMode textType)
+		public bool Append(string newText, TextBuildMode textType)
 		{
 			return StartProcess(newText, BuildMode.Append, textType);
 		}
@@ -52,18 +50,18 @@ namespace Dialogue
 			return true;
 		}
 
-		bool StartProcess(string newText, BuildMode buildType, TextMode textType)
+		bool StartProcess(string newText, BuildMode buildType, TextBuildMode textType)
 		{
 			bool isProcessInterrupted = Stop();
 
-			this.textType = isProcessInterrupted ? TextMode.Instant : textType;
+			this.textType = isProcessInterrupted ? TextBuildMode.Instant : textType;
 			string oldText = tmpText.text;
 			string preText = buildType == BuildMode.Append || isProcessInterrupted ? oldText : "";
 			int preTextLength = BuildPreText(preText);
 
 			if (isProcessInterrupted) return false;
 
-			if (textType == TextMode.Instant || textType == TextMode.InstantFade)
+			if (textType == TextBuildMode.Instant || textType == TextBuildMode.InstantFade)
 				BuildInstantText(newText, preTextLength);
 			else
 				BuildTypedText(newText, preTextLength);
@@ -90,7 +88,7 @@ namespace Dialogue
 			int fullTextLenth = tmpText.textInfo.characterCount;
 			tmpText.maxVisibleCharacters = fullTextLenth;
 
-			if (textType == TextMode.InstantFade)
+			if (textType == TextBuildMode.InstantFade)
 			{
 				int newTextLength = fullTextLenth - preTextLength;
 				buildProcess = tmpText.StartCoroutine(StartInstantFadingIn(preTextLength, newTextLength));
@@ -104,17 +102,17 @@ namespace Dialogue
 
 			int fullTextLength = tmpText.textInfo.characterCount;
 			int newTextLength = fullTextLength - preTextLength;
-			if (textType == TextMode.TypedFade)
+			if (textType == TextBuildMode.TypedFade)
 				tmpText.maxVisibleCharacters = fullTextLength;
 
-			float rawTimePerCharacter = 1f / speed * typeSpeedMultiplier;
-			float timePerCharacter = Mathf.Max(minWaitTime, rawTimePerCharacter);
+			float rawTimePerCharacter = 1f / speed * TypeSpeedMultiplier;
+			float timePerCharacter = Mathf.Max(MinWaitTime, rawTimePerCharacter);
 			int charactersPerIteration = GetCharactersPerIteration(newTextLength, rawTimePerCharacter);
 			float maxTime = timePerCharacter * Mathf.CeilToInt((float)newTextLength / charactersPerIteration);
 
-			if (textType == TextMode.Typed)
+			if (textType == TextBuildMode.Typed)
 				buildProcess = tmpText.StartCoroutine(StartTyping(maxTime, timePerCharacter, newTextLength, charactersPerIteration));
-			else if (textType == TextMode.TypedFade)
+			else if (textType == TextBuildMode.TypedFade)
 				buildProcess = tmpText.StartCoroutine(StartFadingIn(maxTime, preTextLength, newTextLength, charactersPerIteration));
 		}
 
@@ -123,7 +121,7 @@ namespace Dialogue
 			HideText(preTextLength);
 
 			float[] transparencyValues = new float[newTextLength];
-			float fadeTime = 1 / speed * instantSpeedMultiplier;
+			float fadeTime = 1 / speed * InstantSpeedMultiplier;
 			float newestAlpha = 0;
 
 			while (newestAlpha < 255)
@@ -193,10 +191,10 @@ namespace Dialogue
 				}
 
 				// Fade in all the characters in the current range
-				if (fadeTimeElapsed >= minWaitTime)
+				if (fadeTimeElapsed >= MinWaitTime)
 				{
-					fadeTimeElapsed -= minWaitTime;
-					float transparencyStep = fadeSpeedMultiplier * 255;
+					fadeTimeElapsed -= MinWaitTime;
+					float transparencyStep = FadeSpeedMultiplier * 255;
 					newestAlpha = FadeInText(transparencyValues, minRange, maxRange, preTextLength, transparencyStep);
 				}
 
@@ -245,9 +243,9 @@ namespace Dialogue
 		int GetCharactersPerIteration(int textCount, float waitTime)
 		{
 			// Reveal more characters when the wait time is less than minimum
-			if (waitTime < minWaitTime)
+			if (waitTime < MinWaitTime)
 			{
-				float waitRatio = minWaitTime / waitTime;
+				float waitRatio = MinWaitTime / waitTime;
 				int characterCount = Mathf.RoundToInt((waitRatio - 1f) * 5f) + 1;
 
 				return characterCount;

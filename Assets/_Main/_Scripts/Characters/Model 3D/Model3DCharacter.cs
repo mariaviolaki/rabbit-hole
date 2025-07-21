@@ -239,7 +239,7 @@ namespace Characters
 
 		IEnumerator TransitionExpression(string expressionName, float speed, bool isSkipped)
 		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Model3D.ExpressionTransitionSpeed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.TransitionSpeed, isSkipped);
 			float transitionDuration = (1 / speed) * expressionTransitionMultiplier;
 
 			// Fade off the old expression
@@ -265,7 +265,7 @@ namespace Characters
 
 			ToggleSecondaryImage(true);
 
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Model3D.ExpressionTransitionSpeed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.TransitionSpeed, isSkipped);
 			secondaryCanvasGroup.alpha = 0f;
 			secondaryCanvasGroup.transform.localScale = targetLocalScale;
 
@@ -281,7 +281,7 @@ namespace Characters
 
 		IEnumerator TransitionColor(Graphic image, Color color, float speed, bool isSkipped)
 		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.ColorTransitionSpeed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.TransitionSpeed, isSkipped);
 			Color targetColor = isHighlighted ? color : GetDarkColor(color);
 			
 			yield return TransitionHandler.SetColor(image, targetColor, speed);
@@ -292,7 +292,7 @@ namespace Characters
 
 		IEnumerator TransitionBrightness(Graphic image, bool isHighlighted, float speed, bool isSkipped)
 		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.BrightnessTransitionSpeed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.TransitionSpeed, isSkipped);
 			Color targetColor = isHighlighted ? LightColor : DarkColor;
 			
 			yield return TransitionHandler.SetColor(image, targetColor, speed);

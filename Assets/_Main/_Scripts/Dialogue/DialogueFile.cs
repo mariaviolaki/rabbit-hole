@@ -1,3 +1,4 @@
+using IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -7,8 +8,8 @@ namespace Dialogue
 {
 	public class DialogueFile
 	{
+		public const string CommentLineDelimiter = "//";
 		const string RootPath = "Dialogue/";
-		const string CommentLineDelimiter = "//";
 
 		readonly FileManagerSO fileManager;
 		readonly DialogueStack dialogueStack;
@@ -20,7 +21,7 @@ namespace Dialogue
 		public List<string> Lines => lines;
 
 		// Used to load files in addressables using the file manager
-		public DialogueFile(FileManagerSO fileManager, DialogueStack dialogueStack, string addressablePath)
+		public DialogueFile(string addressablePath, FileManagerSO fileManager, DialogueStack dialogueStack)
 		{
 			addressablePath = GetNormalizedPath(addressablePath);
 
@@ -30,7 +31,7 @@ namespace Dialogue
 		}
 
 		// Creates a custom dialogue to read based on the given lines
-		public DialogueFile(FileManagerSO fileManager, DialogueStack dialogueStack, string speaker, List<string> lines)
+		public DialogueFile(List<string> lines, FileManagerSO fileManager, DialogueStack dialogueStack, string speaker)
 		{
 			this.fileManager = fileManager;
 			this.dialogueStack = dialogueStack;
@@ -42,15 +43,22 @@ namespace Dialogue
 		{
 			if (string.IsNullOrWhiteSpace(addressablePath)) yield break;
 
+			yield return Parse();
+
+			dialogueStack.Clear();
+			dialogueStack.AddBlock(addressablePath, lines);
+		}
+
+		public IEnumerator Parse()
+		{
+			if (string.IsNullOrWhiteSpace(addressablePath)) yield break;
+
 			yield return fileManager.LoadDialogue(addressablePath);
 			TextAsset dialogueAsset = fileManager.GetDialogueFile(addressablePath);
 			if (dialogueAsset == null) yield break;
 
 			name = dialogueAsset.name;
 			ParseLines(dialogueAsset);
-
-			dialogueStack.Clear();
-			dialogueStack.AddBlock(addressablePath, lines);
 		}
 
 		void ParseLines(TextAsset dialogueAsset)

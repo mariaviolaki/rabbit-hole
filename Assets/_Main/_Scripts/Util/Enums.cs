@@ -22,6 +22,16 @@ namespace Dialogue
 	{
 		None, Forward, Auto, Skip
 	}
+
+	public enum DialogueSkipMode
+	{
+		Read, Unread, AfterChoices
+	}
+
+	public enum TextBuildMode
+	{
+		Instant, Typed, InstantFade, TypedFade
+	}
 }
 
 namespace Audio
@@ -38,9 +48,14 @@ namespace Visuals
 	{
 		None, Background, Foreground, Cinematic
 	}
+
+	public enum GraphicsQuality
+	{
+		VeryLow = 0, Low = 1, Medium = 2, High = 3, VeryHigh = 4, Ultra = 5
+	}
 }
 
-namespace GameIO
+namespace IO
 {
 	public enum InputActionType
 	{
@@ -55,6 +70,11 @@ namespace GameIO
 	public enum FileExtension
 	{
 		None, mp4, mp3, ogg
+	}
+
+	public enum AssetType
+	{
+		Video, Audio, Dialogue, Background, CharacterAtlas, Model3DPrefab, CharacterPrefab
 	}
 }
 
@@ -76,5 +96,21 @@ namespace Variables
 	public enum DataTypeEnum
 	{
 		None, String, Int, Float, Bool
+	}
+}
+
+namespace Logic
+{
+	public enum BlockingLogicSegmentType
+	{
+		None, Choice, Input
+	}
+}
+
+namespace History
+{
+	public enum HistoryAction
+	{
+		None, Capture, Load, SaveApply, NavigationApply, LogApply
 	}
 }

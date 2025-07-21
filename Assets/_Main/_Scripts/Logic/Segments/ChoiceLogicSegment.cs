@@ -1,4 +1,5 @@
 using Dialogue;
+using IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,17 +17,17 @@ namespace Logic
 
 		readonly InputManagerSO inputManager;
 		readonly VisualNovelUI visualNovelUI;
-		readonly DialogueStack dialogueStack;
+		readonly DialogueReader dialogueReader;
 		readonly LogicSegmentUtils logicSegmentUtils;
 		readonly List<DialogueChoice> choices = new();
 		DialogueChoice choice;
 
-		public ChoiceLogicSegment(DialogueSystem dialogueSystem, string rawLine) : base(dialogueSystem, rawLine)
+		public ChoiceLogicSegment(DialogueManager dialogueManager, string rawLine) : base(dialogueManager, rawLine)
 		{
-			inputManager = dialogueSystem.InputManager;
-			visualNovelUI = dialogueSystem.UI;
-			dialogueStack = dialogueSystem.Reader.Stack;
-			logicSegmentUtils = new(dialogueSystem);
+			inputManager = dialogueManager.InputManager;
+			visualNovelUI = dialogueManager.UI;
+			dialogueReader = dialogueManager.Reader;
+			logicSegmentUtils = new(dialogueManager);
 
 			ParseChoices();
 		}
@@ -42,7 +43,8 @@ namespace Logic
 			{
 				yield return visualNovelUI.GameplayControls.ShowChoices(choices);
 				while (choice == null) yield return null;
-				dialogueStack.AddBlock(choice.FilePath, choice.DialogueLines, choice.FileStartIndex, choice.FileEndIndex);
+				dialogueReader.Stack.AddBlock(choice.FilePath, choice.DialogueLines, choice.FileStartIndex, choice.FileEndIndex);
+				dialogueReader.LogicReader.LogicSegmentType = BlockingLogicSegmentType.Choice;
 			}
 			finally
 			{
@@ -62,7 +64,7 @@ namespace Logic
 
 		void ParseChoices()
 		{
-			DialogueBlock dialogueBlock = dialogueStack.GetBlock();
+			DialogueBlock dialogueBlock = dialogueReader.Stack.GetBlock();
 			if (dialogueBlock == null)
 			{
 				Debug.LogWarning("No Dialogue Block found in stack while parsing choices.");

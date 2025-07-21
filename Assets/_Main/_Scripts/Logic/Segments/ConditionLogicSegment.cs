@@ -16,10 +16,10 @@ namespace Logic
 		readonly DialogueStack dialogueStack;
 		readonly LogicSegmentUtils logicSegmentUtils;
 
-		public ConditionLogicSegment(DialogueSystem dialogueSystem, string rawLine) : base(dialogueSystem, rawLine)
+		public ConditionLogicSegment(DialogueManager dialogueManager, string rawLine) : base(dialogueManager, rawLine)
 		{
-			dialogueStack = dialogueSystem.Reader.Stack;
-			logicSegmentUtils = new(dialogueSystem);
+			dialogueStack = dialogueManager.Reader.Stack;
+			logicSegmentUtils = new(dialogueManager);
 		}
 
 		public override void Execute()

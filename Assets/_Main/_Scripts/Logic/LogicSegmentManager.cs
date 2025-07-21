@@ -1,4 +1,5 @@
 using Dialogue;
+using IO;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace Logic
 {
 	public class LogicSegmentManager
 	{
-		readonly DialogueSystem dialogueSystem;
+		readonly DialogueManager dialogueManager;
 		readonly InputManagerSO inputManager;
 		readonly Dictionary<Type, Func<string, bool>> segmentMatches = new();
 		readonly Stack<LogicSegmentBase> segments = new();
@@ -20,10 +21,10 @@ namespace Logic
 
 		void PauseExecution() => isExecuting = false;
 
-		public LogicSegmentManager(DialogueSystem dialogueSystem)
+		public LogicSegmentManager(DialogueManager dialogueManager)
 		{
-			this.dialogueSystem = dialogueSystem;
-			this.inputManager = dialogueSystem.InputManager;
+			this.dialogueManager = dialogueManager;
+			this.inputManager = dialogueManager.InputManager;
 
 			InitSegmentTypes();
 
@@ -76,7 +77,7 @@ namespace Logic
 
 		LogicSegmentBase CreateLogicSegment(Type segmentType, string rawData)
 		{
-			object[] args = { dialogueSystem, rawData };
+			object[] args = { dialogueManager, rawData };
 			LogicSegmentBase logicSegment = (LogicSegmentBase)Activator.CreateInstance(segmentType, args);
 
 			return logicSegment;

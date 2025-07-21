@@ -1,4 +1,5 @@
 using Dialogue;
+using IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -13,7 +14,7 @@ namespace Characters
 		[SerializeField] GameOptionsSO gameOptions;
 		[SerializeField] FileManagerSO fileManager;
 		[SerializeField] CharacterBankSO characterBank;
-		[SerializeField] DialogueSystem dialogueSystem;
+		[SerializeField] DialogueManager dialogueManager;
 		[SerializeField] RectTransform characterContainer;
 		[SerializeField] Transform model3DContainer;
 
@@ -23,7 +24,7 @@ namespace Characters
 		public GameOptionsSO GameOptions { get { return gameOptions; } }
 		public CharacterBankSO Bank { get { return characterBank; } }
 		public FileManagerSO FileManager { get { return fileManager; } }
-		public DialogueSystem Dialogue { get { return dialogueSystem; } }
+		public DialogueManager Dialogue { get { return dialogueManager; } }
 		public RectTransform Container { get { return characterContainer; } }
 		public Transform Model3DContainer { get { return model3DContainer; } }
 

@@ -1,3 +1,5 @@
+using IO;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -7,8 +9,12 @@ namespace Audio
 {
 	public class AudioManager : MonoBehaviour
 	{
+		const float MinVolume = 0.0001f;
+		const float MaxVolume = 1f;
+
 		[SerializeField] FileManagerSO fileManager;
 		[SerializeField] GameOptionsSO options;
+		[SerializeField] AudioMixer audioMixer;
 		[SerializeField] AudioMixerGroup ambientMixerGroup;
 		[SerializeField] AudioMixerGroup musicMixerGroup;
 		[SerializeField] AudioMixerGroup sfxMixerGroup;
@@ -20,6 +26,7 @@ namespace Audio
 
 		public FileManagerSO FileManager => fileManager;
 		public GameOptionsSO Options => options;
+		public AudioMixer Mixer => audioMixer;
 		public AudioMixerGroup AmbientMixerGroup => ambientMixerGroup;
 		public AudioMixerGroup MusicMixerGroup => musicMixerGroup;
 		public AudioMixerGroup SFXMixerGroup => sfxMixerGroup;
@@ -50,6 +57,25 @@ namespace Audio
 		public void Stop(AudioType audioType, string audioName, bool isImmediate = false, float fadeSpeed = 0f, int layerNum = 0)
 		{
 			audioGroups[audioType].Stop(audioName, isImmediate, fadeSpeed, layerNum);
+		}
+
+		public float GetVolume(AudioType audioType)
+		{
+			string volumeParam = audioType == AudioType.None ? "MasterVolume" : $"{audioType}Volume";
+			float normalizedVolume = 0f;
+
+			if (audioMixer.GetFloat(volumeParam, out float decibelVolume))
+				normalizedVolume = Mathf.Pow(10f, decibelVolume / 20f);
+
+			return normalizedVolume;
+		}
+
+		public void SetVolume(AudioType audioType, float normalizedVolume)
+		{
+			string volumeParam = audioType == AudioType.None ? "MasterVolume" : $"{audioType}Volume";
+			float decibelVolume = Mathf.Log10(Mathf.Clamp(normalizedVolume, MinVolume, MaxVolume)) * 20f;
+
+			audioMixer.SetFloat(volumeParam, decibelVolume);
 		}
 	}
 }

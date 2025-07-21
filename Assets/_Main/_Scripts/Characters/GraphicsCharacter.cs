@@ -172,7 +172,7 @@ namespace Characters
 
 		IEnumerator TransitionVisibility(bool isVisible, float speed, bool isSkipped)
 		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.TransitionSpeed, isSkipped);
 
 			yield return TransitionHandler.SetVisibility(rootCanvasGroup, isVisible, speed);
 			this.isVisible = isVisible;

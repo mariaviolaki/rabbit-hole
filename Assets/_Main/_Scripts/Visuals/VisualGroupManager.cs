@@ -1,4 +1,5 @@
 using Dialogue;
+using IO;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace Visuals
 		[SerializeField] VisualLayerGroup[] layerGroups;
 		[SerializeField] FileManagerSO fileManager;
 		[SerializeField] GameOptionsSO gameOptions;
-		[SerializeField] DialogueSystem dialogueSystem;
+		[SerializeField] DialogueManager dialogueManager;
 
 		Dictionary<VisualType, VisualLayerGroup> layerGroupBank = new();
 
@@ -35,7 +36,7 @@ namespace Visuals
 
 		public float GetTransitionSpeed(float speedInput, bool isTransitionSkipped)
 		{
-			if (isTransitionSkipped || dialogueSystem.ReadMode == DialogueReadMode.Skip)
+			if (isTransitionSkipped || dialogueManager.ReadMode == DialogueReadMode.Skip)
 				return gameOptions.General.SkipTransitionSpeed;
 			else if (speedInput <= 0)
 				return gameOptions.BackgroundLayers.TransitionSpeed;

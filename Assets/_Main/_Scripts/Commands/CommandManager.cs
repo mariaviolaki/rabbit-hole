@@ -41,7 +41,8 @@ namespace Commands
 		public static readonly string Model3DCharacterBankName = "Model3DCharacters";
 		const char CommandBankIdentifier = '.';
 
-		[SerializeField] DialogueSystem dialogueSystem;
+		[SerializeField] GameManager gameManager;
+		[SerializeField] DialogueManager dialogueManager;
 		CharacterManager characterManager;
 		VisualGroupManager visualGroupManager;
 		AudioManager audioManager;
@@ -52,16 +53,17 @@ namespace Commands
 		// Keep track of all the processes that may run simultaneously
 		readonly Dictionary<Guid, CommandProcess> processes = new();
 
+		public GameManager Game => gameManager;
+		public DialogueManager Dialogue => dialogueManager;
 		public CharacterManager Characters => characterManager;
 		public VisualGroupManager Visuals => visualGroupManager;
 		public AudioManager Audio => audioManager;
-		public DialogueSystem Dialogue => dialogueSystem;
-
+		
 		void Start()
 		{
-			characterManager = dialogueSystem.Characters;
-			visualGroupManager = dialogueSystem.Visuals;
-			audioManager = dialogueSystem.Audio;
+			characterManager = dialogueManager.Characters;
+			visualGroupManager = dialogueManager.Visuals;
+			audioManager = dialogueManager.Audio;
 			InitBank();
 		}
 

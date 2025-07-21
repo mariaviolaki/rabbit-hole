@@ -1,7 +1,8 @@
 using Dialogue;
-using System;
+using IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace History
@@ -10,21 +11,22 @@ namespace History
 	{
 		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] FontBankSO fontBank;
-		[SerializeField] DialogueSystem dialogueSystem;
+		[SerializeField] GameManager gameManager;
+		[SerializeField] DialogueManager dialogueManager;
 
 		const int MaxHistoryStates = 100;
 		readonly LinkedList<HistoryState> historyStates = new();
 		LinkedListNode<HistoryState> currentStateNode;
-		LinkedListNode<HistoryState> logStateNode;
 		int historyStateIndex = -1;
 		bool isUpdatingHistory = false;
+		HistoryAction lastHistoryAction = HistoryAction.None;
 
 		public LinkedListNode<HistoryState> HistoryNode => currentStateNode;
-		public LinkedListNode<HistoryState> LogNode => logStateNode;
-		public bool IsViewingHistory => currentStateNode != null || logStateNode != null;
-
-		public bool IsUpdatingHistory { get { return isUpdatingHistory; } set { isUpdatingHistory = value; } }
-
+		public HistoryAction LastAction => lastHistoryAction;
+		public int CurrentDialogueLineId => currentStateNode == null ? 0 : currentStateNode.Value.Dialogue.DialogueLineId;
+		public bool IsViewingHistory => currentStateNode != null && currentStateNode != historyStates.Last;
+		public bool IsUpdatingHistory => isUpdatingHistory;
+		
 		void Awake()
 		{
 			inputManager.OnBack += GoBack;
@@ -37,133 +39,155 @@ namespace History
 
 		public LinkedListNode<HistoryState> GetLastNode()
 		{
-			if (historyStates.Count == 0) return null;
-			else if (currentStateNode == null && !dialogueSystem.Reader.Stack.IsEmpty) return historyStates.Last;
-			else if (currentStateNode == null) return historyStates.Last.Previous;
-			else return currentStateNode.Previous;
+			if (historyStates.Count <= 1) return null;
+			else return currentStateNode?.Previous;
 		}
 
 		public int GetLastNodeIndex()
 		{
-			if (historyStates.Count == 0 || (dialogueSystem.Reader.Stack.IsEmpty && historyStates.Count == 1)) return -1;
-			else if (currentStateNode == null && dialogueSystem.Reader.Stack.IsEmpty) return 1;
-			else if (currentStateNode == null) return 0;
+			if (historyStates.Count <= 1) return -1;
 			else return historyStateIndex;
 		}
 
 		public int GetHistoryStateCount()
 		{
-			if (dialogueSystem.Reader.Stack.IsEmpty) return Mathf.Max(historyStates.Count - 1, 0);
-			else if(currentStateNode == null) return historyStates.Count; 
+			if (historyStates.Count <= 1) return 0;
 			else return historyStates.Count - historyStateIndex - 1;
+		}
+
+		public List<HistoryState> GetSaveFileHistoryStates()
+		{
+			if (currentStateNode == null || currentStateNode == historyStates.Last) return historyStates.ToList();
+
+			// If the player is navigating back to history find the actual states shown at this moment
+			List<HistoryState> navigationStates = new List<HistoryState>(historyStates.Count);
+			for (LinkedListNode<HistoryState> node = historyStates.First; node != null; node = node.Next)
+			{
+				navigationStates.Add(node.Value);
+				if (node == currentStateNode) break;
+			}
+
+			return navigationStates;
 		}
 
 		// Called when reading new dialogue
 		public void Capture()
 		{
-			if (currentStateNode != null || isUpdatingHistory) return;
+			if (isUpdatingHistory || (currentStateNode != null && currentStateNode != historyStates.Last)) return;
 			isUpdatingHistory = true;
 
 			// Capture the current state of the visual novel
-			historyStates.AddLast(new HistoryState(dialogueSystem));
+			historyStates.AddLast(new HistoryState(dialogueManager, gameManager.DialogueBank));
+			currentStateNode = historyStates.Last;
+			historyStateIndex = 0;
 
 			// Don't allow the history to grow indefinitely
 			if (historyStates.Count > MaxHistoryStates)
 				historyStates.RemoveFirst();
 
+			lastHistoryAction = HistoryAction.Capture;
 			isUpdatingHistory = false;
 		}
 
 		void GoBack()
 		{
-			if (historyStates.Count == 0 || isUpdatingHistory) return;
+			if (isUpdatingHistory || historyStates.Count <= 1 || currentStateNode.Previous == null) return;
 			isUpdatingHistory = true;
 
-			if (currentStateNode == null)
-			{
-				if (!dialogueSystem.Reader.Stack.IsEmpty)
-				{
-					// Get the most recently captured history state
-					currentStateNode = historyStates.Last;
-					historyStateIndex = 0;
-				}
-				else if (historyStates.Last.Previous != null)
-				{
-					// If we have reached the end of the current dialogue, the last state is already being shown
-					currentStateNode = historyStates.Last.Previous;
-					historyStateIndex = 1;
-				}
-				else // No previous state to go back to
-				{
-					isUpdatingHistory = false;
-					return;
-				}
-			}
-			else if (currentStateNode.Previous != null)
-			{
-				// We are already traversing history, go further back
-				currentStateNode = currentStateNode.Previous;
-				historyStateIndex++;
-			}
-			else // No previous state to go back to
-			{
-				isUpdatingHistory = false;
-				return;
-			}
-	
+			currentStateNode = currentStateNode.Previous;
+			historyStateIndex++;
+
 			StartCoroutine(Load(currentStateNode.Value));
 		}
 
-		public IEnumerator ApplyHistory(Action<bool> isApplied)
+		public IEnumerator ApplySaveFileHistory(List<HistoryState> historyStatesArray)
 		{
-			if (isUpdatingHistory || (currentStateNode == null && logStateNode == null))
-			{
-				logStateNode = null;
-				isApplied(false);
-				yield break;
-			}
+			if (historyStatesArray == null || historyStatesArray.Count == 0) yield break;
 
-			isUpdatingHistory = true;	
+			while (isUpdatingHistory) yield return null;
+			isUpdatingHistory = true;
 
-			if (logStateNode != null)
-			{
-				yield return logStateNode.Value.Apply(dialogueSystem, fontBank);
-				DeleteLogHistory();
-			}
-			else
-			{
-				yield return currentStateNode.Value.Apply(dialogueSystem, fontBank);
-				DeleteNavigationHistory();
-			}
+			Repopulate(historyStatesArray);
+			currentStateNode = historyStates.Last;
+			historyStateIndex = 0;
 
-			isApplied(true);
-			isUpdatingHistory = false;
+			lastHistoryAction = HistoryAction.SaveApply;
+			yield return currentStateNode.Value.Apply(dialogueManager, fontBank);
 		}
 
-		public void SetLogPanelRewindNode(LinkedListNode<HistoryState> node)
+		public IEnumerator ApplyLogPanelHistory(LinkedListNode<HistoryState> logPanelNode)
 		{
-			if (!inputManager.IsLogPanelOpen || node == null || IsUpdatingHistory) return;
+			if (logPanelNode == null) yield break;
+			while (isUpdatingHistory) yield return null;
+			if (logPanelNode == historyStates.Last) yield break;
 
-			logStateNode = node;
+			isUpdatingHistory = true;
+
+			currentStateNode = logPanelNode;
+			lastHistoryAction = HistoryAction.LogApply;
+			yield return currentStateNode.Value.Apply(dialogueManager, fontBank);
+		}
+
+		public IEnumerator ApplyNavigationHistory()
+		{
+			if (currentStateNode == null) yield break;
+			while (isUpdatingHistory) yield return null;
+			if (currentStateNode == historyStates.Last) yield break;
+
+			isUpdatingHistory = true;
+
+			lastHistoryAction = HistoryAction.NavigationApply;
+			yield return currentStateNode.Value.Apply(dialogueManager, fontBank);
+		}
+
+		public void ResetHistoryProgress(HistoryState historyState)
+		{
+			historyState.Dialogue.RestoreDialogueProgress(dialogueManager.Reader.Stack);
+
+			DeleteHistoryAfterCurrentNode();
+
+			if (lastHistoryAction == HistoryAction.NavigationApply)
+			{
+				DialogueBlock lastBlock = dialogueManager.Reader.Stack.GetBlock();
+				dialogueManager.Reader.Stack.Proceed(lastBlock);
+			}
+			else if (lastHistoryAction == HistoryAction.LogApply || lastHistoryAction == HistoryAction.SaveApply)
+			{
+				historyStates.RemoveLast();
+				currentStateNode = historyStates.Last;
+			}
+
+			isUpdatingHistory = false;
 		}
 
 		IEnumerator Load(HistoryState historyState)
 		{
-			yield return historyState.Load(dialogueSystem, fontBank, false);
+			dialogueManager.SetReadMode(DialogueReadMode.Forward);
+			dialogueManager.Reader.IsWaitingToAdvance = true;
+			yield return historyState.Load(dialogueManager, fontBank, false);
 
-			dialogueSystem.ResetReadMode();
-			dialogueSystem.Reader.WaitForInput();
-
+			lastHistoryAction = HistoryAction.Load;
 			isUpdatingHistory = false;
 		}
 
-		void DeleteNavigationHistory()
+		void Repopulate(List<HistoryState> historyStatesArray)
+		{
+			historyStates.Clear();
+			currentStateNode = null;
+			historyStateIndex = -1;
+
+			foreach (HistoryState historyState in historyStatesArray)
+			{
+				historyStates.AddLast(historyState);
+			}
+		}
+
+		void DeleteHistoryAfterCurrentNode()
 		{
 			if (currentStateNode == null) return;
 
 			LinkedListNode<HistoryState> lastNode = historyStates.Last;
 
-			// Preserve the current state because the dialogue is about to progress to the next one
 			while (lastNode != null && lastNode != currentStateNode)
 			{
 				LinkedListNode<HistoryState> nodeToRemove = lastNode;
@@ -171,32 +195,8 @@ namespace History
 				historyStates.Remove(nodeToRemove);
 			}
 
-			currentStateNode = null;
-			logStateNode = null;
-			historyStateIndex = -1;
-		}
-
-		void DeleteLogHistory()
-		{
-			if (logStateNode == null) return;
-
-			LinkedListNode<HistoryState> lastNode = historyStates.Last;
-
-			// Delete the current state because the dialogue is about to recapture it
-			while (lastNode != null)
-			{
-				LinkedListNode<HistoryState> nodeToRemove = lastNode;
-				bool isLogNode = nodeToRemove == logStateNode;
-
-				lastNode = lastNode.Previous;
-				historyStates.Remove(nodeToRemove);
-
-				if (isLogNode) break;
-			}
-
-			currentStateNode = null;
-			logStateNode = null;
-			historyStateIndex = -1;
+			currentStateNode = historyStates.Last;
+			historyStateIndex = 0;
 		}
 	}
 }

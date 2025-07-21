@@ -1,24 +1,27 @@
 using Audio;
 using Characters;
 using Commands;
-using GameIO;
-using Visuals;
+using IO;
 using History;
+using Logic;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UI;
 using UnityEngine;
 using Variables;
-using Logic;
-using System;
+using Visuals;
 
 namespace Dialogue
 {
-	public class DialogueSystem : MonoBehaviour
+	public class DialogueManager : MonoBehaviour
 	{
 		[SerializeField] GameOptionsSO gameOptions;
 		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] FileManagerSO fileManager;
 		[SerializeField] DialogueTagBankSO tagBank;
+		[SerializeField] GameManager gameManager;
 		[SerializeField] CommandManager commandManager;
 		[SerializeField] CharacterManager characterManager;
 		[SerializeField] AudioManager audioManager;
@@ -27,16 +30,15 @@ namespace Dialogue
 		[SerializeField] VisualNovelUI visualNovelUI;
 		[SerializeField] DialogueContinuePromptUI continuePrompt;
 		[SerializeField] ReadModeIndicatorUI readModeIndicator;
-		[SerializeField] string dialogueFileName; // TODO get dynamically
 
 		ScriptTagManager tagManager;
 		ScriptVariableManager variableManager;
 		LogicSegmentManager logicSegmentManager;
 		DialogueReader dialogueReader;
-		DialogueReadMode readMode = DialogueReadMode.Forward;
 		Coroutine dialogueCoroutine;
 		Coroutine readCoroutine;
 		Guid currentDialogueId;
+		DialogueReadMode readMode;
 
 		// Keep track of immediate dialogue calls
 		bool isShowingImmediateDialogue = false;
@@ -57,8 +59,14 @@ namespace Dialogue
 		public VisualGroupManager Visuals => visualManager;
 		public LogicSegmentManager Logic => logicSegmentManager;
 		public HistoryManager History => historyManager;
-		public DialogueReadMode ReadMode => readMode;
+		public GameState State => gameManager.State;
 		public Guid CurrentDialogueId => currentDialogueId;
+		public DialogueReadMode ReadMode { get { return readMode; } }
+
+		void Awake()
+		{
+			readMode = DialogueReadMode.Forward;
+		}
 
 		void Start()
 		{
@@ -72,41 +80,29 @@ namespace Dialogue
 
 		void OnDestroy()
 		{
-			dialogueReader.Dispose();
 			logicSegmentManager.Dispose();
 
 			UnsubscribeEvents();
 		}
 
-		void Update()
-		{
-			// TODO start dialogue using other triggers
-			if (Input.GetKeyDown(KeyCode.KeypadEnter))
-			{
-				LoadDialogue(dialogueFileName, Guid.NewGuid());
-			}
-		}
-
-		public void LoadDialogue(string dialoguePath, Guid dialogueId)
+		public void LoadDialogue(string dialoguePath)
 		{
 			if (dialogueCoroutine != null) return;
 
-			dialogueCoroutine = StartCoroutine(ReplaceDialogue(dialoguePath, dialogueId));
+			dialogueCoroutine = StartCoroutine(ReplaceDialogue(dialoguePath));
 		}
 
-		IEnumerator ReplaceDialogue(string dialoguePath, Guid dialogueId)
+		public void LoadDialogueWithProgress(string dialoguePath, HistoryState historyState)
 		{
-			dialogueReader.StopDialogue();
+			if (dialogueCoroutine != null || historyState == null) return;
+
+			dialogueCoroutine = StartCoroutine(ReplaceDialogueWithProgress(dialoguePath, historyState));
+		}
+
+		IEnumerator ReplaceDialogue(string dialoguePath)
+		{
+			dialogueReader.IsRunning = false;
 			while (dialogueReader.IsReading) yield return null;
-			yield return null;
-
-			// Parse the new dialogue file and update the stack
-			DialogueFile dialogueFile = new(fileManager, dialogueReader.Stack, dialoguePath);
-			yield return dialogueFile.Load();
-
-			// Change the current dialogue id and wait a frame so that history manage can react to the change
-			currentDialogueId = dialogueId;
-			yield return null;
 
 			if (readCoroutine != null)
 			{
@@ -114,10 +110,40 @@ namespace Dialogue
 				readCoroutine = null;
 			}
 
-			// Start reading all the dialogue blocks added to the stack (at least 1 by default)
-			dialogueReader.StartDialogue();
-			readCoroutine = StartCoroutine(dialogueReader.Read(readMode));
+			// Parse the new dialogue file and update the stack
+			DialogueFile dialogueFile = new(dialoguePath, fileManager, dialogueReader.Stack);
+			yield return dialogueFile.Load();
 
+			// Start reading all the dialogue blocks added to the stack (at least 1 by default)
+			readCoroutine = StartCoroutine(dialogueReader.Read(readMode));
+			dialogueCoroutine = null;
+		}
+
+		IEnumerator ReplaceDialogueWithProgress(string dialoguePath, HistoryState historyState)
+		{
+			dialogueReader.IsRunning = false;
+			while (dialogueReader.IsReading) yield return null;
+
+			if (readCoroutine != null)
+			{
+				StopCoroutine(readCoroutine);
+				readCoroutine = null;
+			}
+
+			// Parse the new dialogue file and update the stack
+			DialogueFile dialogueFile = new(dialoguePath, fileManager, dialogueReader.Stack);
+			yield return dialogueFile.Load();
+
+			// Move the progress of the main block to the right point in the history state
+			DialogueBlock mainBlock = dialogueReader.Stack.GetBlock();
+			if (mainBlock == null) yield break;
+
+			historyManager.ResetHistoryProgress(historyState);
+			//RestoreDialogueProgress(mainBlock, historyDialogueBlocks);
+			dialogueReader.LineReader.UpdateTextBuildMode(DialogueReadMode.Forward);
+
+			// Start reading all the dialogue blocks added to the stack (at least 1 by default)
+			readCoroutine = StartCoroutine(dialogueReader.Read(readMode));
 			dialogueCoroutine = null;
 		}
 
@@ -150,24 +176,44 @@ namespace Dialogue
 			yield return new WaitForSeconds(time);
 		}
 
-		public void ResetReadMode()
+		public void SetReadMode(DialogueReadMode readMode)
 		{
-			DialogueReadMode lastReadMode = readMode;
-			readMode = DialogueReadMode.Forward;
-			UpdateReadMode(lastReadMode, readMode);
+			this.readMode = readMode;
+			UpdateReadMode(readMode);
 		}
-		
+
+		void RestoreDialogueProgress(DialogueBlock mainBlock, List<HistoryDialogueBlock> historyDialogueBlocks)
+		{
+			HistoryDialogueBlock mainHistoryBlock = historyDialogueBlocks.Last();
+			mainBlock.LoadProgress(mainHistoryBlock.progress, mainHistoryBlock.fileStartIndex, mainHistoryBlock.fileEndIndex);
+
+			for (int i = historyDialogueBlocks.Count - 2; i >= 0; i--)
+			{
+				HistoryDialogueBlock historyBlock = historyDialogueBlocks[i];
+
+				// Get a subset of the lines from the main block based on the history block's start and end indices
+				List<string> lines = mainBlock.Lines
+					.Skip(historyBlock.fileStartIndex)
+					.Take(historyBlock.fileEndIndex - historyBlock.fileStartIndex + 1)
+					.ToList();
+
+				// Add any subsequent nested blocks back to the stack
+				dialogueReader.Stack.AddBlock(
+					historyBlock.filePath, lines, historyBlock.fileStartIndex, historyBlock.fileEndIndex, historyBlock.progress);
+			}
+		}
+
 		void HandleOnForwardEvent()
 		{
 			DialogueReadMode lastReadMode = readMode;
 			bool shouldAdvanceDuringAuto = lastReadMode == DialogueReadMode.Auto && !gameOptions.Dialogue.StopAutoOnClick;
 
-			if (lastReadMode == DialogueReadMode.Forward || shouldAdvanceDuringAuto)
-				inputManager.OnAdvance?.Invoke();
-			else
-				readMode = DialogueReadMode.Forward;
+			readMode = DialogueReadMode.Forward;
 
-			UpdateReadMode(lastReadMode, readMode);
+			UpdateReadMode(readMode);
+
+			if (lastReadMode == DialogueReadMode.Forward || shouldAdvanceDuringAuto)
+				dialogueReader.IsWaitingToAdvance = false;
 		}
 
 		void HandleOnAutoEvent()
@@ -175,7 +221,10 @@ namespace Dialogue
 			DialogueReadMode lastReadMode = readMode;
 			readMode = (lastReadMode == DialogueReadMode.Auto) ? DialogueReadMode.Forward : DialogueReadMode.Auto;
 
-			UpdateReadMode(lastReadMode, readMode);
+			UpdateReadMode(readMode);
+
+			if (readMode == DialogueReadMode.Auto)
+				dialogueReader.IsWaitingToAdvance = false;
 		}
 
 		void HandleOnSkipToggleEvent() => HandleOnSkipEvent(InputActionDuration.Toggle);
@@ -192,18 +241,19 @@ namespace Dialogue
 			else if (inputDuration == InputActionDuration.End)
 				readMode = DialogueReadMode.Forward;
 
-			UpdateReadMode(lastReadMode, readMode);
+			UpdateReadMode(readMode);
+
+			if (readMode == DialogueReadMode.Skip)
+				dialogueReader.IsWaitingToAdvance = false;
 		}
 
-		void UpdateReadMode(DialogueReadMode lastMode, DialogueReadMode newMode)
+		void UpdateReadMode(DialogueReadMode newMode)
 		{
-			if (lastMode == newMode) return;
-
-			dialogueReader.UpdateReadMode(newMode);
+			dialogueReader.LineReader.UpdateTextBuildMode(newMode);
 
 			if (newMode == DialogueReadMode.Auto || newMode == DialogueReadMode.Skip)
 				readModeIndicator.Show(newMode);
-			else if (lastMode == DialogueReadMode.Auto || lastMode == DialogueReadMode.Skip)
+			else
 				readModeIndicator.Hide();
 		}
 

@@ -5,7 +5,7 @@ ShowVN(immediate=true)
 
 wait CreateCharacters(v, eg, v1:v, m, mc)
 SetBackgroundImage(Green-Forest-Back, 1, immediate=true), SetBackgroundImage(Green-Forest-Front, immediate=true)
-PlayMusic(night, volume=0.01)
+PlayMusic(night, volume=0.1)
 
 v.Setposition(0.5, 0.5, immediate=true), eg.setPosition(0.5, 0.5, immediate=true), m.setposition(0.5, 0.5, immediate=true)
 
@@ -13,7 +13,7 @@ v.show(immediate=true), eg.show(immediate=true), m.show(immediate=true)
 
 v "Alright, let's go over the transitions again."
 setcharacterpriority(v, m, eg), SetBackgroundImage(Red-Forest-Back, 1, immediate=true)
-v "1"
+v "1" Autosave()
 setcharacterpriority(eg, m, v)
 v "2"
 setcharacterpriority(v, m, eg)

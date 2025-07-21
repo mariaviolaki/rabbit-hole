@@ -10,7 +10,7 @@ namespace History
 	[System.Serializable]
 	public class HistoryCharacterData
 	{
-		[SerializeField] List<HistoryCharacterBase> historyCharacters = new();
+		[SerializeField] List<HistoryCharacter> historyCharacters = new();
 
 		public HistoryCharacterData(CharacterManager characterManager)
 		{
@@ -19,7 +19,7 @@ namespace History
 			{
 				if (!character.IsVisible || character is not GraphicsCharacter graphicsCharacter) continue;
 
-				HistoryCharacterBase historyCharacter = CreateHistoryCharacter(graphicsCharacter.Data.Type);
+				HistoryCharacter historyCharacter = new HistoryCharacter();
 				historyCharacters.Add(historyCharacter);
 
 				historyCharacter.type = graphicsCharacter.Data.Type;
@@ -39,13 +39,13 @@ namespace History
 				{
 					foreach (CharacterSpriteLayer layer in spriteCharacter.SpriteLayers.Values)
 					{
-						HistorySpriteCharacter.HistorySpriteLayer layerData = new(layer.LayerType, layer.SpriteName);
-						((HistorySpriteCharacter)historyCharacter).spriteLayers.Add(layerData);
+						HistorySpriteLayer layerData = new(layer.LayerType, layer.SpriteName);
+						historyCharacter.spriteLayers.Add(layerData);
 					}
 				}
 				else if (graphicsCharacter is Model3DCharacter model3DCharacter)
 				{
-					((HistoryModel3DCharacter)historyCharacter).expression = model3DCharacter.Expression;
+					historyCharacter.modelExpression = model3DCharacter.Expression;
 				}
 			}
 		}
@@ -57,9 +57,11 @@ namespace History
 			List<KeyValuePair<int, string>> characterPriorities = new();
 			bool areSorted = true;
 
-			foreach (HistoryCharacterBase historyCharacter in historyCharacters)
+			foreach (HistoryCharacter historyCharacter in historyCharacters)
 			{
 				GraphicsCharacter character = characterManager.GetCharacter(historyCharacter.shortName) as GraphicsCharacter;
+				if (character == null) continue;
+
 				characterPriorities.Add(new(historyCharacter.priority, historyCharacter.shortName));
 
 				if (historyCharacter.priority != character.HierarchyPriority)
@@ -81,19 +83,19 @@ namespace History
 
 				LoadAnimations(character.RootAnimator, historyCharacter.animations);
 
-				if (character is SpriteCharacter spriteChar && historyCharacter is HistorySpriteCharacter historySpriteChar)
+				if (character is SpriteCharacter spriteChar && historyCharacter.type == CharacterType.Sprite)
 				{
-					foreach (var historySpriteLayer in historySpriteChar.spriteLayers)
+					foreach (var historySpriteLayer in historyCharacter.spriteLayers)
 					{
-						CharacterSpriteLayer spriteLayer = spriteChar.SpriteLayers[historySpriteLayer.layerType];
+							CharacterSpriteLayer spriteLayer = spriteChar.SpriteLayers[historySpriteLayer.layerType];
 						if (spriteLayer.SpriteName != historySpriteLayer.spriteName)
 							yield return spriteChar.SetSprite(historySpriteLayer.spriteName, historySpriteLayer.layerType, false, fadeSpeed);
 					}
 				}
-				else if (character is Model3DCharacter model3DChar && historyCharacter is HistoryModel3DCharacter historyModel3DChar)
+				else if (character is Model3DCharacter model3DChar && historyCharacter.type == CharacterType.Model3D)
 				{
-					if (historyModel3DChar.expression != model3DChar.Expression)
-						yield return model3DChar.SetExpression(historyModel3DChar.expression, false, fadeSpeed);
+					if (historyCharacter.modelExpression != model3DChar.Expression)
+						yield return model3DChar.SetExpression(historyCharacter.modelExpression, false, fadeSpeed);
 				}
 			}
 
@@ -102,16 +104,6 @@ namespace History
 				string[] shortNames = characterPriorities.OrderByDescending(pair => pair.Key).Select(pair => pair.Value).ToArray();
 				characterManager.SetPriority(shortNames);
 			}
-		}
-
-		HistoryCharacterBase CreateHistoryCharacter(CharacterType characterType)
-		{
-			switch (characterType)
-			{
-				case CharacterType.Sprite: return new HistorySpriteCharacter();
-				case CharacterType.Model3D: return new HistoryModel3DCharacter();
-				default: return null;
-			} 
 		}
 
 		List<HistoryAnimationData> GetHistoryAnimations(Animator animator)

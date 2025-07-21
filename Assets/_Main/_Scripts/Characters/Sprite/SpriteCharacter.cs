@@ -153,7 +153,7 @@ namespace Characters
 
 		IEnumerator TransitionDirection(float speed, bool isSkipped)
 		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.FadeTransitionSpeed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.TransitionSpeed, isSkipped);
 
 			ForEachLayer(layer => manager.StartCoroutine(SetLayerImageDirection(layer, speed)));
 
@@ -167,7 +167,7 @@ namespace Characters
 
 		IEnumerator TransitionBrightness(bool isHighlighted, float speed, bool isSkipped)
 		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.BrightnessTransitionSpeed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.TransitionSpeed, isSkipped);
 			Color targetColor = isHighlighted ? LightColor : DarkColor;
 
 			ForEachLayer(layer => manager.StartCoroutine(SetLayerImageBrightness(layer, targetColor, speed)));
@@ -182,7 +182,7 @@ namespace Characters
 
 		IEnumerator TransitionColor(Color color, float speed, bool isSkipped)
 		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.ColorTransitionSpeed, isSkipped);
+			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.TransitionSpeed, isSkipped);
 			Color targetColor = isHighlighted ? color : GetDarkColor(color);
 
 			ForEachLayer(layer => manager.StartCoroutine(ColorLayerImage(layer, targetColor, speed)));

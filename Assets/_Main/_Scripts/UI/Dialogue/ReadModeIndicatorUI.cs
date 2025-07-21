@@ -10,27 +10,25 @@ namespace UI
 		[SerializeField] TextMeshProUGUI autoReadText;
 		Coroutine visibilityCoroutine;
 
-		public Coroutine Hide(bool isImmediate = false, float fadeSpeed = 0f)
+		public void Hide(bool isImmediate = false, float fadeSpeed = 0f)
 		{
-			if (IsHidden) return null;
+			if (IsHidden) return;
 
 			StopProcess();
 			visibilityCoroutine = StartCoroutine(FadeOut(isImmediate, fadeSpeed));
-			return visibilityCoroutine;
 		}
 
-		public Coroutine Show(DialogueReadMode readMode, bool isImmediate = false, float fadeSpeed = 0f)
+		public void Show(DialogueReadMode readMode, bool isImmediate = false, float fadeSpeed = 0f)
 		{
 			string newText = readMode.ToString();
 
 			if (autoReadText.text != newText)
 				autoReadText.text = newText;
 
-			if (IsVisible) return null;
+			if (IsVisible) return;
 
 			StopProcess();
 			visibilityCoroutine = StartCoroutine(FadeIn(isImmediate, fadeSpeed));
-			return visibilityCoroutine;
 		}
 
 		void StopProcess()

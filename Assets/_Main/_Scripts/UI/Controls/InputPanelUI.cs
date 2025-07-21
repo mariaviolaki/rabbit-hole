@@ -1,4 +1,5 @@
 using Dialogue;
+using IO;
 using System;
 using System.Collections;
 using TMPro;
@@ -11,7 +12,7 @@ namespace UI
 	public class InputPanelUI : BaseFadeableUI
 	{
 		[SerializeField] InputManagerSO inputManager;
-		[SerializeField] DialogueSystem dialogueSystem;
+		[SerializeField] DialogueManager dialogueManager;
 		[SerializeField] TextMeshProUGUI titleText;
 		[SerializeField] TMP_InputField inputField;
 		[SerializeField] Button submitButton;
@@ -26,7 +27,7 @@ namespace UI
 		override protected void Awake()
 		{
 			base.Awake();
-			scriptTagManager = dialogueSystem.TagManager;
+			scriptTagManager = dialogueManager.TagManager;
 		}
 
 		override protected void OnEnable()

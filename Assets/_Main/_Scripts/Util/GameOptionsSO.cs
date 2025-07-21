@@ -1,90 +1,99 @@
 using Dialogue;
 using TMPro;
 using UnityEngine;
+using Visuals;
 
 [CreateAssetMenu(fileName = "Game Options", menuName = "Scriptable Objects/Game Options")]
 public class GameOptionsSO : ScriptableObject
 {
 	[SerializeField] GeneralOptions general;
-	[SerializeField] IOOptions inputOutput;
 	[SerializeField] DialogueOptions dialogue;
 	[SerializeField] CharacterOptions characters;
 	[SerializeField] Model3DOptions model3D;
 	[SerializeField] BackgroundLayerOptions backgroundLayers;
 	[SerializeField] AudioOptions audio;
+	[SerializeField] IOOptions inputOutput;
 
-	public GeneralOptions General { get { return general; } }
-	public IOOptions IO { get { return inputOutput; } }
-	public DialogueOptions Dialogue { get { return dialogue; } }
-	public CharacterOptions Characters { get { return characters; } }
-	public Model3DOptions Model3D { get { return model3D; } }
-	public BackgroundLayerOptions BackgroundLayers { get { return backgroundLayers; } }
-	public AudioOptions Audio { get { return audio; } }
+	public GeneralOptions General => general;
+	public DialogueOptions Dialogue => dialogue;
+	public CharacterOptions Characters => characters;
+	public Model3DOptions Model3D => model3D;
+	public BackgroundLayerOptions BackgroundLayers => backgroundLayers;
+	public AudioOptions Audio => audio;
+	public IOOptions IO => inputOutput;
 
 	[System.Serializable]
 	public class GeneralOptions
 	{
+		[Header("Transitions")]
 		[SerializeField] float transitionSpeed;
 		[SerializeField] float skipTransitionSpeed;
-		
-		public float TransitionSpeed { get { return transitionSpeed; } }
-		public float SkipTransitionSpeed { get { return skipTransitionSpeed; } }
-	}
+		[SerializeField] float sceneFadeTransitionSpeed;
 
-	[System.Serializable]
-	public class IOOptions
-	{
-		[SerializeField] GameIO.FileExtension audioExtension;
-		[SerializeField] GameIO.FileExtension videoExtension;
+		[Header("Screen")]
+		[SerializeField] bool isFullscreen;
+		[SerializeField] GraphicsQuality graphicsQuality;
+		[SerializeField] int resolutionWidth;
+		[SerializeField] int resolutionHeight;
 
-		public GameIO.FileExtension AudioExtension { get { return audioExtension; } }
-		public GameIO.FileExtension VideoExtension { get { return videoExtension; } }
+		public float TransitionSpeed => transitionSpeed;
+		public float SkipTransitionSpeed => skipTransitionSpeed;
+		public float SceneFadeTransitionSpeed => sceneFadeTransitionSpeed;
+
+		public bool IsFullscreen => isFullscreen;
+		public GraphicsQuality GraphicsQuality => graphicsQuality;
+		public int ResolutionWidth => resolutionWidth;
+		public int ResolutionHeight => resolutionHeight;
 	}
 
 	[System.Serializable]
 	public class DialogueOptions
 	{
+		[Header("Text Speed")]
+		[SerializeField][Range(1, 12)] float textSpeed;
+		[SerializeField] float autoSpeed;
+		[SerializeField] float skipSpeed;
+
+		[Header("Text Style")]
 		[SerializeField] Color defaultTextColor;
 		[SerializeField] TMP_FontAsset defaultFont;
-		[SerializeField] TextBuilder.TextMode textMode;
-		[SerializeField][Range(1, 12)] float textSpeed;
-		[SerializeField] PromptPosition promptPos;
 		[SerializeField][Range(1, 100)] float dialogueFontSize;
-		[SerializeField] float fadeTransitionSpeed;
-		[SerializeField] float sceneFadeTransitionSpeed;
-		[SerializeField] bool stopAutoOnClick;
-		[SerializeField] float autoDialogueSpeed;
-		[SerializeField] float skipDialogueSpeed;
 
-		public Color DefaultTextColor { get { return defaultTextColor; } }
-		public TMP_FontAsset DefaultFont { get { return defaultFont; } }
-		public TextBuilder.TextMode TextMode { get { return textMode; } }
-		public float TextSpeed { get { return textSpeed; } }
-		public PromptPosition PromptPos { get { return promptPos; } }
-		public float DialogueFontSize { get { return dialogueFontSize; } }
-		public float FadeTransitionSpeed { get { return fadeTransitionSpeed; } }
-		public float SceneFadeTransitionSpeed { get { return sceneFadeTransitionSpeed; } }
-		public bool StopAutoOnClick { get { return stopAutoOnClick; } }
-		public float AutoDialogueSpeed { get { return autoDialogueSpeed; } }
-		public float SkipDialogueSpeed { get { return skipDialogueSpeed; } }
+		[Header("Reading Options")]
+		[SerializeField] TextBuildMode textMode;
+		[SerializeField] DialogueSkipMode skipMode;
+		[SerializeField] PromptPosition promptPos;
+		[SerializeField] bool stopAutoOnClick;
+
+		public float TextSpeed => textSpeed;
+		public DialogueSkipMode SkipMode => skipMode;
+		public float AutoSpeed => autoSpeed;
+		public float SkipSpeed => skipSpeed;
+
+		public Color DefaultTextColor => defaultTextColor;
+		public TMP_FontAsset DefaultFont => defaultFont;
+		public float DialogueFontSize => dialogueFontSize;
+
+		public TextBuildMode TextMode => textMode;
+		public PromptPosition PromptPos => promptPos;
+		public bool StopAutoOnClick => stopAutoOnClick;
 	}
 
 	[System.Serializable]
 	public class CharacterOptions
 	{
+		[Header("Transitions")]
+		[SerializeField] float transitionSpeed;
 		[SerializeField] float moveSpeed;
-		[SerializeField] float fadeTransitionSpeed;
-		[SerializeField] float brightnessTransitionSpeed;
-		[SerializeField] float colorTransitionSpeed;
+
+		[Header("Character Visuals")]
 		[SerializeField][Range(0, 1)] float darkenBrightness;
 		[SerializeField] bool spritesFacingRight;
 
-		public float MoveSpeed { get { return moveSpeed; } }
-		public float FadeTransitionSpeed { get { return fadeTransitionSpeed; } }
-		public float BrightnessTransitionSpeed { get { return brightnessTransitionSpeed; } }
-		public float ColorTransitionSpeed { get { return colorTransitionSpeed; } }
-		public float DarkenBrightness { get { return darkenBrightness; } }
-		public bool AreSpritesFacingRight { get { return spritesFacingRight; } }
+		public float TransitionSpeed => transitionSpeed;
+		public float MoveSpeed => moveSpeed;
+		public float DarkenBrightness => darkenBrightness;
+		public bool AreSpritesFacingRight => spritesFacingRight;
 	}
 
 	[System.Serializable]
@@ -94,9 +103,8 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField] float expressionTransitionSpeed;
 		[SerializeField] float defaultAngle;
 
-		public RenderTexture RenderTexture3D { get { return renderTexture3D; } }
-		public float ExpressionTransitionSpeed { get { return expressionTransitionSpeed; } }
-		public float DefaultAngle { get { return defaultAngle; } }
+		public RenderTexture RenderTexture3D => renderTexture3D;
+		public float DefaultAngle => defaultAngle;
 	}
 
 	[System.Serializable]
@@ -104,14 +112,46 @@ public class GameOptionsSO : ScriptableObject
 	{
 		[SerializeField] float transitionSpeed;
 
-		public float TransitionSpeed { get { return transitionSpeed; } }
+		public float TransitionSpeed => transitionSpeed;
 	}
 
 	[System.Serializable]
 	public class AudioOptions
 	{
+		[Header("Transitions")]
 		[SerializeField] float transitionSpeed;
 
-		public float TransitionSpeed { get { return transitionSpeed; } }
+		[Header("Mixer Volumes")]
+		[SerializeField] float defaultVolume;
+		[SerializeField] float ambientVolume;
+		[SerializeField] float musicVolume;
+		[SerializeField] float sfxVolume;
+		[SerializeField] float voiceVolume;
+
+		public float TransitionSpeed => transitionSpeed;
+		public float DefaultVolume => defaultVolume;
+		public float AmbientVolume => ambientVolume;
+		public float MusicVolume => musicVolume;
+		public float SFXVolume => sfxVolume;
+		public float VoiceVolume => voiceVolume;
+	}
+
+	[System.Serializable]
+	public class IOOptions
+	{
+		[Header("Save Files")]
+		[SerializeField] bool autosaveTimer;
+		[SerializeField][Range(30, 600)] float autosaveTimerInterval;
+		[SerializeField] int slotCount;
+
+		[Header("Default Extensions")]
+		[SerializeField] IO.FileExtension audioExtension;
+		[SerializeField] IO.FileExtension videoExtension;
+
+		public bool HasAutosaveTimer => autosaveTimer;
+		public float AutosaveTimerInterval => autosaveTimerInterval;
+		public int SlotCount => slotCount;
+		public IO.FileExtension AudioExtension => audioExtension;
+		public IO.FileExtension VideoExtension => videoExtension;
 	}
 }

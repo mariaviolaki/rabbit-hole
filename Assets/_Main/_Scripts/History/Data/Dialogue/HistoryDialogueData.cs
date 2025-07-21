@@ -1,5 +1,4 @@
 using Dialogue;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +12,7 @@ namespace History
 	public class HistoryDialogueData
 	{
 		[SerializeField] List<HistoryDialogueBlock> dialogueBlocks = new();
+		[SerializeField] int dialogueLineId;
 		[SerializeField] string speakerText;
 		[SerializeField] string dialogueText;
 		[SerializeField] Color speakerColor;
@@ -20,10 +20,11 @@ namespace History
 		[SerializeField] string speakerFont;
 		[SerializeField] string dialogueFont;
 
+		public int DialogueLineId => dialogueLineId;
 		public string SpeakerText => speakerText;
 		public string DialogueText => dialogueText;
-
-		public HistoryDialogueData(DialogueStack dialogueStack, DialogueUI dialogueUI)
+		
+		public HistoryDialogueData(DialogueStack dialogueStack, DialogueLineBank dialogueLineBank, DialogueUI dialogueUI)
 		{
 			TextMeshProUGUI speakerTextData = dialogueUI.SpeakerText;
 			TextMeshProUGUI dialogueTextData = dialogueUI.DialogueText;
@@ -35,8 +36,15 @@ namespace History
 			speakerFont = speakerTextData.font.name;
 			dialogueFont = dialogueTextData.font.name;
 
+			DialogueBlock lastDialogueBlock = dialogueStack.Blocks.Peek();
 			foreach (DialogueBlock dialogueBlock in dialogueStack.Blocks)
 			{
+				if (dialogueBlock == lastDialogueBlock)
+				{
+					string dialogueLineKey = DialogueUtilities.GetDialogueLineId(dialogueBlock.FilePath, dialogueBlock.Progress);
+					dialogueLineId = dialogueLineBank.GetLineId(dialogueLineKey);
+				}
+
 				HistoryDialogueBlock historyBlock = new();
 				historyBlock.filePath = dialogueBlock.FilePath;
 				historyBlock.fileStartIndex = dialogueBlock.FileStartIndex;
@@ -61,21 +69,23 @@ namespace History
 			}
 		}
 
-		public IEnumerator Apply(DialogueSystem dialogueSystem)
+		public void Apply(HistoryState historyState, DialogueManager dialogueManager)
 		{
-			if (dialogueBlocks.Count == 0) yield break;
+			if (dialogueBlocks.Count == 0) return;
 
-			// Load the file and add its parsed contents to the bottom of the stack
+			// The dialogue manager will now end the current reading process
 			HistoryDialogueBlock mainHistoryBlock = dialogueBlocks.Last();
-			Guid dialogueId = Guid.NewGuid();
+			// The restore function will be called shortly for this history state, after dialogue manager loads the new dialogue file
+			dialogueManager.LoadDialogueWithProgress(mainHistoryBlock.filePath, historyState);
+		}
 
-			dialogueSystem.LoadDialogue(mainHistoryBlock.filePath, dialogueId);
-			while (dialogueSystem.CurrentDialogueId != dialogueId) yield return null;
+		public void RestoreDialogueProgress(DialogueStack dialogueStack)
+		{
+			// The dialogue manager just loaded the main file so the stack should only contain its main block
+			DialogueBlock mainBlock = dialogueStack.GetBlock();
+			if (mainBlock == null) return;
 
-			// Move the progress of the main block to the right point in the history state
-			DialogueBlock mainBlock = dialogueSystem.Reader.Stack.GetBlock();
-			if (mainBlock == null) yield break;
-
+			HistoryDialogueBlock mainHistoryBlock = dialogueBlocks.Last();
 			mainBlock.LoadProgress(mainHistoryBlock.progress, mainHistoryBlock.fileStartIndex, mainHistoryBlock.fileEndIndex);
 
 			for (int i = dialogueBlocks.Count - 2; i >= 0; i--)
@@ -89,7 +99,7 @@ namespace History
 					.ToList();
 
 				// Add any subsequent nested blocks back to the stack
-				dialogueSystem.Reader.Stack.AddBlock(
+				dialogueStack.AddBlock(
 					historyBlock.filePath, lines, historyBlock.fileStartIndex, historyBlock.fileEndIndex, historyBlock.progress);
 			}
 		}

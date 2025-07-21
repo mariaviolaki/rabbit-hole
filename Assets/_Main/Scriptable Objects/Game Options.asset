@@ -15,26 +15,25 @@ MonoBehaviour:
   general:
     transitionSpeed: 10
     skipTransitionSpeed: 100
-  inputOutput:
-    audioExtension: 2
-    videoExtension: 1
+    sceneFadeTransitionSpeed: 10
+    isFullscreen: 1
+    graphicsQuality: 3
+    resolutionWidth: 1920
+    resolutionHeight: 1080
   dialogue:
+    textSpeed: 5
+    autoSpeed: 10
+    skipSpeed: 10
     defaultTextColor: {r: 1, g: 1, b: 1, a: 1}
     defaultFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-    textMode: 3
-    textSpeed: 5
-    promptPos: 0
     dialogueFontSize: 40
-    fadeTransitionSpeed: 10
-    sceneFadeTransitionSpeed: 10
+    textMode: 3
+    skipMode: 0
+    promptPos: 0
     stopAutoOnClick: 1
-    autoDialogueSpeed: 10
-    skipDialogueSpeed: 10
   characters:
+    transitionSpeed: 10
     moveSpeed: 10
-    fadeTransitionSpeed: 10
-    brightnessTransitionSpeed: 10
-    colorTransitionSpeed: 10
     darkenBrightness: 0.5
     spritesFacingRight: 1
   model3D:
@@ -45,3 +44,11 @@ MonoBehaviour:
     transitionSpeed: 10
   audio:
     transitionSpeed: 10
+    defaultVolume: 0.5
+    ambientVolume: 0.5
+    musicVolume: 0.5
+    sfxVolume: 0.5
+    voiceVolume: 0.5
+  inputOutput:
+    audioExtension: 2
+    videoExtension: 1

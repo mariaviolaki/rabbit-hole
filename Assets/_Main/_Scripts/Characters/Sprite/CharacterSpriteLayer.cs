@@ -193,7 +193,7 @@ namespace Characters
 
 		IEnumerator ChangeDirection(float speed, bool isSkipped)
 		{
-			float defaultSpeed = spriteCharacter.Manager.GameOptions.Characters.FadeTransitionSpeed;
+			float defaultSpeed = spriteCharacter.Manager.GameOptions.Characters.TransitionSpeed;
 			speed = spriteCharacter.GetTransitionSpeed(speed, defaultSpeed, isSkipped);
 
 			Vector3 currentLocalScale = primaryImage.transform.localScale;

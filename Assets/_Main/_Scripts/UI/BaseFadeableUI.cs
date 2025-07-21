@@ -44,7 +44,7 @@ namespace UI
 			}
 			else
 			{
-				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
+				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : speed;
 				yield return transitionHandler.SetVisibility(canvasGroup, true, fadeSpeed);
 			}
 		}
@@ -60,7 +60,7 @@ namespace UI
 			}
 			else
 			{
-				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
+				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : speed;
 				yield return transitionHandler.SetVisibility(canvasGroup, false, fadeSpeed);
 			}
 		}

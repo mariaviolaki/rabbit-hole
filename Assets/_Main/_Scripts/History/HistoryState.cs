@@ -14,34 +14,38 @@ namespace History
 		[SerializeField] HistoryVariableData variableData;
 
 		public HistoryDialogueData Dialogue => dialogueData;
+		public HistoryAudioData Audio => audioData;
+		public HistoryVisualData Visuals => visualData;
+		public HistoryCharacterData Characters => characterData;
+		public HistoryVariableData Variables => variableData;
 
-		public HistoryState(DialogueSystem dialogueSystem)
+		public HistoryState(DialogueManager dialogueManager, DialogueLineBank dialogueLineBank)
 		{
-			dialogueData = new(dialogueSystem.Reader.Stack, dialogueSystem.UI.Dialogue);
-			audioData = new(dialogueSystem.Audio);
-			visualData = new(dialogueSystem.Visuals);
-			characterData = new(dialogueSystem.Characters);
-			variableData = new(dialogueSystem.VariableManager, dialogueSystem.TagManager);
+			dialogueData = new(dialogueManager.Reader.Stack, dialogueLineBank, dialogueManager.UI.Dialogue);
+			audioData = new(dialogueManager.Audio);
+			visualData = new(dialogueManager.Visuals);
+			characterData = new(dialogueManager.Characters);
+			variableData = new(dialogueManager.VariableManager, dialogueManager.TagManager);
 		}
 
 		// Safely traverses older state
-		public IEnumerator Load(DialogueSystem dialogueSystem, FontBankSO fontBank, bool isApplyingHistory)
+		public IEnumerator Load(DialogueManager dialogueManager, FontBankSO fontBank, bool isApplyingHistory)
 		{
-			audioData.Load(dialogueSystem.Audio, dialogueSystem.Options);
-			yield return visualData.Load(dialogueSystem.Visuals, dialogueSystem.Options);
-			yield return characterData.Load(dialogueSystem.Characters, dialogueSystem.Options);
+			audioData.Load(dialogueManager.Audio, dialogueManager.Options);
+			yield return visualData.Load(dialogueManager.Visuals, dialogueManager.Options);
+			yield return characterData.Load(dialogueManager.Characters, dialogueManager.Options);
 
 			if (isApplyingHistory) yield break;
 
-			yield return dialogueData.Load(dialogueSystem.UI.Dialogue, dialogueSystem.Reader, dialogueSystem.Options, fontBank);
+			yield return dialogueData.Load(dialogueManager.UI.Dialogue, dialogueManager.Reader, dialogueManager.Options, fontBank);
 		}
 
 		// Resets progress to an older state
-		public IEnumerator Apply(DialogueSystem dialogueSystem, FontBankSO fontBank)
+		public IEnumerator Apply(DialogueManager dialogueManager, FontBankSO fontBank)
 		{
-			yield return Load(dialogueSystem, fontBank, true);
-			variableData.Apply(dialogueSystem.VariableManager, dialogueSystem.TagManager);
-			yield return dialogueData.Apply(dialogueSystem);
+			yield return Load(dialogueManager, fontBank, true);
+			variableData.Apply(dialogueManager.VariableManager, dialogueManager.TagManager);
+			dialogueData.Apply(this, dialogueManager);
 		}
 	}
 }

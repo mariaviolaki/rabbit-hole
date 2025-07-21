@@ -1,5 +1,6 @@
 using Dialogue;
 using History;
+using IO;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace UI
 		[SerializeField] Scrollbar scrollbar;
 		[SerializeField] float closedPositionOffset;
 		[SerializeField] HistoryManager historyManager;
-		[SerializeField] DialogueSystem dialogueSystem;
+		[SerializeField] DialogueManager dialogueManager;
 
 		RectTransform contentRectTransform;
 		UITransitionHandler transitionHandler;
@@ -99,7 +100,7 @@ namespace UI
 			}
 			else
 			{
-				speed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
+				speed = (speed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : speed;
 				Vector2 closedPosition = new(openPosition.x, openPosition.y + closedPositionOffset);
 
 				List<IEnumerator> transitionProcesses = new()
@@ -122,7 +123,7 @@ namespace UI
 			}
 			else
 			{
-				speed = (speed < Mathf.Epsilon) ? gameOptions.Dialogue.FadeTransitionSpeed : speed;
+				speed = (speed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : speed;
 				Vector2 closedPosition = new (openPosition.x, openPosition.y + closedPositionOffset);
 
 				List<IEnumerator> transitionProcesses = new()
@@ -217,8 +218,7 @@ namespace UI
 
 		IEnumerator RewindHistoryProcess(LinkedListNode<HistoryState> historyNode, bool isImmediate = false, float speed = 0f)
 		{
-			historyManager.SetLogPanelRewindNode(historyNode);
-
+			yield return historyManager.ApplyLogPanelHistory(historyNode);
 			yield return CloseProcess(isImmediate, speed);
 		}
 
@@ -437,8 +437,8 @@ namespace UI
 
 			foreach (HistoryLogEntryUI logEntry in logEntries)
 			{
-				logEntry.OnSelect += (index) => Scroll(index);
-				logEntry.OnRewindHistory += (historyNode) => RewindHistory(historyNode);
+				logEntry.OnSelect += Scroll;
+				logEntry.OnRewindHistory += RewindHistory;
 			}
 		}
 
@@ -449,8 +449,8 @@ namespace UI
 
 			foreach (HistoryLogEntryUI logEntry in logEntries)
 			{
-				logEntry.OnSelect -= (index) => Scroll(index);
-				logEntry.OnRewindHistory -= (historyNode) => RewindHistory(historyNode);
+				logEntry.OnSelect -= Scroll;
+				logEntry.OnRewindHistory -= RewindHistory;
 			}
 		}
 	}

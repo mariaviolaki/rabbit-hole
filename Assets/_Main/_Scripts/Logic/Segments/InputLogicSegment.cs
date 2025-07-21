@@ -1,4 +1,5 @@
 using Dialogue;
+using IO;
 using System.Collections;
 using UI;
 
@@ -9,15 +10,17 @@ namespace Logic
 		const string keyword = "input";
 		public static new bool Matches(string rawLine) => StartsWithKeyword(rawLine, keyword);
 
+		readonly DialogueReader dialogueReader;
 		readonly InputManagerSO inputManager;
 		readonly VisualNovelUI visualNovelUI;
 		string title = "";
 		string input = null;
 
-		public InputLogicSegment(DialogueSystem dialogueSystem, string rawLine) : base(dialogueSystem, rawLine)
+		public InputLogicSegment(DialogueManager dialogueManager, string rawLine) : base(dialogueManager, rawLine)
 		{
-			inputManager = dialogueSystem.InputManager;
-			visualNovelUI = dialogueSystem.UI;
+			dialogueReader = dialogueManager.Reader;
+			inputManager = dialogueManager.InputManager;
+			visualNovelUI = dialogueManager.UI;
 
 			ParseTitle();
 		}
@@ -31,6 +34,7 @@ namespace Logic
 			{
 				yield return visualNovelUI.GameplayControls.ShowInput(title);
 				while (input == null) yield return null;
+				dialogueReader.LogicReader.LogicSegmentType = BlockingLogicSegmentType.Input;
 			}
 			finally
 			{

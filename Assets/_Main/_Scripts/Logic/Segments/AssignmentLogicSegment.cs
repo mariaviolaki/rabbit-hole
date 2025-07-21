@@ -12,10 +12,10 @@ namespace Logic
 		readonly ScriptVariableManager variableManager;
 		readonly LogicSegmentUtils logicSegmentUtils;
 
-		public AssignmentLogicSegment(DialogueSystem dialogueSystem, string rawLine) : base(dialogueSystem, rawLine)
+		public AssignmentLogicSegment(DialogueManager dialogueManager, string rawLine) : base(dialogueManager, rawLine)
 		{
-			variableManager = dialogueSystem.VariableManager;
-			logicSegmentUtils = new(dialogueSystem);
+			variableManager = dialogueManager.VariableManager;
+			logicSegmentUtils = new(dialogueManager);
 		}
 
 		public override void Execute()

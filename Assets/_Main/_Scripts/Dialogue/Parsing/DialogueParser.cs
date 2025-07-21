@@ -7,14 +7,14 @@ namespace Dialogue
 	{
 		static readonly Regex commandRegex = new(DialogueCommandData.CommandPattern, RegexOptions.Compiled);
 
-		public static DialogueLine Parse(string rawLine, LogicSegmentManager logicSegmentManager)
+		public static DialogueLine Parse(string filePath, int lineNumber, string rawLine, LogicSegmentManager logicSegmentManager)
 		{
 			rawLine = rawLine.Trim();
 			string speaker = "", dialogue = "", commands = "";
 
 			LogicSegmentBase logicSegment = logicSegmentManager.GetLogicSegment(rawLine);
 			if (logicSegment != null)
-				return new DialogueLine(logicSegment);
+				return new DialogueLine(filePath, lineNumber, logicSegment);
 
 			MatchCollection commandMatches = commandRegex.Matches(rawLine);
 			int firstCommandStart = commandMatches.Count == 0 ? -1 : commandMatches[0].Index;
@@ -39,7 +39,7 @@ namespace Dialogue
 			if (speaker == string.Empty && dialogue == string.Empty && commands == string.Empty)
 				dialogue = rawLine.Replace("\\\"", "\"").Trim();
 
-			return new DialogueLine(speaker, dialogue, commands);
+			return new DialogueLine(filePath, lineNumber, speaker, dialogue, commands);
 		}
 
 		static (int, int) GetDialogueBounds(string rawLine, int firstCommandStart)

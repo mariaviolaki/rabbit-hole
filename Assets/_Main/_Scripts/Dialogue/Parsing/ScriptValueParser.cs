@@ -18,10 +18,10 @@ namespace Dialogue
 		readonly ScriptVariableManager variableManager;
 		readonly DialogueTagBankSO tagBank;
 
-		public ScriptValueParser(DialogueSystem dialogueSystem)
+		public ScriptValueParser(ScriptVariableManager variableManager, DialogueTagBankSO tagBank)
 		{
-			variableManager = dialogueSystem.VariableManager;
-			tagBank = dialogueSystem.TagBank;
+			this.variableManager = variableManager;
+			this.tagBank = tagBank;
 		}
 
 		public string ParseText(string text)
