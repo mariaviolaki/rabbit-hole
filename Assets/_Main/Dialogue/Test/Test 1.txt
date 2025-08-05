@@ -1,4 +1,0 @@
-Void as ??? "<i>Welcome, welcome~</i>"
-Void "You're wondering what sort of game this is, aren't you?{c 1.5}Well, it... {a 0.5}<b>isn't</b>.{c}This is a sandbox project of sorts, so you're gonna see a bunch of weird things happening here."
-"You think to yourself that it's too late to turn back now."
-Eerie Voice "Enjoy yourself."

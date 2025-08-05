@@ -1,4 +1,0 @@
-Speaker1 "1 Lorem ipsum dolor sit amet." C1 (true)
-Speaker2 as ??? "2 Lorem ipsum dolor sit amet." CommandName1(lorem, "ipsum")  ,  CommandName2( 5.5 , "lorem, ipsum)"),
-Speaker3 at 1 "3 Lorem ipsum dolor sit amet."
- CommandName1 ("lorem,", "ipsum)", ,	 "sit", "")

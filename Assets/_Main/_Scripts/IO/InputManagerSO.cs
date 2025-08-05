@@ -1,4 +1,4 @@
-using Logic;
+using Dialogue;
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -95,7 +95,6 @@ namespace IO
 
 		public void OnLogAction(InputAction.CallbackContext context)
 		{
-			if (IsDialoguePanelOpen) return;
 			if (context.phase != InputActionPhase.Performed) return;
 
 			OnOpenLog?.Invoke();

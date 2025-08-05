@@ -13,6 +13,11 @@ namespace Characters
 
 namespace Dialogue
 {
+	public enum DialogueNodeType
+	{
+		None, Jump, Dialogue, Command, Input, Choice, ChoiceBranch, Condition, ConditionBranch, Assignment
+	}
+
 	public enum PromptPosition
 	{
 		EndOfText, TextboxBottomRight
@@ -31,6 +36,11 @@ namespace Dialogue
 	public enum TextBuildMode
 	{
 		Instant, Typed, InstantFade, TypedFade
+	}
+
+	public enum SegmentStartMode
+	{
+		None, InputClear, InputAppend, AutoClear, AutoAppend
 	}
 }
 
@@ -88,11 +98,6 @@ namespace Commands
 
 namespace Variables
 {
-	public enum ScriptVariableType
-	{
-		None, Tag, Variable
-	}
-
 	public enum DataTypeEnum
 	{
 		None, String, Int, Float, Bool
@@ -104,13 +109,5 @@ namespace Logic
 	public enum BlockingLogicSegmentType
 	{
 		None, Choice, Input
-	}
-}
-
-namespace History
-{
-	public enum HistoryAction
-	{
-		None, Capture, Load, SaveApply, NavigationApply, LogApply
 	}
 }

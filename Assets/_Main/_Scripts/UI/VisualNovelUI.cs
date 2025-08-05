@@ -14,6 +14,8 @@ namespace UI
 		[SerializeField] FadeableUI sprites;
 		[SerializeField] FadeableUI foreground;
 		[SerializeField] GameplayControlsUI gameplayControls;
+		[SerializeField] DialogueContinuePromptUI continuePrompt;
+		[SerializeField] ReadModeIndicatorUI readModeIndicator;
 		[SerializeField] Canvas overlayControlsCanvas;
 
 		const float fadeMultiplier = 0.1f;
@@ -21,6 +23,8 @@ namespace UI
 
 		public DialogueUI Dialogue => dialogue;
 		public GameplayControlsUI GameplayControls => gameplayControls;
+		public DialogueContinuePromptUI ContinuePrompt => continuePrompt;
+		public ReadModeIndicatorUI ReadModeIndicator => readModeIndicator;
 
 		void Start()
 		{
@@ -74,13 +78,16 @@ namespace UI
 			List<IEnumerator> fadeProcesses = new();
 			foreach (BaseFadeableUI canvas in canvases)
 			{
+				if (!canvas.gameObject.activeInHierarchy) continue;
+
 				if (isFadeIn)
 					fadeProcesses.Add(canvas.FadeIn(false, speed));
 				else
 					fadeProcesses.Add(canvas.FadeOut(false, speed));
 			}
 
-			yield return Utilities.RunConcurrentProcesses(this, fadeProcesses);
+			if (fadeProcesses.Count > 0)
+				yield return Utilities.RunConcurrentProcesses(this, fadeProcesses);
 			
 			ToggleOverlayControls(!isFadeIn);
 			fadeCoroutine = null;

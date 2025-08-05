@@ -8,13 +8,12 @@ public class GameState
 {
 	readonly PlayerSettings settings;
 	readonly PlayerProgress progress;
-	readonly DialogueLineBank dialogueLineBank;
 	readonly AudioManager audioManager;
 	readonly GameOptionsSO gameOptions;
 
-	readonly HashSet<int> readLines;
+	readonly HashSet<string> readLines;
 
-	public int LastAutosaveLine { get; set; } = 0;
+	public string LastAutosaveNodeId { get; set; } = null;
 	public bool HasPendingSettings { get; set; } = false;
 	public bool HasPendingProgress { get; set; } = false;
 	public PlayerSettings Settings => settings;
@@ -33,26 +32,19 @@ public class GameState
 	public int ResolutionWidth => settings.resolutionWidth;
 	public int ResolutionHeight => settings.resolutionHeight;
 
-	public bool HasReadLine(string lineKey)
-	{
-		int lineId = dialogueLineBank.GetLineId(lineKey);
-		if (lineId <= 0) return false;
+	public bool HasReadLine(string lineId) => readLines.Contains(lineId);
 
-		return readLines.Contains(lineId);
-	}
-
-	public GameState(PlayerSettings settings, PlayerProgress progress, DialogueLineBank dialogueLineBank, AudioManager audioManager, GameOptionsSO gameOptions)
+	public GameState(PlayerSettings settings, PlayerProgress progress, AudioManager audioManager, GameOptionsSO gameOptions)
 	{
 		this.settings = settings;
 		this.progress = progress;
-		this.dialogueLineBank = dialogueLineBank;
 		this.audioManager = audioManager;
 		this.gameOptions = gameOptions;
 
 		if (progress.readLines == null)
-			readLines = new HashSet<int>();
+			readLines = new HashSet<string>();
 		else
-			readLines = new HashSet<int>(progress.readLines);
+			readLines = new HashSet<string>(progress.readLines);
 	}
 
 	public void ResetReadLines()
@@ -73,10 +65,9 @@ public class GameState
 	public void ResetGraphicsQuality() => SetGraphicsQuality((int)gameOptions.General.GraphicsQuality);
 	public void ResetResolution() => SetResolution(gameOptions.General.ResolutionWidth, gameOptions.General.ResolutionHeight);
 
-	public void AddReadLine(string lineKey)
+	public void AddReadLine(string lineId)
 	{
-		int lineId = dialogueLineBank.GetLineId(lineKey);
-		if (lineId <= 0 || readLines.Contains(lineId)) return;
+		if (string.IsNullOrWhiteSpace(lineId) || readLines.Contains(lineId)) return;
 
 		readLines.Add(lineId);
 		progress.readLines.Add(lineId);

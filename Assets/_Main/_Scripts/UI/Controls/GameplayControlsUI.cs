@@ -1,5 +1,5 @@
+using Dialogue;
 using IO;
-using Logic;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -68,12 +68,12 @@ namespace UI
 			return logPanel.Show(isImmediate, fadeSpeed);
 		}
 
-		public Coroutine ForceHideInput(bool isImmediate = false)
+		public IEnumerator ForceHideInput(bool isImmediate = false)
 		{
 			return inputPanel.ForceHide(isImmediate);
 		}
 
-		public Coroutine ForceHideChoices(bool isImmediate = false)
+		public IEnumerator ForceHideChoices(bool isImmediate = false)
 		{
 			return choicePanel.ForceHide(isImmediate);
 		}
@@ -85,14 +85,18 @@ namespace UI
 
 		public override IEnumerator FadeOut(bool isImmediate = false, float speed = 0)
 		{
-			List<IEnumerator> closeProcesses = new()
-			{
-				inputPanel.CloseProcess(isImmediate, speed),
-				choicePanel.CloseProcess(isImmediate, speed),
-				logPanel.CloseProcess(isImmediate, speed)
-			};
+			List<IEnumerator> closeProcesses = new();
 
-			yield return Utilities.RunConcurrentProcesses(this, closeProcesses);
+			if (inputPanel.gameObject.activeInHierarchy)
+				closeProcesses.Add(inputPanel.CloseProcess(isImmediate, speed));
+			if (choicePanel.gameObject.activeInHierarchy)
+				closeProcesses.Add(choicePanel.CloseProcess(isImmediate, speed));
+			if (logPanel.gameObject.activeInHierarchy)
+				closeProcesses.Add(logPanel.CloseProcess(isImmediate, speed));
+
+			if (closeProcesses.Count > 0)
+				yield return Utilities.RunConcurrentProcesses(this, closeProcesses);
+
 			yield return base.FadeOut(isImmediate, speed);
 		}
 

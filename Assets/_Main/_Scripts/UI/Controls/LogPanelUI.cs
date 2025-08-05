@@ -218,7 +218,7 @@ namespace UI
 
 		IEnumerator RewindHistoryProcess(LinkedListNode<HistoryState> historyNode, bool isImmediate = false, float speed = 0f)
 		{
-			yield return historyManager.ApplyLogPanelHistory(historyNode);
+			yield return historyManager.Load(historyNode);
 			yield return CloseProcess(isImmediate, speed);
 		}
 
@@ -331,11 +331,8 @@ namespace UI
 			historyStateCount = historyManager.GetHistoryStateCount();
 			if (historyStateCount == 0) return false;
 
-			lastHistoryIndex = historyManager.GetLastNodeIndex();
-			if (lastHistoryIndex < 0) return false;
-
 			// Don't show any logs if there is no history
-			currentNode = historyManager.GetLastNode();
+			currentNode = historyManager.HistoryNode?.Previous;
 			if (currentNode == null) return false;
 
 			return true;

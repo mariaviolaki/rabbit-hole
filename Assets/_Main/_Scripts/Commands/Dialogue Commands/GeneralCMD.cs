@@ -17,7 +17,6 @@ namespace Commands
 			CommandBank bank = commandManager.GetBank(CommandManager.MainBankName);
 
 			bank.AddCommand("Wait", new Func<DialogueCommandArguments, IEnumerator>(Wait));
-			bank.AddCommand("Load", new Action<DialogueCommandArguments>(Load));
 			bank.AddCommand("Autosave", new Action<DialogueCommandArguments>(Autosave));
 		}
 
@@ -26,13 +25,6 @@ namespace Commands
 			float time = args.Get(0, "time", 1f);
 
 			yield return dialogueManager.Wait(time);
-		}
-
-		static void Load(DialogueCommandArguments args)
-		{
-			string path = args.Get(0, "path", "");
-
-			dialogueManager.LoadDialogue(path);
 		}
 
 		static void Autosave(DialogueCommandArguments args)

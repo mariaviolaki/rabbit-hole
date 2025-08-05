@@ -1,0 +1,190 @@
+﻿start Main
+
+CreateBackground(2), CreateForeground(), CreateCinematic()
+CreateAmbient(2), CreateMusic(2), CreateSFX(2), CreateVoice(2)
+ShowVN(immediate=true)
+wait CreateCharacters(v, eg, v1:v, m, mc, all)
+all.SetDisplayName("Everyone")
+
+jump Prologue
+end Main
+
+
+
+start Prologue
+
+SetBackgroundImage(Green-Forest-Back, layer=1, immediate=true), SetBackgroundImage(Green-Forest-Front, immediate=true)
+PlayMusic(day, volume=0.05)
+
+v.SetPosition(0.5, 0.5, immediate=true), v.SetSprite(smug, layer=face, immediate=true), v.SetSprite(casual-body, layer=body, immediate=true)
+v.SetDisplayName("???")
+v.Show()
+
+v "Curiouser and curiouser..."
+v "Didn't expect to find a human...{a 0.5} here."
+v (neutral) "Got lost again, did you?"
+choice
+{
+	- "I never lose my way"
+	{
+		$mc.isLost = false
+		$v.affinity -= 1
+		v "Oh, really?{a} Then why are you here?"
+		v "I know this place like the back of my hand."
+		v (evil) "No human who ends up here ever knew where they were heading."
+		choice
+		{
+			- "I was looking for you"
+			{
+				$v.affinity += 2
+				v (neutral) "Oh, so you were looking for me?"
+				v (smug) "How flattering."
+				v "I guess I can forgive you for getting lost then."
+				choice
+				{
+					- Can you?
+					{
+						v "That's a secret, human~"
+					}
+					- Yay!
+					{
+						$v.affinity += 1
+						v "How gullible~{a} <i>Adorable.</i>"
+					}
+				}
+			}
+			- "You know a lot about this place, don't you?"
+			{
+				v "I might."
+				v "But I wouln't tell <i>you</i> any time soon."
+			}
+		}
+	}
+	- "Umm... You got me there"
+	{
+		$mc.isLost = true
+		$v.affinity += 1
+		v "I thought so.{c 0.5}You're an honest one, aren't you?"
+		v (smug) "Well, let me be your guide then.{c}You can call me Void."
+		v.SetDisplayName("Void")
+	}
+}
+
+eg.SetPosition(1.5, 0.5, immediate=true), eg.SetSprite(whiny, immediate=true), eg.FaceLeft(immediate=true)
+eg.SetDisplayName("???")
+
+eg "Voooooid!"
+eg.Show(immediate=true), v.SetSprite("neutral", layer="face")
+
+eg.SetPosition(0.8, immediate=false)
+if ($mc.isLost)
+{
+	eg "I wanted to guide this human first!"
+}
+else
+{
+	eg "Are you really bothering this poor human?"
+	eg "Since when do you care about humans???"
+}
+
+eg (laugh) "Hey human!{a} Let me show you around, onegaishimasu!!!"
+
+m.SetPosition(-0.5, 0.5, immediate=true), m.SetExpression(sad, immediate=true)
+m.SetDisplayName("???")
+m.Show(immediate=true)
+
+m "Oh, no...{a 0.5} God help us."
+m at [0.2] (sad) "Eccentric Guy is speaking Japanese again."
+eg.SetDisplayName("Eccentric Guy")
+m "Prepare yourselves for the worst, guys."
+
+v.FaceLeft()
+v (smug) "Oh, come on~"
+v "No one has stayed here as long as he has."
+v (crazy) "In a few months, your brain will be as fried as his."
+
+eg (whiny) "I can hear you, you know!"
+eg (sick) "You and Marsh are always so mean to me..."
+m.SetDisplayName("Marsh")
+eg "I just wanted to help the human, but nooo~{c}You two have to mock me!"
+
+m (angry) "Oh, <i>human this</i>, <i>human that</i>. I'm sure this human has a name."
+v.Flip()
+v (smug) "Feel like introducing yourself... <i>human</i>?"
+m.SetExpression()
+
+choice
+{
+	- "Yes"
+	{
+		input "Enter your name"
+		$mc.name = $input
+		"My name is {$mc.name}."
+		v (neutral) "Well, then."
+		v "Nice to meet you, {$mc.name}."
+	}
+	- "Pick a name for me?"
+	{
+		$v.affinity += 1
+		v (smug) "Huh. How interesting~"
+		$mc.name = "Rabbit"
+		v "In that case, I shall name you... <b>{$mc.name}</b>."
+		choice
+		{
+			- "Thank you! That's a nice name"
+			{
+				$v.affinity += 1
+				v (smug) "I know, right?"
+				v "You can thank me later."
+			}
+			- "I don't like it"
+			{
+				$v.affinity -= 1
+				v (annoyed) "Oh, really?"
+				v "Well, I don't care."
+				v "You can re-enter this world and change it if you want."
+				m (crazy) "For now, you will be called <i>Rabbit</i>."
+			}
+		}
+	}
+}
+
+eg (laugh) "Anyway, {$mc.name}, pick a guide!"
+eg "Marshy hasn't offered yet, but I know he wants to."
+
+Autosave()
+
+"So I should just pick one of you three?"
+all "Yes!"
+
+"Then I choose..."
+choice
+{
+	- "Void"
+	{
+		if ($v.affinity > 0)
+		{
+			v.affinity += 1
+		}
+		jump VoidRoute
+	}
+	- "Eccentric Guy"
+	{
+		$z.affinity += 1
+		jump ZeroRoute
+	}
+	- "Marsh"
+	{
+		$m.affinity += 1
+		jump MarshRoute
+	}
+	- "None of you"
+	{
+		$v.affinity -= 1
+		$z.affinity -= 1
+		$m.affinity -= 1
+		jump NoRoute
+	}
+}
+
+end Prologue

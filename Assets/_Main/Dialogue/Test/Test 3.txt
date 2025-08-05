@@ -1,3 +1,0 @@
-speaker1 "Lorem ipsum dolor sit amet,{a} consectetur adipiscing elit,{a 1.9} sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.{c} Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.{c 3}Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-
-speaker2 "Lorem ipsum dolor sit amet,{a} consectetur adipiscing elit,{a 1.9} sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.{c} Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.{c 3}Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."

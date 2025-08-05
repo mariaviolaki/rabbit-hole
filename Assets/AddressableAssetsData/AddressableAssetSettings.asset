@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: d3c9d180fd290d04a98c72f655148502
   m_currentHash:
     serializedVersion: 2
-    Hash: 8bc9c77d4ce85b70cb2e0148a5dde9aa
+    Hash: 3b1787d7a6d6913f2636ed814f31e028
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_BundleLocalCatalog: 0
@@ -86,9 +86,6 @@ MonoBehaviour:
     m_ProfileVersion: 1
   m_LabelTable:
     m_LabelNames:
-    - Dialogue
-    - Dialogue/Characters
-    - Dialogue/Endings
     - Prefabs/Characters
     - Sprite Atlas/Characters
     - Prefabs/Character Models
@@ -97,6 +94,7 @@ MonoBehaviour:
     - Audio/Music
     - Audio/SFX
     - Audio/Voice
+    - Dialogue
     - StreamingAssets/Videos
   m_SchemaTemplates: []
   m_GroupTemplateObjects:

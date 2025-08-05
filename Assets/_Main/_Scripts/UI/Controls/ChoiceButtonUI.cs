@@ -1,4 +1,4 @@
-using Logic;
+using Dialogue;
 using System;
 using TMPro;
 using UI;
@@ -30,12 +30,15 @@ public class ChoiceButtonUI : FadeableUI
 	public void UpdateChoice(DialogueChoice choice)
 	{
 		this.choice = choice;
-
 		buttonText.text = choice.Text;
+	}
+
+	public void EnableListeners()
+	{
 		button.onClick.AddListener(SelectChoice);
 	}
 
-	public void RemoveListeners()
+	public void DisableListeners()
 	{
 		button.onClick.RemoveAllListeners();
 	}

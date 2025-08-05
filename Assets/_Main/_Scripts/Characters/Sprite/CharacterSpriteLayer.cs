@@ -154,6 +154,7 @@ namespace Characters
 		void SetSpriteImmediate(Sprite sprite)
 		{
 			primaryImage.sprite = sprite;
+			secondaryImage.sprite = sprite;
 		}
 
 		void SetDirectionImmediate()
@@ -161,16 +162,19 @@ namespace Characters
 			Vector3 currentLocalScale = primaryImage.transform.localScale;
 			Vector3 targetLocalScale = new(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
 			primaryImage.transform.localScale = targetLocalScale;
+			secondaryImage.transform.localScale = targetLocalScale;
 		}
 
 		void SetBrightnessImmediate(Color color)
 		{
 			primaryImage.color = color;
+			secondaryImage.color = color;
 		}
 
 		void SetColorImmediate(Color color)
 		{
 			primaryImage.color = color;
+			secondaryImage.color = color;
 		}
 
 		IEnumerator ChangeSprite(Sprite sprite, float speed, bool isSkipped)
@@ -197,7 +201,7 @@ namespace Characters
 			speed = spriteCharacter.GetTransitionSpeed(speed, defaultSpeed, isSkipped);
 
 			Vector3 currentLocalScale = primaryImage.transform.localScale;
-			Vector3 targetLocalScale = new(currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
+			Vector3 targetLocalScale = new(-currentLocalScale.x, currentLocalScale.y, currentLocalScale.z);
 
 			while (isSwappingContainers) yield return null;
 			isSwappingContainers = true;

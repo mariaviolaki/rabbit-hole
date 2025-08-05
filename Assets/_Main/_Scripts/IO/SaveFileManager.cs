@@ -1,3 +1,4 @@
+using Dialogue;
 using History;
 using System;
 using System.Collections.Generic;
@@ -15,43 +16,24 @@ namespace IO
 
 	public class SaveFileManager
 	{
-		public int AutosaveSlot = 0;
-		public int MinSaveSlot = 1;
-
-		const string FileExtension = "vns";
-		const string SettingsFileName = "Settings";
-		const string ProgressFileName = "Progress";
-		readonly string RootDirectory;
-		readonly string PersistentDirectory;
-		readonly string SlotsDirectory;
-		readonly string SettingsSavePath;
-		readonly string ProgressSavePath;
-		readonly string AutosavePath;
 		readonly byte[] EncryptionKeyBytes = Encoding.UTF8.GetBytes("VNSaveKey");
 
-		public bool HasSettingsSave() => File.Exists(SettingsSavePath);
-		public bool HasProgressSave() => File.Exists(ProgressSavePath);
-		public bool HasAutosave() => File.Exists(AutosavePath);
+		public bool HasSettingsSave() => File.Exists(FilePaths.SettingsSavePath);
+		public bool HasProgressSave() => File.Exists(FilePaths.ProgressSavePath);
+		public bool HasAutosave() => File.Exists(FilePaths.AutosavePath);
 
 		public SaveFileManager()
 		{
-			RootDirectory = Path.Combine(Application.persistentDataPath, "Saves");
-			SlotsDirectory = Path.Combine(RootDirectory, "Slots");
-			PersistentDirectory = Path.Combine(RootDirectory, "Persistent");
-			SettingsSavePath = Path.Combine(PersistentDirectory, $"{SettingsFileName}.{FileExtension}");
-			ProgressSavePath = Path.Combine(PersistentDirectory, $"{ProgressFileName}.{FileExtension}");
-			AutosavePath = Path.Combine(SlotsDirectory, $"{AutosaveSlot}.{FileExtension}");
-
-			Directory.CreateDirectory(RootDirectory);
-			Directory.CreateDirectory(SlotsDirectory);
-			Directory.CreateDirectory(PersistentDirectory);
+			Directory.CreateDirectory(FilePaths.RootDirectory);
+			Directory.CreateDirectory(FilePaths.SlotsDirectory);
+			Directory.CreateDirectory(FilePaths.PersistentDirectory);
 		}
 
-		public bool SavePlayerSettings(PlayerSettings playerSettings) => SavePersistentData(playerSettings, SettingsSavePath);
-		public PlayerSettings LoadPlayerSettings() => LoadPersistentState<PlayerSettings>(SettingsSavePath);
+		public bool SavePlayerSettings(PlayerSettings playerSettings) => SavePersistentData(playerSettings, FilePaths.SettingsSavePath);
+		public PlayerSettings LoadPlayerSettings() => LoadPersistentState<PlayerSettings>(FilePaths.SettingsSavePath);
 
-		public bool SavePlayerProgress(PlayerProgress playerProgress) => SavePersistentData(playerProgress, ProgressSavePath);
-		public PlayerProgress LoadPlayerProgress() => LoadPersistentState<PlayerProgress>(ProgressSavePath);
+		public bool SavePlayerProgress(PlayerProgress playerProgress) => SavePersistentData(playerProgress, FilePaths.ProgressSavePath);
+		public PlayerProgress LoadPlayerProgress() => LoadPersistentState<PlayerProgress>(FilePaths.ProgressSavePath);
 
 		public bool SaveSlot(int slot, List<HistoryState> historyStates)
 		{
@@ -66,7 +48,7 @@ namespace IO
 				return false;
 			}
 
-			string filePath = Path.Combine(SlotsDirectory, $"{slot}.{FileExtension}");
+			string filePath = Path.Combine(FilePaths.SlotsDirectory, $"{slot}{FilePaths.SaveFileExtension}");
 			SaveSlot gameSave = new() { HistoryStates = historyStates };
 
 			return SaveJson(gameSave, filePath);
@@ -80,10 +62,44 @@ namespace IO
 				return null;
 			}
 
-			string filePath = Path.Combine(SlotsDirectory, $"{slot}.{FileExtension}");
+			string filePath = Path.Combine(FilePaths.SlotsDirectory, $"{slot}{FilePaths.SaveFileExtension}");
 			SaveSlot gameSave = LoadJson<SaveSlot>(filePath);
 
 			return gameSave?.HistoryStates;
+		}
+
+		public bool SaveDialogueLookup(DialogueTreeMap dialogueLookup)
+		{
+			if (dialogueLookup == null)
+			{
+				Debug.LogWarning("Unable to save dialogue lookup because it was null. Save aborted.");
+				return false;
+			}
+
+			return SaveJson(dialogueLookup, FilePaths.DialogueLookupFilePath);
+		}
+
+		public DialogueTreeMap LoadDialogueLookup()
+		{
+			return LoadJson<DialogueTreeMap>(FilePaths.DialogueLookupFilePath);
+		}
+
+		public bool SaveCompiledDialogue(DialogueTree dialogueTree)
+		{
+			if (dialogueTree == null)
+			{
+				Debug.LogWarning("Unable to save compiled dialogue tree because it was null. Save aborted.");
+				return false;
+			}
+
+			string filePath = Path.Combine(FilePaths.DialogueFileDirectory, $"{dialogueTree.Name}{FilePaths.DialogueFileExtension}");
+			return SaveJson(dialogueTree, filePath);
+		}
+
+		public DialogueTree LoadCompiledDialogue(string fileName)
+		{
+			string filePath = Path.Combine(FilePaths.DialogueFileDirectory, $"{fileName}{FilePaths.DialogueFileExtension}");
+			return LoadJson<DialogueTree>(filePath);
 		}
 
 		bool SavePersistentData<T>(T persistentData, string persistentFilePath) where T : class
@@ -100,6 +116,48 @@ namespace IO
 		T LoadPersistentState<T>(string persistentFilePath) where T : class
 		{
 			return LoadJson<T>(persistentFilePath);
+		}
+
+		public bool SaveJson<T>(T data, string filePath) where T : class
+		{
+			try
+			{
+				string gameSaveJson = JsonUtility.ToJson(data, true);
+				File.WriteAllText(filePath, gameSaveJson);
+				return true;
+			}
+			catch (Exception e)
+			{
+				Debug.LogWarning($"Unable to save json in path '{filePath}': {e.Message}");
+				return false;
+			}
+		}
+
+		public T LoadJson<T>(string filePath) where T : class
+		{
+			try
+			{
+				string gameSaveJson = File.ReadAllText(filePath);
+				return JsonUtility.FromJson<T>(gameSaveJson);
+			}
+			catch (Exception e)
+			{
+				Debug.LogWarning($"Unable to load json from path '{filePath}': {e.Message}");
+				return null;
+			}
+		}
+
+		public T ParseJson<T>(string json) where T : class
+		{
+			try
+			{
+				return JsonUtility.FromJson<T>(json);
+			}
+			catch (Exception e)
+			{
+				Debug.LogWarning($"Unable to parse JSON: {e.Message}");
+				return null;
+			}
 		}
 
 		bool Save<T>(T data, string filePath) where T : class
@@ -133,38 +191,7 @@ namespace IO
 				Debug.LogWarning($"Unable to load game save from path '{filePath}': {e.Message}");
 				return null;
 			}
-		}
-
-		// Creates JSON files for testing
-		bool SaveJson<T>(T data, string filePath) where T : class
-		{
-			try
-			{
-				string gameSaveJson = JsonUtility.ToJson(data, true);
-				File.WriteAllText(filePath, gameSaveJson);
-				return true;
-			}
-			catch (Exception e)
-			{
-				Debug.LogWarning($"Unable to create game save in path '{filePath}': {e.Message}");
-				return false;
-			}
-		}
-
-		// Loads JSON files for testing
-		T LoadJson<T>(string filePath) where T : class
-		{
-			try
-			{
-				string gameSaveJson = File.ReadAllText(filePath);
-				return JsonUtility.FromJson<T>(gameSaveJson);
-			}
-			catch (Exception e)
-			{
-				Debug.LogWarning($"Unable to load game save from path '{filePath}': {e.Message}");
-				return null;
-			}
-		}
+		}		
 
 		byte[] GetXORBytes(byte[] historyStateBytes, byte[] keyBytes)
 		{

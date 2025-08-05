@@ -1,5 +1,5 @@
+using Dialogue;
 using IO;
-using Logic;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -53,27 +53,26 @@ namespace UI
 			return visibilityCoroutine;
 		}
 
-		public Coroutine ForceHide(bool isImmediate = false)
+		public IEnumerator ForceHide(bool isImmediate = false)
 		{
-			fadeSpeed = gameOptions.General.SkipTransitionSpeed;
+			while (visibilityCoroutine != null) yield return null;
 
-			StopProcess();
-			visibilityCoroutine = StartCoroutine(HideProcess(isImmediate, fadeSpeed));
-			return visibilityCoroutine;
+			fadeSpeed = gameOptions.General.SkipTransitionSpeed;
+			yield return CloseProcess(isImmediate, fadeSpeed);
 		}
 
 		public IEnumerator OpenProcess(List<DialogueChoice> choices, bool isImmediate = false, float speed = 0)
 		{
 			CreateButtons(choices);
-
 			yield return FadeIn(isImmediate, speed);
+			EnableButtonListeners();
 		}
 
 		public IEnumerator CloseProcess(bool isImmediate = false, float speed = 0)
 		{
 			foreach (ChoiceButtonUI choiceButton in activeButtons)
 			{
-				choiceButton.RemoveListeners();
+				choiceButton.DisableListeners();
 				choiceButton.OnSelect -= SelectChoice;
 			}
 
@@ -121,6 +120,15 @@ namespace UI
 			}
 		}
 
+		void EnableButtonListeners()
+		{
+			for (int i = 0; i < activeButtons.Count; i++)
+			{
+				activeButtons[i].OnSelect += SelectChoice;
+				activeButtons[i].EnableListeners();
+			}
+		}
+
 		void SelectChoice(DialogueChoice choice)
 		{
 			lastChoice = choice;
@@ -138,7 +146,6 @@ namespace UI
 		void OnGetButton(ChoiceButtonUI choiceButton)
 		{
 			choiceButton.transform.SetParent(transform, false);
-			choiceButton.OnSelect += SelectChoice;
 			choiceButton.ClearData();
 			choiceButton.gameObject.SetActive(true);
 			choiceButton.Show(true);

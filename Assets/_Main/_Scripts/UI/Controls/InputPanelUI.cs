@@ -5,7 +5,6 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Variables;
 
 namespace UI
 {
@@ -17,8 +16,6 @@ namespace UI
 		[SerializeField] TMP_InputField inputField;
 		[SerializeField] Button submitButton;
 
-		ScriptTagManager scriptTagManager;
-		const string InputTagName = "input";
 		string lastInput = "";
 		Coroutine visibilityCoroutine;
 
@@ -27,7 +24,6 @@ namespace UI
 		override protected void Awake()
 		{
 			base.Awake();
-			scriptTagManager = dialogueManager.TagManager;
 		}
 
 		override protected void OnEnable()
@@ -54,13 +50,12 @@ namespace UI
 			return visibilityCoroutine;
 		}
 
-		public Coroutine ForceHide(bool isImmediate = false)
+		public IEnumerator ForceHide(bool isImmediate = false)
 		{
-			fadeSpeed = gameOptions.General.SkipTransitionSpeed;
+			while (visibilityCoroutine != null) yield return null;
 
-			StopProcess();
-			visibilityCoroutine = StartCoroutine(HideProcess(isImmediate, fadeSpeed));
-			return visibilityCoroutine;
+			fadeSpeed = gameOptions.General.SkipTransitionSpeed;
+			yield return CloseProcess(isImmediate, fadeSpeed);
 		}
 
 		public IEnumerator OpenProcess(string title, bool isImmediate = false, float speed = 0)
@@ -80,8 +75,6 @@ namespace UI
 			if (string.IsNullOrWhiteSpace(inputField.text)) return;
 
 			lastInput = inputField.text.Trim();
-			scriptTagManager.SetTagValue(InputTagName, lastInput);
-
 			inputManager.OnSubmitInput?.Invoke(lastInput);
 
 			StopProcess();

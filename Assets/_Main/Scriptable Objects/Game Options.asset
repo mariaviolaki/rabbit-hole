@@ -50,5 +50,8 @@ MonoBehaviour:
     sfxVolume: 0.5
     voiceVolume: 0.5
   inputOutput:
+    autosaveTimer: 1
+    autosaveTimerInterval: 60
+    slotCount: 10
     audioExtension: 2
     videoExtension: 1

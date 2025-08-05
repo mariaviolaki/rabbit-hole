@@ -19,8 +19,6 @@ namespace IO
 		[SerializeField] AssetLabelReference sfxAudioLabel;
 		[SerializeField] AssetLabelReference voiceAudioLabel;
 		[SerializeField] AssetLabelReference dialogueLabel;
-		[SerializeField] AssetLabelReference dialogueCharactersLabel;
-		[SerializeField] AssetLabelReference dialogueEndingsLabel;
 		[SerializeField] AssetLabelReference backgroundImageLabel;
 		[SerializeField] AssetLabelReference characterAtlasLabel;
 		[SerializeField] AssetLabelReference model3DPrefabLabel;
@@ -52,7 +50,7 @@ namespace IO
 			// Load the addressables's metadata to easily search and load them later
 			CacheLabeledAssetsIntoDictionary(AssetType.Video, videoPaths, videoLabel);
 			CacheLabeledAssetsIntoDictionary(AssetType.Audio, audioKeys, ambientAudioLabel, musicAudioLabel, sfxAudioLabel, voiceAudioLabel);
-			CacheLabeledAssetsIntoDictionary(AssetType.Dialogue, dialogueKeys, dialogueLabel, dialogueCharactersLabel, dialogueEndingsLabel);
+			CacheLabeledAssetsIntoDictionary(AssetType.Dialogue, dialogueKeys, dialogueLabel);
 			CacheLabeledAssetsIntoDictionary(AssetType.Background, backgroundImageKeys, backgroundImageLabel);
 			CacheLabeledAssetsIntoDictionary(AssetType.CharacterAtlas, characterAtlasKeys, characterAtlasLabel);
 			CacheLabeledAssetsIntoDictionary(AssetType.Model3DPrefab, model3DPrefabKeys, model3DPrefabLabel);

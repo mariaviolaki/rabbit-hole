@@ -55,6 +55,8 @@ public static class Utilities
 
 	public static IEnumerator RunConcurrentProcesses(MonoBehaviour owner, List<IEnumerator> processes)
 	{
+		if (!owner.gameObject.activeInHierarchy) yield break;
+
 		int completedCount = 0;
 
 		IEnumerator MarkProcessCompletion(IEnumerator process)

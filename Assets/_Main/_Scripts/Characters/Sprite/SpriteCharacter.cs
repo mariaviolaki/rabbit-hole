@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.U2D;
 
 namespace Characters
@@ -53,6 +54,8 @@ namespace Characters
 
 		public Coroutine SetSprite(string spriteName, SpriteLayerType layerType, bool isImmediate = false, float speed = 0)
 		{
+			layerType = GetLayerTypeFromInput(layerType);
+
 			Sprite sprite = GetSprite(layerType, spriteName);
 			if (sprite == null) return null;
 
@@ -236,6 +239,14 @@ namespace Characters
 			{
 				action(spriteLayer);
 			}
+		}
+
+		SpriteLayerType GetLayerTypeFromInput(SpriteLayerType layerInput)
+		{
+			// Get the default layer if invalid input was provided
+			if (spriteLayers.Count == 1) return SpriteLayerType.None;
+			else if (layerInput == SpriteLayerType.None) return SpriteLayerType.Face;
+			else return layerInput;
 		}
 
 		public string GetRawSpriteName(string spriteName)

@@ -107,7 +107,12 @@ namespace Characters
 
 		public Coroutine SetExpression(string expressionName, bool isImmediate = false, float speed = 0)
 		{
-			if (expressionName == currentExpression || !IsValidExpression(expressionName) || skippedExpressionCoroutine != null) return null;
+			if (skippedExpressionCoroutine != null) return null;
+
+			// Allow null or empty strings to clear the current expression
+			bool isClearing = string.IsNullOrWhiteSpace(expressionName);
+			if (expressionName == currentExpression || (!isClearing && !IsValidExpression(expressionName))) return null;
+
 			bool isSkipped = manager.StopProcess(ref expressionCoroutine);
 
 			if (isImmediate)
@@ -209,7 +214,7 @@ namespace Characters
 		void SetExpressionImmediate(string expressionName)
 		{
 			// Clear the old expression
-			if (string.IsNullOrWhiteSpace(currentExpression))
+			if (!string.IsNullOrWhiteSpace(currentExpression))
 				SetSubExpressionsImmediate(currentExpression, false);
 
 			// If a new expression was specified, change into this - and cache the new expression
@@ -329,10 +334,9 @@ namespace Characters
 
 		bool IsValidExpression(string expressionName)
 		{
-			if (expressionName == currentExpression) return false;
-			if (!string.IsNullOrWhiteSpace(expressionName) && !expressionBank.Expressions.ContainsKey(expressionName))
+			if (!expressionBank.Expressions.ContainsKey(expressionName))
 			{
-				Debug.LogError($"No expression '{expressionName}' found for 3D Model: '{data.CastName}'");
+				Debug.LogWarning($"No expression '{expressionName}' found for 3D Model: '{data.CastName}'");
 				return false;
 			}
 
