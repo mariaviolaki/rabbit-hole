@@ -44,6 +44,8 @@ namespace Dialogue
 
 		protected override IEnumerator ExecuteLogic()
 		{
+			yield return base.ExecuteLogic();
+
 			// Proceed to the first node nested inside the branch
 			if (branchNode != null && branchNode.Children.Count > 0)
 				flowController.ProceedToNode(branchNode.Id + 1);

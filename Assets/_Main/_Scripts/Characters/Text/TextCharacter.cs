@@ -4,9 +4,9 @@ namespace Characters
 {
 	public class TextCharacter : Character
 	{
-		protected override IEnumerator Init()
+		public override IEnumerator Initialize(CharacterManager manager, CharacterData data)
 		{
-			yield break;
+			yield return base.Initialize(manager, data);
 		}
 	}
 }

@@ -47,6 +47,9 @@ MonoBehaviour:
   gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
   fileManager: {fileID: 11400000, guid: 527643bfa3cac48449467bd17611abdd, type: 2}
   characterBank: {fileID: 11400000, guid: a56599e06ff1517458c71a5b515770b8, type: 2}
-  dialogueSystem: {fileID: 0}
+  textCharacterPrefab: {fileID: 3641862074013137635, guid: c4e9c29ac7f0ec745afa961300bc462f, type: 3}
+  spriteCharacterPrefab: {fileID: 7066556285555917875, guid: e32372a873a8dca4db62931eef5eccb2, type: 3}
+  model3DCharacterPrefab: {fileID: 2487174019650768599, guid: 6644d93dff4025e48ba6a8aa348c10e0, type: 3}
+  dialogueManager: {fileID: 0}
   characterContainer: {fileID: 0}
   model3DContainer: {fileID: 0}

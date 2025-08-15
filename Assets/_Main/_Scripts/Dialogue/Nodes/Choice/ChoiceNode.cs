@@ -13,7 +13,6 @@ namespace Dialogue
 
 		readonly List<DialogueChoice> choices = new();
 		DialogueChoice selectedChoice;
-		bool isWaitingToAdvance = true;
 
 		public ChoiceNode(DialogueTreeNode treeNode, DialogueFlowController flowController) : base(treeNode, flowController)
 		{
@@ -43,6 +42,8 @@ namespace Dialogue
 
 		protected override IEnumerator ExecuteLogic()
 		{
+			yield return base.ExecuteLogic();
+
 			if (choices.Count == 0)
 			{
 				executionCoroutine = null;
@@ -57,11 +58,10 @@ namespace Dialogue
 
 			try
 			{
-				isWaitingToAdvance = true;
 				yield return visualNovelUI.GameplayControls.ShowChoices(choices);
-				while (selectedChoice == null && isWaitingToAdvance) yield return null;
+				while (selectedChoice == null && !IsExecutionCanceled) yield return null;
 
-				if (!isWaitingToAdvance)
+				if (IsExecutionCanceled)
 					yield return visualNovelUI.GameplayControls.ForceHideChoices();
 			}
 			finally
@@ -71,12 +71,6 @@ namespace Dialogue
 				executionCoroutine = null;
 				ProceedAfterChoice();
 			}
-		}
-
-		public override void CancelExecution()
-		{
-			base.CancelExecution();
-			isWaitingToAdvance = false;
 		}
 
 		void HandleOnClearChoiceEvent() => HandleChoiceEvent(null);

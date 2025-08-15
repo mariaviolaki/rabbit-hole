@@ -4,7 +4,7 @@ wait CreateCharacter(z)
 SetBackgroundImage(Snow-Back, layer=1), SetBackgroundImage(Snow-Front)
 PlayMusic(day, volume=0.02)
 
-z.SetDisplayName("???")
+z.SetName("???")
 
 m.SetPosition(x=-0.5), eg.SetPosition(x=1.5)
 z.SetPosition(-0.5, 0.5, immediate=true), z.Show(immediate=true)

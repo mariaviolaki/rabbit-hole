@@ -17,12 +17,6 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: d3c9d180fd290d04a98c72f655148502
   m_SerializeEntries:
-  - m_GUID: 91ba255192827954ab70d3b16c0e30d9
-    m_Address: Assets/_Main/Prefabs/Characters
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - Prefabs/Characters
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dfa0fbd4593a1104a86f2ea329cac894
     m_Address: Assets/_Main/Graphics/Sprite Atlas/Characters
     m_ReadOnly: 0

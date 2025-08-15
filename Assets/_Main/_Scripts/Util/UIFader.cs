@@ -68,12 +68,11 @@ public class UITransitionHandler
 		canvasGroup.alpha = targetAlpha;
 	}
 
-	public IEnumerator SetColor(Graphic image, Color targetColor, float speed = 0)
+	public IEnumerator SetColor(Graphic image, Color startColor, Color targetColor, float speed = 0)
 	{
 		if (image == null) yield break;
 
 		speed = speed <= Mathf.Epsilon ? DefaultTransitionSpeed : speed;
-		Color startColor = image.color;
 
 		float duration = (1 / speed) * ColorSpeedMultiplier * Vector4.Distance(startColor, targetColor);
 		duration = Mathf.Clamp(duration, MinTransitionDuration, MaxTransitionDuration);

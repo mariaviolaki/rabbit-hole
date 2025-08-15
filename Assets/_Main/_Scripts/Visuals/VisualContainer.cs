@@ -1,3 +1,6 @@
+using Characters;
+using Dialogue;
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,9 +10,9 @@ namespace Visuals
 {
 	public class VisualContainer
 	{
-		const float FadeSpeedMultiplier = 10f;
-
 		readonly VisualLayer visualLayer;
+		readonly DialogueFlowController flowController;
+		readonly GameOptionsSO gameOptions;
 		readonly CanvasGroup canvasGroup;
 		readonly RawImage rawImage;
 		readonly VideoPlayer videoPlayer;
@@ -17,9 +20,28 @@ namespace Visuals
 
 		RenderTexture renderTexture;
 
+		const float TransitionSpeedMultiplier = 1f;
+		float targetFade;
+		float transitionSpeed;
+		bool isPreparingVideo;
+		bool hasVideoFailed;
+		bool isImage;
+		string visualName;
+		float targetVolume;
+		bool isMuted;
+		TransitionStatus transitionStatus = TransitionStatus.Completed;
+
+		public event Action<VisualContainer> OnCompleteTransition;
+
+		public bool IsTransitioning => transitionStatus != TransitionStatus.Completed;
+		public bool IsVisible => transitionStatus == TransitionStatus.Completed && Utilities.AreApproximatelyEqual(targetFade, 1f);
+		public bool IsHidden => transitionStatus == TransitionStatus.Completed && Utilities.AreApproximatelyEqual(targetFade, 0f);
+
 		public VisualContainer(VisualLayer visualLayer, GameObject layerObject)
 		{
 			this.visualLayer = visualLayer;
+			this.flowController = visualLayer.LayerGroup.Manager.Dialogue.FlowController;
+			this.gameOptions = visualLayer.LayerGroup.Manager.GameOptions;
 
 			RectTransform rectTransform = layerObject.GetComponent<RectTransform>();
 			canvasGroup = layerObject.AddComponent<CanvasGroup>();
@@ -41,169 +63,221 @@ namespace Visuals
 			rectTransform.offsetMax = Vector2.zero;
 		}
 
-		public void ClearImmediate()
+		public void Clear(bool isImmediate = false, float speed = 0)
 		{
-			UnloadVisual();
-			canvasGroup.alpha = 0;
-		}
+			targetFade = 0f;
 
-		public IEnumerator Clear(bool isImmediate, float speed)
-		{
 			if (isImmediate)
 			{
 				ClearImmediate();
-				yield break;
+				transitionStatus = TransitionStatus.Completed;
+				OnCompleteTransition?.Invoke(this);
 			}
 			else
 			{
-				yield return ClearVisual(speed);
+				SetTransitionSpeed(speed);
+				transitionStatus = transitionStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
 			}
 		}
 
-		public IEnumerator SetImage(string name, bool isImmediate = false, float fadeSpeed = 0)
+		public void SetImage(Sprite sprite, string name, bool isImmediate = false, float speed = 0)
 		{
-			if (isImmediate)
-				yield return SetImageImmediate(name);
-			else
-				yield return ChangeVisual(name, fadeSpeed, true, true);
-		}
+			targetFade = 1f;
 
-		public IEnumerator SetVideo(string name, bool isMuted = false, bool isImmediate = false, float speed = 0)
-		{
 			if (isImmediate)
 			{
-				ApplyVideo(name, isMuted);
-				yield break;
+				SetImageImmediate(sprite, name);
+				transitionStatus = TransitionStatus.Completed;
+				OnCompleteTransition?.Invoke(this);
 			}
 			else
 			{
-				yield return ChangeVisual(name, speed, false, isMuted);
+				ApplyImage(sprite, name);
+				SetTransitionSpeed(speed);
+				transitionStatus = transitionStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
 			}
 		}
 
-		void ApplyImage(Sprite sprite)
+		public IEnumerator SetVideo(string path, string name, float volume = 0.5f, bool isMuted = false, bool isImmediate = false, float speed = 0)
 		{
-			if (sprite == null) return;
+			targetFade = 1f;
 
-			UnloadVisual();
+			if (isImmediate)
+			{
+				yield return SetVideoImmediate(path, name, volume, isMuted);
+				transitionStatus = TransitionStatus.Completed;
+				OnCompleteTransition?.Invoke(this);
+			}
+			else
+			{
+				yield return ApplyVideo(path, name, volume, isMuted);
+				SetTransitionSpeed(speed);
+				transitionStatus = transitionStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
+			}
+		}
+	
+		public void TransitionVisual()
+		{
+			if (transitionStatus == TransitionStatus.Completed) return;
 
-			rawImage.texture = sprite.texture;
+			float speed = transitionSpeed * Time.deltaTime;
+
+			// Fade in/out the visual
+			canvasGroup.alpha = Mathf.MoveTowards(canvasGroup.alpha, targetFade, speed);
+
+			// Fade in/out the video audio if applicable
+			if (!isImage && !isMuted && !Utilities.AreApproximatelyEqual(audioSource.volume, targetVolume))
+			{
+				audioSource.volume = Mathf.MoveTowards(audioSource.volume, targetVolume, speed);
+
+				if (Utilities.AreApproximatelyEqual(audioSource.volume, targetVolume))
+					audioSource.volume = targetVolume;
+			}
+
+			if (Utilities.AreApproximatelyEqual(canvasGroup.alpha, targetFade))
+			{
+				canvasGroup.alpha = targetFade;
+
+				// If this was a fade-out, unload the visual after hiding it
+				if (targetFade < 0.5f)
+					UnloadVisual();
+
+				transitionStatus = TransitionStatus.Completed;
+				OnCompleteTransition?.Invoke(this);
+			}
 		}
 
-		void ApplyVideo(string name, bool isMuted)
+		public void SkipTransition()
 		{
-			UnloadVisual();
+			if (transitionStatus == TransitionStatus.Completed) return;
 
-			audioSource.mute = isMuted;
-			audioSource.volume = 0;
-
-			videoPlayer.url = visualLayer.LayerGroup.Manager.FileManager.GetVideoUrl(name);
-			videoPlayer.prepareCompleted += OnVideoPrepared;
-			videoPlayer.Prepare();
+			SetTransitionSpeed(gameOptions.General.SkipTransitionSpeed);
 		}
 
-		IEnumerator SetImageImmediate(string name)
+		void ClearImmediate()
 		{
-			yield return visualLayer.LayerGroup.Manager.FileManager.LoadBackgroundImage(name);
-			Sprite sprite = visualLayer.LayerGroup.Manager.FileManager.GetBackgroundImage(name);
-			if (sprite == null) yield break;
+			canvasGroup.alpha = 0f;
+			UnloadVisual();
+		}
 
-			ApplyImage(sprite);
+		void SetImageImmediate(Sprite sprite, string name)
+		{
+			ApplyImage(sprite, name);
 			canvasGroup.alpha = 1f;
 		}
 
-		IEnumerator ChangeVisual(string name, float speed, bool isImage, bool isMuted)
+		IEnumerator SetVideoImmediate(string path, string name, float volume, bool isMuted)
 		{
-			if (isImage)
-			{
-				yield return visualLayer.LayerGroup.Manager.FileManager.LoadBackgroundImage(name);
-				Sprite sprite = visualLayer.LayerGroup.Manager.FileManager.GetBackgroundImage(name);
-				if (sprite != null)
-					ApplyImage(sprite);
-			}
-			else
-			{
-				ApplyVideo(name, isMuted);
-			}
-
-			yield return FadeVisual(true, speed);
+			yield return ApplyVideo(path, name, volume, isMuted);
+			canvasGroup.alpha = 1f;
 		}
 
-		IEnumerator ClearVisual(float speed)
+		void ApplyImage(Sprite sprite, string name)
 		{
-			yield return FadeVisual(false, speed);
-			UnloadVisual();
+			if (visualName != null) UnloadVisual();
+
+			rawImage.texture = sprite.texture;
+			isImage = true;
+			visualName = name;
 		}
 
-		IEnumerator FadeVisual(bool isFadeIn, float speed)
+		IEnumerator ApplyVideo(string path, string name, float volume, bool isMuted)
 		{
-			float startAlpha = canvasGroup.alpha;
-			float targetAlpha = isFadeIn ? 1f : 0f;
+			while (isPreparingVideo) yield return null;
+			if (visualName != null) UnloadVisual();
 
-			float timeElapsed = 0;
-			float duration = (1f / speed) * FadeSpeedMultiplier * Mathf.Abs(targetAlpha - startAlpha);
+			isPreparingVideo = true;
+			hasVideoFailed = false;
 
-			while (timeElapsed < duration)
+			audioSource.mute = isMuted;
+			audioSource.volume = 0;
+			videoPlayer.url = path;
+
+			videoPlayer.prepareCompleted += OnVideoPrepared;
+			videoPlayer.Prepare();
+
+			while (isPreparingVideo) yield return null;
+
+			videoPlayer.prepareCompleted -= OnVideoPrepared;
+			yield return null;
+
+			while (!hasVideoFailed && (videoPlayer.width <= 0 || videoPlayer.height <= 0)) yield return null;
+
+			if (hasVideoFailed)
 			{
-				timeElapsed += Time.deltaTime;
-				float smoothPercentage = Mathf.SmoothStep(0, 1, Mathf.Clamp01(timeElapsed / duration));
-
-				float transitionValue = Mathf.Lerp(startAlpha, targetAlpha, smoothPercentage);
-				canvasGroup.alpha = transitionValue;
-
-				if (!visualLayer.IsImage && !visualLayer.IsMuted)
-					audioSource.volume = transitionValue;
-
-				yield return null;
+				UnloadVisual();
+				yield break;
 			}
 
-			canvasGroup.alpha = targetAlpha;
+			renderTexture = new RenderTexture((int)videoPlayer.width, (int)videoPlayer.height, 0);
+			rawImage.texture = renderTexture;
+			videoPlayer.targetTexture = renderTexture;
+
+			if (visualLayer.IsImmediate)
+			{
+				audioSource.volume = isMuted ? 0f : volume;
+				canvasGroup.alpha = 1f;
+			}
+
+			videoPlayer.Play();
+
+			isImage = false;
+			visualName = name;
+			this.targetVolume = volume;
+			this.isMuted = isMuted;
 		}
 
 		void UnloadVisual()
 		{
-			if (visualLayer.VisualName == null) return;
+			if (visualName == null) return;
 
-			if (visualLayer.IsImage)
+			if (isImage)
 			{
-				visualLayer.LayerGroup.Manager.FileManager.UnloadBackgroundImage(visualLayer.VisualName);
+				visualLayer.LayerGroup.Manager.FileManager.UnloadBackgroundImage(visualName);
 			}
 			else
 			{
 				videoPlayer.Stop();
+				audioSource.Stop();
 				videoPlayer.url = null;
+				audioSource.clip = null;
 				videoPlayer.targetTexture = null;
 
 				if (renderTexture != null)
 				{
 					renderTexture.Release();
-					Object.Destroy(renderTexture);
+					UnityEngine.Object.Destroy(renderTexture);
 				}
 			}
 
+			hasVideoFailed = false;
+			isPreparingVideo = false;
 			rawImage.texture = null;
+			visualName = null;
 		}
 
 		void OnVideoPrepared(VideoPlayer videoPlayer)
 		{
-			this.videoPlayer.prepareCompleted -= OnVideoPrepared;
+			isPreparingVideo = false;
+		}
 
-			renderTexture = new RenderTexture((int)videoPlayer.width, (int)videoPlayer.height, 0);
-			rawImage.texture = renderTexture;
-			this.videoPlayer.targetTexture = renderTexture;
+		void SetTransitionSpeed(float speed)
+		{
+			float baseSpeed = speed;
 
-			if (visualLayer.IsImmediate)
-			{
-				audioSource.volume = visualLayer.IsMuted ? 0f : 1f;
-				canvasGroup.alpha = 1f;
-			}
+			if (flowController.IsSkipping || transitionStatus == TransitionStatus.Skipped)
+				baseSpeed = gameOptions.General.SkipTransitionSpeed;
+			else if (speed < Mathf.Epsilon)
+				baseSpeed = gameOptions.BackgroundLayers.TransitionSpeed;
 
-			this.videoPlayer.Play();
+			this.transitionSpeed = baseSpeed * TransitionSpeedMultiplier;
 		}
 
 		void OnVideoError(VideoPlayer source, string message)
 		{
 			Debug.LogWarning($"Video failed to load. {message}");
+			hasVideoFailed = true;
+			isPreparingVideo = false;
 		}
 	}
 }

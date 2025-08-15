@@ -1,4 +1,5 @@
 using Audio;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ namespace History
 			}
 		}
 
-		public void Load(AudioManager audioManager, GameOptionsSO gameOptions)
+		public IEnumerator Load(AudioManager audioManager, GameOptionsSO gameOptions)
 		{
 			float fadeSpeed = gameOptions.General.SkipTransitionSpeed;
 
@@ -63,7 +64,7 @@ namespace History
 					{
 						if (!audioTrackNames.Contains(historyAudioTrack.name))
 						{
-							audioManager.Play(historyAudioTrack.audioType, historyAudioTrack.name, historyAudioTrack.volume,
+							yield return audioManager.Play(historyAudioTrack.audioType, historyAudioTrack.name, historyAudioTrack.volume,
 								historyAudioTrack.pitch, historyAudioTrack.isLooping, false, fadeSpeed, historyAudioTrack.layerNum);
 						}
 					}

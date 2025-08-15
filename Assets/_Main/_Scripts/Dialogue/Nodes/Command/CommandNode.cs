@@ -1,7 +1,6 @@
 using Commands;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -21,7 +20,6 @@ namespace Dialogue
 
 		readonly List<DialogueNodeCommand> commands = new();
 		readonly CommandManager commandManager;
-		bool isWaitingToAdvance;
 
 		public CommandNode(DialogueTreeNode treeNode, DialogueFlowController flowController) : base(treeNode, flowController)
 		{
@@ -43,45 +41,15 @@ namespace Dialogue
 
 		protected override IEnumerator ExecuteLogic()
 		{
-			List<CommandProcess> processesToWait = new();
+			yield return base.ExecuteLogic();
 
 			foreach (DialogueNodeCommand command in commands)
 			{
-				CommandProcess process = commandManager.Execute(command.Name, command.Arguments);
-				if (process == null) continue;
-
-				if (process.IsBlocking || command.IsWaiting || command.Name.ToLower() == "wait")
-					processesToWait.Add(process);
-			}
-
-			// Wait to execute all processes of this line concurrently
-			if (processesToWait.Count > 0)
-			{
-				isWaitingToAdvance = true;
-				while (true)
-				{
-					// Stop when all processes end, or the user clicks to skip them
-					if (processesToWait.All(p => p.IsCompleted)) break;
-					else if (!flowController.IsRunning || !isWaitingToAdvance || flowController.IsSkipping)
-					{
-						commandManager.SkipCommands();
-						break;
-					}
-					yield return null;
-				}
-
-				// Wait for any previous skipped transitions to complete smoothly
-				while (!commandManager.IsIdle()) yield return null;
+				commandManager.Execute(command.Name, command.Arguments, command.IsWaiting);
 			}
 
 			executionCoroutine = null;
 			flowController.ProceedToNode(treeNode.NextId);
-		}
-
-		public override void SpeedUpExecution()
-		{
-			base.SpeedUpExecution();
-			isWaitingToAdvance = false;
 		}
 
 		void ParseCommandData(string rawCommands)

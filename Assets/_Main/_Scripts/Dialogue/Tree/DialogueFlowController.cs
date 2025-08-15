@@ -12,6 +12,7 @@ namespace Dialogue
 		readonly FileManagerSO fileManager;
 		readonly SaveFileManager saveFileManager;
 		readonly GameManager gameManager;
+		readonly GameOptionsSO gameOptions;
 		readonly DialogueSpeakerHandler dialogueSpeakerHandler;
 		readonly DialogueTextHandler dialogueTextHandler;
 
@@ -39,7 +40,8 @@ namespace Dialogue
 			this.dialogueManager = dialogueManager;
 			saveFileManager = gameManager.SaveManager;
 			fileManager = dialogueManager.FileManager;
-			dialogueSpeakerHandler = new(dialogueManager.Characters, dialogueManager.UI);
+			gameOptions = gameManager.Options;
+			dialogueSpeakerHandler = new(dialogueManager, gameManager.Options);
 			dialogueTextHandler = new(gameManager, dialogueManager, this);
 
 			isRunning = false;
@@ -72,13 +74,13 @@ namespace Dialogue
 
 		public void StopDialogue()
 		{
-			isRunning = false;
-
 			if (currentNode != null)
 			{
 				currentNode.SpeedUpExecution();
 				currentNode.CancelExecution();
 			}
+
+			isRunning = false;
 		}
 
 		// Called by the tree nodes when they finish execution
@@ -139,7 +141,7 @@ namespace Dialogue
 
 		public void SpeedUpCurrentNode()
 		{
-			if (currentNode == null) return;
+			if (!isRunning || currentNode == null) return;
 
 			if (currentNode.IsExecuting)
 				currentNode.SpeedUpExecution();

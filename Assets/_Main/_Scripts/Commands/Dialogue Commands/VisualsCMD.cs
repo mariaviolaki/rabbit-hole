@@ -2,57 +2,60 @@ using Dialogue;
 using Visuals;
 using System;
 using UnityEngine;
+using System.Collections;
 
 namespace Commands
 {
 	public class VisualsCMD : DialogueCommand
 	{
+		static CommandManager commandManager;
 		static VisualGroupManager visualGroupManager;
 
-		public new static void Register(CommandManager commandManager)
+		public new static void Register(CommandManager manager)
 		{
-			visualGroupManager = commandManager.Visuals;
+			commandManager = manager;
+			visualGroupManager = manager.Visuals;
 
-			CommandBank bank = commandManager.GetBank(CommandManager.MainBankName);
+			CommandBank bank = manager.GetBank(CommandManager.MainBankName);
 
 			// Background
-			bank.AddCommand("CreateBackground", new Action<DialogueCommandArguments>(CreateBackground));
-			bank.AddCommand("ClearBackground", new Func<DialogueCommandArguments, Coroutine>(ClearBackground), CommandSkipType.Transition);
-			bank.AddCommand("SetBackgroundImage", new Func<DialogueCommandArguments, Coroutine>(SetBackgroundImage), CommandSkipType.Transition);
-			bank.AddCommand("SetBackgroundVideo", new Func<DialogueCommandArguments, Coroutine>(SetBackgroundVideo), CommandSkipType.Transition);
+			bank.AddCommand("CreateBackground", new Func<DialogueCommandArguments, CommandProcessBase>(CreateBackground));
+			bank.AddCommand("ClearBackground", new Func<DialogueCommandArguments, CommandProcessBase>(ClearBackground));
+			bank.AddCommand("SetBackgroundImage", new Func<DialogueCommandArguments, CommandProcessBase>(SetBackgroundImage));
+			bank.AddCommand("SetBackgroundVideo", new Func<DialogueCommandArguments, CommandProcessBase>(SetBackgroundVideo));
 
 			// Foreground
-			bank.AddCommand("CreateForeground", new Action<DialogueCommandArguments>(CreateForeground));
-			bank.AddCommand("ClearForeground", new Func<DialogueCommandArguments, Coroutine>(ClearForeground), CommandSkipType.Transition);
-			bank.AddCommand("SetForegroundImage", new Func<DialogueCommandArguments, Coroutine>(SetForegroundImage), CommandSkipType.Transition);
-			bank.AddCommand("SetForegroundVideo", new Func<DialogueCommandArguments, Coroutine>(SetForegroundVideo), CommandSkipType.Transition);
+			bank.AddCommand("CreateForeground", new Func<DialogueCommandArguments, CommandProcessBase>(CreateForeground));
+			bank.AddCommand("ClearForeground", new Func<DialogueCommandArguments, CommandProcessBase>(ClearForeground));
+			bank.AddCommand("SetForegroundImage", new Func<DialogueCommandArguments, CommandProcessBase>(SetForegroundImage));
+			bank.AddCommand("SetForegroundVideo", new Func<DialogueCommandArguments, CommandProcessBase>(SetForegroundVideo));
 
 			// Cinematic
-			bank.AddCommand("CreateCinematic", new Action<DialogueCommandArguments>(CreateCinematic));
-			bank.AddCommand("ClearCinematic", new Func<DialogueCommandArguments, Coroutine>(ClearCinematic), CommandSkipType.Transition);
-			bank.AddCommand("SetCinematicImage", new Func<DialogueCommandArguments, Coroutine>(SetCinematicImage), CommandSkipType.Transition);
-			bank.AddCommand("SetCinematicVideo", new Func<DialogueCommandArguments, Coroutine>(SetCinematicVideo), CommandSkipType.Transition);
+			bank.AddCommand("CreateCinematic", new Func<DialogueCommandArguments, CommandProcessBase>(CreateCinematic));
+			bank.AddCommand("ClearCinematic", new Func<DialogueCommandArguments, CommandProcessBase>(ClearCinematic));
+			bank.AddCommand("SetCinematicImage", new Func<DialogueCommandArguments, CommandProcessBase>(SetCinematicImage));
+			bank.AddCommand("SetCinematicVideo", new Func<DialogueCommandArguments, CommandProcessBase>(SetCinematicVideo));
 		}
 
 
 		/***** Background *****/
 
-		static void CreateBackground(DialogueCommandArguments args)
+		static CommandProcessBase CreateBackground(DialogueCommandArguments args)
 		{
-			CreateVisualGroup(VisualType.Background, args);
+			return CreateVisualGroup(VisualType.Background, args);
 		}
 
-		static Coroutine ClearBackground(DialogueCommandArguments args)
+		static CommandProcessBase ClearBackground(DialogueCommandArguments args)
 		{
 			return ClearVisualGroup(VisualType.Background, args);
 		}
 
-		static Coroutine SetBackgroundImage(DialogueCommandArguments args)
+		static CommandProcessBase SetBackgroundImage(DialogueCommandArguments args)
 		{
 			return SetVisualGroupImage(VisualType.Background, args);
 		}
 
-		static Coroutine SetBackgroundVideo(DialogueCommandArguments args)
+		static CommandProcessBase SetBackgroundVideo(DialogueCommandArguments args)
 		{
 			return SetVisualGroupVideo(VisualType.Background, args);
 		}
@@ -60,22 +63,22 @@ namespace Commands
 
 		/***** Foreground *****/
 
-		static void CreateForeground(DialogueCommandArguments args)
+		static CommandProcessBase CreateForeground(DialogueCommandArguments args)
 		{
-			CreateVisualGroup(VisualType.Foreground, args);
+			return CreateVisualGroup(VisualType.Foreground, args);
 		}
 
-		static Coroutine ClearForeground(DialogueCommandArguments args)
+		static CommandProcessBase ClearForeground(DialogueCommandArguments args)
 		{
 			return ClearVisualGroup(VisualType.Foreground, args);
 		}
 
-		static Coroutine SetForegroundImage(DialogueCommandArguments args)
+		static CommandProcessBase SetForegroundImage(DialogueCommandArguments args)
 		{
 			return SetVisualGroupImage(VisualType.Foreground, args);
 		}
 
-		static Coroutine SetForegroundVideo(DialogueCommandArguments args)
+		static CommandProcessBase SetForegroundVideo(DialogueCommandArguments args)
 		{
 			return SetVisualGroupVideo(VisualType.Foreground, args);
 		}
@@ -83,22 +86,22 @@ namespace Commands
 
 		/***** Cinematic *****/
 
-		static void CreateCinematic(DialogueCommandArguments args)
+		static CommandProcessBase CreateCinematic(DialogueCommandArguments args)
 		{
-			CreateVisualGroup(VisualType.Cinematic, args);
+			return CreateVisualGroup(VisualType.Cinematic, args);
 		}
 
-		static Coroutine ClearCinematic(DialogueCommandArguments args)
+		static CommandProcessBase ClearCinematic(DialogueCommandArguments args)
 		{
 			return ClearVisualGroup(VisualType.Cinematic, args);
 		}
 
-		static Coroutine SetCinematicImage(DialogueCommandArguments args)
+		static CommandProcessBase SetCinematicImage(DialogueCommandArguments args)
 		{
 			return SetVisualGroupImage(VisualType.Cinematic, args);
 		}
 
-		static Coroutine SetCinematicVideo(DialogueCommandArguments args)
+		static CommandProcessBase SetCinematicVideo(DialogueCommandArguments args)
 		{
 			return SetVisualGroupVideo(VisualType.Cinematic, args);
 		}
@@ -106,41 +109,55 @@ namespace Commands
 
 		/***** All Visual Groups *****/
 
-		static void CreateVisualGroup(VisualType visualType, DialogueCommandArguments args)
+		static CommandProcessBase CreateVisualGroup(VisualType visualType, DialogueCommandArguments args)
 		{
 			int layerCount = args.Get(0, "layers", 1);
 
-			visualGroupManager.Create(visualType, layerCount);
+			void action() => visualGroupManager.Create(visualType, layerCount);
+			return new ActionCommandProcess(action);
 		}
 
-		static Coroutine ClearVisualGroup(VisualType visualType, DialogueCommandArguments args)
+		static CommandProcessBase ClearVisualGroup(VisualType visualType, DialogueCommandArguments args)
 		{
 			int layerDepth = args.Get(0, "layer", -1);
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			return visualGroupManager.Clear(visualType, layerDepth, isImmediate, speed);
+			void runFunc() => visualGroupManager.Clear(visualType, layerDepth, isImmediate, speed);
+			void skipFunc() => visualGroupManager.SkipTransition(visualType, layerDepth);
+			bool isCompletedFunc() => !visualGroupManager.IsTransitioning(visualType, layerDepth);
+
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
-		static Coroutine SetVisualGroupImage(VisualType visualType, DialogueCommandArguments args)
+		static CommandProcessBase SetVisualGroupImage(VisualType visualType, DialogueCommandArguments args)
 		{
 			string imageName = args.Get(0, "name", "");
 			int layerDepth = args.Get(1, "layer", 0);
 			bool isImmediate = args.Get(2, "immediate", false);
 			float speed = args.Get(3, "speed", 0f);
 
-			return visualGroupManager.SetImage(visualType, layerDepth, imageName, isImmediate, speed);
+			IEnumerator processFunc() => visualGroupManager.SetImage(visualType, layerDepth, imageName, isImmediate, speed);
+			void skipFunc() => visualGroupManager.SkipTransition(visualType, layerDepth);
+			bool isCompletedFunc() => !visualGroupManager.IsTransitioning(visualType, layerDepth);
+
+			return new TransitionCommandProcess(commandManager, processFunc, skipFunc, isCompletedFunc);
 		}
 
-		static Coroutine SetVisualGroupVideo(VisualType visualType, DialogueCommandArguments args)
+		static CommandProcessBase SetVisualGroupVideo(VisualType visualType, DialogueCommandArguments args)
 		{
 			string videoName = args.Get(0, "name", "");
 			int layerDepth = args.Get(1, "layer", 0);
-			bool isMuted = args.Get(2, "mute", false);
-			bool isImmediate = args.Get(3, "immediate", false);
-			float speed = args.Get(4, "speed", 0f);
+			float volume = args.Get(2, "volume", 0.5f);
+			bool isMuted = args.Get(3, "mute", false);
+			bool isImmediate = args.Get(4, "immediate", false);
+			float speed = args.Get(5, "speed", 0f);
 
-			return visualGroupManager.SetVideo(visualType, layerDepth, videoName, isMuted, isImmediate, speed);
+			IEnumerator processFunc() => visualGroupManager.SetVideo(visualType, layerDepth, videoName, volume, isMuted, isImmediate, speed);
+			void skipFunc() => visualGroupManager.SkipTransition(visualType, layerDepth);
+			bool isCompletedFunc() => !visualGroupManager.IsTransitioning(visualType, layerDepth);
+
+			return new TransitionCommandProcess(commandManager, processFunc, skipFunc, isCompletedFunc);
 		}
 	}
 }

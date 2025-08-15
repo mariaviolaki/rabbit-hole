@@ -9,6 +9,11 @@ namespace Characters
 	{
 		None, Body, Face
 	}
+
+	public enum TransitionStatus
+	{
+		Started, Skipped, Completed
+	}
 }
 
 namespace Dialogue
@@ -84,7 +89,7 @@ namespace IO
 
 	public enum AssetType
 	{
-		Video, Audio, Dialogue, Background, CharacterAtlas, Model3DPrefab, CharacterPrefab
+		Video, Audio, Dialogue, Background, CharacterAtlas, Model3DPrefab
 	}
 }
 

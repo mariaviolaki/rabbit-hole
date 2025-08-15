@@ -9,6 +9,7 @@ namespace History
 		public int layerDepth;
 		public bool isImage;
 		public string visualName;
+		public float volume;
 		public bool isMuted;
 	}
 }

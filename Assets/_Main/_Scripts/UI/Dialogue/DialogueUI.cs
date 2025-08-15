@@ -1,5 +1,7 @@
 using Characters;
 using Dialogue;
+using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -19,31 +21,26 @@ namespace UI
 			UpdateFontSize(gameOptions.Dialogue.DefaultFont);
 		}
 
-		public Coroutine ShowSpeaker(string speakerName, TMP_FontAsset speakerFont, Color speakerColor,
-			TMP_FontAsset dialogueFont, Color dialogueColor, bool isImmediate = false, float fadeSpeed = 0)
-		{
-			UpdateDialogueText(dialogueFont, dialogueColor);
-			dialogueNameUI.ShowSpeaker(speakerName, speakerFont, speakerColor, isImmediate, fadeSpeed);
-
-			// Ensure that the dialogue box is visible when a character speaks
-			return Show(isImmediate, fadeSpeed);
-		}
-
-		public Coroutine ShowSpeaker(CharacterData characterData, bool isImmediate = false, float fadeSpeed = 0)
+		public IEnumerator ShowSpeaker(CharacterData characterData, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			UpdateDialogueText(characterData);
-			dialogueNameUI.ShowSpeaker(characterData, isImmediate, fadeSpeed);
 
 			// Ensure that the dialogue box is visible when a character speaks
-			return Show(isImmediate, fadeSpeed);
+			List<IEnumerator> processes = new()
+			{
+				dialogueNameUI.ShowSpeaker(characterData, isImmediate, fadeSpeed),
+				SetVisible(isImmediate, fadeSpeed)
+			};
+
+			yield return Utilities.RunConcurrentProcesses(this, processes);
 		}
 
-		public Coroutine HideSpeaker(bool isImmediate = false, float fadeSpeed = 0)
+		public IEnumerator HideSpeaker(bool isImmediate = false, float fadeSpeed = 0)
 		{
 			// When there is no speaker specified, revert to default text as dialogue
 			UpdateDialogueText();
 
-			return dialogueNameUI.HideSpeaker(isImmediate, fadeSpeed);
+			yield return dialogueNameUI.HideSpeaker(isImmediate, fadeSpeed);
 		}
 
 		void UpdateDialogueText() => UpdateDialogueText(gameOptions.Dialogue.DefaultFont, gameOptions.Dialogue.DefaultTextColor);

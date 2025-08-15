@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace UI
 {
-	public class InputPanelUI : BaseFadeableUI
+	public class InputPanelUI : FadeableUI
 	{
 		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] DialogueManager dialogueManager;
@@ -17,7 +17,7 @@ namespace UI
 		[SerializeField] Button submitButton;
 
 		string lastInput = "";
-		Coroutine visibilityCoroutine;
+		bool isTransitioning = false;
 
 		public event Action OnClose;
 
@@ -38,47 +38,40 @@ namespace UI
 			CompleteClose();
 		}
 
-		public Coroutine Show(string title, bool isImmediate = false, float fadeSpeed = 0)
+		public IEnumerator Open(string title, bool isImmediate = false, float fadeSpeed = 0)
 		{
-			if (IsVisible) return null;
-			
+			if (IsVisible || isTransitioning) yield break;
+			isTransitioning = true;
+
 			base.fadeSpeed = fadeSpeed;
 			base.isImmediateTransition = isImmediate;
-			StopProcess();
 
-			visibilityCoroutine = StartCoroutine(ShowProcess(title, isImmediate, fadeSpeed));
-			return visibilityCoroutine;
-		}
-
-		public IEnumerator ForceHide(bool isImmediate = false)
-		{
-			while (visibilityCoroutine != null) yield return null;
-
-			fadeSpeed = gameOptions.General.SkipTransitionSpeed;
-			yield return CloseProcess(isImmediate, fadeSpeed);
-		}
-
-		public IEnumerator OpenProcess(string title, bool isImmediate = false, float speed = 0)
-		{
 			titleText.text = title;
-			yield return FadeIn(isImmediate, speed);
+			yield return SetVisible(isImmediate, fadeSpeed);
+
+			isTransitioning = false;
 		}
 
-		public IEnumerator CloseProcess(bool isImmediate = false, float speed = 0)
+		public IEnumerator Close(bool isImmediate = false, float fadeSpeed = 0)
 		{
-			yield return FadeOut(isImmediate, speed);
+			if (isTransitioning) yield break;
+			isTransitioning = true;
+
+			fadeSpeed = fadeSpeed <= 0 ? gameOptions.General.SkipTransitionSpeed : fadeSpeed;
+			yield return SetHidden(isImmediate, fadeSpeed);
+
+			isTransitioning = false;
 			OnClose?.Invoke();
 		}
 
 		void SubmitInput()
 		{
-			if (string.IsNullOrWhiteSpace(inputField.text)) return;
+			if (isTransitioning || string.IsNullOrWhiteSpace(inputField.text)) return;
 
 			lastInput = inputField.text.Trim();
 			inputManager.OnSubmitInput?.Invoke(lastInput);
 
-			StopProcess();
-			visibilityCoroutine = StartCoroutine(HideProcess(isImmediateTransition, fadeSpeed));
+			StartCoroutine(Close(isImmediateTransition));
 		}
 
 		void SetButtonVisibility(string input)
@@ -90,18 +83,6 @@ namespace UI
 				submitButton.gameObject.SetActive(true);
 			else if (!isValidInput && isActive)
 				submitButton.gameObject.SetActive(false);
-		}
-
-		IEnumerator ShowProcess(string title, bool isImmediate = false, float speed = 0)
-		{
-			yield return OpenProcess(title, isImmediate, speed);
-			visibilityCoroutine = null;
-		}
-
-		IEnumerator HideProcess(bool isImmediate = false, float speed = 0)
-		{
-			yield return CloseProcess(isImmediate, speed);
-			visibilityCoroutine = null;
 		}
 
 		void PrepareOpen()
@@ -123,14 +104,6 @@ namespace UI
 		{
 			UnsubscribeListeners();
 			inputManager.IsInputPanelOpen = false;
-		}
-
-		void StopProcess()
-		{
-			if (visibilityCoroutine == null) return;
-
-			StopCoroutine(visibilityCoroutine);
-			visibilityCoroutine = null;
 		}
 
 		void SubscribeListeners()

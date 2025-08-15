@@ -3,8 +3,8 @@
 CreateBackground(2), CreateForeground(), CreateCinematic()
 CreateAmbient(2), CreateMusic(2), CreateSFX(2), CreateVoice(2)
 ShowVN(immediate=true)
-wait CreateCharacters(v, eg, v1:v, m, mc, all)
-all.SetDisplayName("Everyone")
+wait CreateCharacters(v, eg, v1:v, mc, m, all)
+all.SetName("Everyone")
 
 jump Prologue
 end Main
@@ -17,10 +17,21 @@ SetBackgroundImage(Green-Forest-Back, layer=1, immediate=true), SetBackgroundIma
 PlayMusic(day, volume=0.05)
 
 v.SetPosition(0.5, 0.5, immediate=true), v.SetSprite(smug, layer=face, immediate=true), v.SetSprite(casual-body, layer=body, immediate=true)
-v.SetDisplayName("???")
+v.SetName("???")
 v.Show()
 
 v "Curiouser and curiouser..."
+v "I have to test the transitions once again."
+v.SetPosition(0, speed = 1), SetBackgroundImage(Yellow-Forest-Back, layer=1, speed=1), PlayMusic(night, volume=0.05), PlaySFX(magic, volume=0.05)
+v "Again."
+v.SetPosition(1, speed = 0.5), SetBackgroundImage(Red-Forest-Back, layer=1, speed=0.5), PlayMusic(day, volume=0.05), PlaySFX(warp, volume=0.05)
+v "Again."
+v.SetPosition(0.5, speed = 0.5), SetBackgroundVideo(day, layer=1, speed=0.5, volume=0.05), PlaySFX(warp, volume=0.05), PlayVoice(yes, volume=0.05)
+v "Again."
+SetBackgroundVideo(night, layer=1, speed=0.5, mute=true, volume=0.05), PlayAmbient("crowd cheer", volume=0.05), StopMusic(day)
+v "Again."
+SetBackgroundImage(Green-Forest-Back, layer=1, speed=0.5), StopMusic()
+
 v "Didn't expect to find a human...{a 0.5} here."
 v (neutral) "Got lost again, did you?"
 choice
@@ -66,17 +77,17 @@ choice
 		$v.affinity += 1
 		v "I thought so.{c 0.5}You're an honest one, aren't you?"
 		v (smug) "Well, let me be your guide then.{c}You can call me Void."
-		v.SetDisplayName("Void")
+		v.SetName("Void")
 	}
 }
 
 eg.SetPosition(1.5, 0.5, immediate=true), eg.SetSprite(whiny, immediate=true), eg.FaceLeft(immediate=true)
-eg.SetDisplayName("???")
+eg.SetName("???")
 
 eg "Voooooid!"
 eg.Show(immediate=true), v.SetSprite("neutral", layer="face")
 
-eg.SetPosition(0.8, immediate=false)
+eg.SetPosition(0.8, immediate=false, speed = 0.1)
 if ($mc.isLost)
 {
 	eg "I wanted to guide this human first!"
@@ -90,12 +101,12 @@ else
 eg (laugh) "Hey human!{a} Let me show you around, onegaishimasu!!!"
 
 m.SetPosition(-0.5, 0.5, immediate=true), m.SetExpression(sad, immediate=true)
-m.SetDisplayName("???")
+m.SetName("???")
 m.Show(immediate=true)
 
 m "Oh, no...{a 0.5} God help us."
 m at [0.2] (sad) "Eccentric Guy is speaking Japanese again."
-eg.SetDisplayName("Eccentric Guy")
+eg.SetName("Eccentric Guy")
 m "Prepare yourselves for the worst, guys."
 
 v.FaceLeft()
@@ -105,11 +116,11 @@ v (crazy) "In a few months, your brain will be as fried as his."
 
 eg (whiny) "I can hear you, you know!"
 eg (sick) "You and Marsh are always so mean to me..."
-m.SetDisplayName("Marsh")
+m.SetName("Marsh")
 eg "I just wanted to help the human, but nooo~{c}You two have to mock me!"
 
 m (angry) "Oh, <i>human this</i>, <i>human that</i>. I'm sure this human has a name."
-v.Flip()
+v.FaceRight()
 v (smug) "Feel like introducing yourself... <i>human</i>?"
 m.SetExpression()
 
@@ -152,6 +163,18 @@ choice
 eg (laugh) "Anyway, {$mc.name}, pick a guide!"
 eg "Marshy hasn't offered yet, but I know he wants to."
 
+v.FaceRight(), v.SetSprite(yukata-body, body), v.SetSprite(flustered), v.SetColor(#7B68EE)
+v "Let's test the transitions again."
+m.SetExpression(angry), m.FaceLeft(), eg.FaceRight()
+eg (whiny) "Yes! We have to test the transitions because transitions are important!!"
+v (annoyed) "How nice. Now I'll have to say random things again."
+v.FaceLeft(), v.SetColor(#ff0000), m.SetExpression(happy), eg.FaceLeft()
+eg (laugh) "It's fun to say random things!{a} Woo!"
+v.FaceRight(), v.SetSprite(formal-body, body), eg.FaceRight()
+v "..."
+v (smug) "Of course it is."
+m.SetExpression(), m.FaceRight(), v.FaceLeft(), m.SetColor(#7B68EE)
+
 Autosave()
 
 "So I should just pick one of you three?"
@@ -183,7 +206,7 @@ choice
 		$v.affinity -= 1
 		$z.affinity -= 1
 		$m.affinity -= 1
-		jump NoRoute
+		jump CommonEnding
 	}
 }
 

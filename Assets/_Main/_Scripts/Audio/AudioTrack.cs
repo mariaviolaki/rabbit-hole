@@ -1,180 +1,161 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace Audio
 {
-	public class AudioTrack
+	public class AudioTrack : MonoBehaviour
 	{
+		enum TrackStatus { Started, Stopped }
+
 		const float FadeSpeedMultiplier = 20f;
 
-		readonly Guid id;
-		readonly string name;
-		readonly AudioGroup audioGroup;
+		GameOptionsSO gameOptions;
+		ObjectPool<AudioTrack> trackPool;
+		AudioGroup audioGroup;
 		AudioSource audioSource;
-		AudioClip audioClip;
 
-		float volume;
+		Guid id;
+		TrackStatus status;
+		string trackName;
 		float pitch;
 		bool isLooping;
+		float targetVolume;
+		float fadeSpeed;
+		float stopTime;
 
-		Coroutine playCoroutine;
-		Coroutine stopCoroutine;
-		Coroutine autoStopCoroutine;
-
-		public event Action<Guid> OnUnloadTrack;
-
-		public string Name => name;
-		public float Volume => volume;
+		public Guid Id => id;
+		public string Name => trackName;
+		public float Volume => targetVolume;
 		public float Pitch => pitch;
 		public bool IsLooping => isLooping;
-		public bool IsActive => audioSource != null && audioSource.clip != null;
+		public bool IsActive => audioSource.clip != null;
 
-		public AudioTrack(AudioGroup audioGroup, Guid id, string name)
+		void Update()
 		{
+			FadeInVolume();
+			StopAfterDuration();
+		}
+
+		public void Initialize(ObjectPool<AudioTrack> trackPool, AudioGroup audioGroup)
+		{
+			this.audioSource = GetComponent<AudioSource>();
+			this.gameOptions = audioGroup.Manager.Options;
+			this.trackPool = trackPool;
 			this.audioGroup = audioGroup;
-			this.id = id;
-			this.name = name;
+			status = TrackStatus.Stopped;
+			stopTime = 0f;
 		}
 
-		public void Play(float volume, float pitch, bool isLooping, bool isImmediate, float fadeSpeed)
+		public IEnumerator Play(Guid id, string trackName, float volume, float pitch, bool isLooping, bool isImmediate = false, float fadeSpeed = 0f)
 		{
-			if (playCoroutine != null) return;
+			if (status == TrackStatus.Started) yield break;
 
-			this.volume = volume;
-			this.pitch = pitch;
-			this.isLooping = isLooping;
+			status = TrackStatus.Started;
+			yield return LoadAudioTrack(trackName);
 
-			if (isImmediate)
-				playCoroutine = audioGroup.Manager.StartCoroutine(LoadTrack(volume, pitch, isLooping, volume));
-			else
-				playCoroutine = audioGroup.Manager.StartCoroutine(PlayAndFadeIn(volume, pitch, isLooping, fadeSpeed));			
-		}
-
-		public void Stop(bool isImmediate, float fadeSpeed)
-		{
-			if (stopCoroutine != null) return;
-
-			if (isImmediate)
+			if (audioSource.clip == null)
 			{
-				StopAudioCoroutine(ref playCoroutine);
-				StopAudioCoroutine(ref autoStopCoroutine);
-				UnloadTrack();
-			}
-			else
-			{
-				stopCoroutine = audioGroup.Manager.StartCoroutine(FadeOutAndStop(fadeSpeed));
-			}
-		}
-
-		IEnumerator LoadTrack(float volume, float pitch, bool isLooping, float startVolume)
-		{
-			yield return LoadAudioTrack();
-			if (audioClip == null)
-			{
-				StopAudioCoroutine(ref stopCoroutine);
-				StopAudioCoroutine(ref autoStopCoroutine);
-				UnloadTrack();
+				UnloadAudioTrack();
 				yield break;
 			}
 
-			audioSource = new GameObject(audioClip.name).AddComponent<AudioSource>();
-			audioSource.transform.SetParent(audioGroup.Root);
-			audioSource.outputAudioMixerGroup = audioGroup.MixerGroup;
-			audioSource.clip = audioClip;
+			this.id = id;
+			this.trackName = trackName;
+			this.pitch = pitch;
+			this.isLooping = isLooping;
+			this.targetVolume = volume;
+			SetTransitionSpeed(fadeSpeed);
+
 			audioSource.pitch = pitch;
 			audioSource.loop = isLooping;
-			audioSource.volume = startVolume;
+			audioSource.volume = isImmediate ? volume : 0f;
 
 			audioSource.Play();
 
-			if (!isLooping)
-				autoStopCoroutine = audioGroup.Manager.StartCoroutine(AutoStopTrack(audioClip.length, pitch));
+			if (isLooping)
+			{
+				stopTime = 0f;
+			}
+			else
+			{
+				float duration = audioSource.clip.length / pitch;
+				stopTime = Time.time + duration + 1;
+			}
 		}
 
-		void UnloadTrack()
+		public void Stop(bool isImmediate = false, float fadeSpeed = 0f)
 		{
-			if (audioSource != null)
-			{
-				UnityEngine.Object.Destroy(audioSource.gameObject);
-				audioSource = null;
-			}
+			targetVolume = 0f;
 
+			if (isImmediate)
+			{
+				StopImmediate();
+			}
+			else
+			{
+				SetTransitionSpeed(fadeSpeed);
+				stopTime = Time.time;
+			}
+		}
+
+		void StopImmediate()
+		{
+			if (audioSource.clip == null) return;
+
+			audioSource.Stop();
 			UnloadAudioTrack();
-			audioClip = null;
-
-			OnUnloadTrack?.Invoke(id);
 		}
 
-		IEnumerator AutoStopTrack(float clipLength, float pitch)
-		{	
-			float duration = clipLength / pitch;
-			yield return new WaitForSeconds(duration + 1);
-
-			StopAudioCoroutine(ref playCoroutine);
-			StopAudioCoroutine(ref stopCoroutine);
-
-			UnloadTrack();	
-		}
-
-		IEnumerator PlayAndFadeIn(float volume, float pitch, bool isLooping, float speed)
+		void FadeInVolume()
 		{
-			yield return LoadTrack(volume, pitch, isLooping, 0f);
+			if (audioSource.clip == null || status != TrackStatus.Started || Utilities.AreApproximatelyEqual(audioSource.volume, targetVolume)) return;
 
-			if (audioSource != null && audioSource.clip != null)
-				yield return FadeVolume(volume, speed);
+			float speed = fadeSpeed * Time.deltaTime;
+			audioSource.volume = Mathf.MoveTowards(audioSource.volume, targetVolume, speed);
 
-			playCoroutine = null;
-		}
-
-		IEnumerator FadeOutAndStop(float speed)
-		{
-			if (audioSource != null && audioSource.clip != null)
-				yield return FadeVolume(0f, speed);
-
-			StopAudioCoroutine(ref playCoroutine);
-			StopAudioCoroutine(ref autoStopCoroutine);
-
-			stopCoroutine = null;
-			UnloadTrack();
-		}
-
-		IEnumerator FadeVolume(float targetVolume, float speed)
-		{
-			if (audioSource == null) yield break;
-
-			speed = speed > Mathf.Epsilon ? speed : audioGroup.Manager.Options.Audio.TransitionSpeed;
-			float startVolume = audioSource.volume;
-
-			float duration = (1 / speed) * FadeSpeedMultiplier * Mathf.Abs(startVolume - targetVolume);
-			float timeElapsed = 0;
-			while (timeElapsed < duration)
+			if (Utilities.AreApproximatelyEqual(audioSource.volume, targetVolume))
 			{
-				timeElapsed += Time.deltaTime;
-				audioSource.volume = Mathf.Lerp(startVolume, targetVolume, Mathf.Clamp01(timeElapsed / duration));
-				yield return null;
-			}
+				audioSource.volume = targetVolume;
 
-			audioSource.volume = targetVolume;
+				if (Utilities.AreApproximatelyEqual(targetVolume, 0f))
+					StopImmediate();
+			}
 		}
 
-		IEnumerator LoadAudioTrack()
+		void StopAfterDuration()
+		{
+			if (audioSource.clip == null || isLooping || stopTime < Mathf.Epsilon || Time.time < stopTime || status == TrackStatus.Stopped) return;
+
+			StopImmediate();
+		}
+
+		IEnumerator LoadAudioTrack(string name)
 		{
 			yield return audioGroup.Manager.FileManager.LoadAudio(name, audioGroup.AssetLabel);
-			audioClip = audioGroup.Manager.FileManager.GetAudio(name, audioGroup.AssetLabel);
+			audioSource.clip = audioGroup.Manager.FileManager.GetAudio(name, audioGroup.AssetLabel);
 		}
 
 		void UnloadAudioTrack()
 		{
-			audioGroup.Manager.FileManager.UnloadAudio(name, audioGroup.AssetLabel);
+			if (audioSource.clip == null) return;
+
+			audioGroup.Manager.FileManager.UnloadAudio(trackName, audioGroup.AssetLabel);
+			audioSource.clip = null;
+			status = TrackStatus.Stopped;
+			RemoveFromPool();
 		}
 
-		void StopAudioCoroutine(ref Coroutine coroutine)
+		void RemoveFromPool()
 		{
-			if (coroutine == null) return;
+			trackPool.Release(this);
+		}
 
-			audioGroup.Manager.StopCoroutine(coroutine);
-			coroutine = null;
+		void SetTransitionSpeed(float speed)
+		{
+			float baseSpeed = speed < Mathf.Epsilon ? gameOptions.Audio.TransitionSpeed : speed;
+			this.fadeSpeed = baseSpeed * FadeSpeedMultiplier;
 		}
 	}
 }

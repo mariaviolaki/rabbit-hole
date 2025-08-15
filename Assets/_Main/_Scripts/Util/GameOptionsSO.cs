@@ -89,11 +89,13 @@ public class GameOptionsSO : ScriptableObject
 		[Header("Character Visuals")]
 		[SerializeField][Range(0, 1)] float darkenBrightness;
 		[SerializeField] bool spritesFacingRight;
+		[SerializeField] bool highlightOnSpeak;
 
 		public float TransitionSpeed => transitionSpeed;
 		public float MoveSpeed => moveSpeed;
 		public float DarkenBrightness => darkenBrightness;
 		public bool AreSpritesFacingRight => spritesFacingRight;
+		public bool HighlightOnSpeak => highlightOnSpeak;
 	}
 
 	[System.Serializable]

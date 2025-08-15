@@ -6,12 +6,14 @@ using UnityEngine;
 
 namespace UI
 {
-	public class GameplayControlsUI : BaseFadeableUI
+	public class GameplayControlsUI : FadeableUI
 	{
 		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] InputPanelUI inputPanel;
 		[SerializeField] ChoicePanelUI choicePanel;
 		[SerializeField] LogPanelUI logPanel;
+
+		bool isTransitioning = false;
 
 		protected override void Awake()
 		{
@@ -46,58 +48,62 @@ namespace UI
 			logPanel.OnClose -= CloseLog;
 		}
 
-		public Coroutine ShowInput(string title, bool isImmediate = false, float fadeSpeed = 0)
+		public IEnumerator ShowInput(string title, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			inputPanel.gameObject.SetActive(true);
 
-			return inputPanel.Show(title, isImmediate, fadeSpeed);
+			yield return inputPanel.Open(title, isImmediate, fadeSpeed);
 		}
 
-		public Coroutine ShowChoices(List<DialogueChoice> choices, bool isImmediate = false, float fadeSpeed = 0)
+		public IEnumerator ShowChoices(List<DialogueChoice> choices, bool isImmediate = false, float fadeSpeed = 0)
 		{
 			choicePanel.gameObject.SetActive(true);
 
-			return choicePanel.Show(choices, isImmediate, fadeSpeed);
+			yield return choicePanel.Open(choices, isImmediate, fadeSpeed);
 		}
 
-		public void ShowLogDefault() => ShowLog();
-		public Coroutine ShowLog(bool isImmediate = false, float fadeSpeed = 0)
+		public void ShowLogDefault() => StartCoroutine(ShowLog());
+		public IEnumerator ShowLog(bool isImmediate = false, float fadeSpeed = 0)
 		{
 			logPanel.gameObject.SetActive(true);
 
-			return logPanel.Show(isImmediate, fadeSpeed);
+			yield return logPanel.Open(isImmediate, fadeSpeed);
 		}
 
 		public IEnumerator ForceHideInput(bool isImmediate = false)
 		{
-			return inputPanel.ForceHide(isImmediate);
+			yield return inputPanel.Close(isImmediate);
 		}
 
 		public IEnumerator ForceHideChoices(bool isImmediate = false)
 		{
-			return choicePanel.ForceHide(isImmediate);
+			yield return choicePanel.Close(isImmediate);
 		}
 
-		public Coroutine HideLog(bool isImmediate = false, float fadeSpeed = 0)
+		public IEnumerator HideLog(bool isImmediate = false, float fadeSpeed = 0)
 		{
-			return logPanel.Hide(isImmediate, fadeSpeed);
+			yield return logPanel.Close(isImmediate, fadeSpeed);
 		}
 
-		public override IEnumerator FadeOut(bool isImmediate = false, float speed = 0)
+		public override IEnumerator SetHidden(bool isImmediate = false, float speed = 0)
 		{
+			if (isTransitioning) yield break;
+			isTransitioning = true;
+
 			List<IEnumerator> closeProcesses = new();
 
 			if (inputPanel.gameObject.activeInHierarchy)
-				closeProcesses.Add(inputPanel.CloseProcess(isImmediate, speed));
+				closeProcesses.Add(inputPanel.Close(isImmediate, speed));
 			if (choicePanel.gameObject.activeInHierarchy)
-				closeProcesses.Add(choicePanel.CloseProcess(isImmediate, speed));
+				closeProcesses.Add(choicePanel.Close(isImmediate, speed));
 			if (logPanel.gameObject.activeInHierarchy)
-				closeProcesses.Add(logPanel.CloseProcess(isImmediate, speed));
+				closeProcesses.Add(logPanel.Close(isImmediate, speed));
 
 			if (closeProcesses.Count > 0)
 				yield return Utilities.RunConcurrentProcesses(this, closeProcesses);
 
-			yield return base.FadeOut(isImmediate, speed);
+			yield return base.SetHidden(isImmediate, speed);
+			isTransitioning = false;
 		}
 
 		void CloseInput()

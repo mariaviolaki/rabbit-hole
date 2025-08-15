@@ -1,128 +1,127 @@
-using System;
 using Characters;
 using Dialogue;
-using UnityEngine;
+using System;
+using System.Collections;
 
 namespace Commands
 {
 	public class CharactersCMD : DialogueCommand
 	{
+		static CommandManager commandManager;
 		static CharacterManager characterManager;
 
-		public new static void Register(CommandManager commandManager)
+		public new static void Register(CommandManager manager)
 		{
-			characterManager = commandManager.Characters;
+			commandManager = manager;
+			characterManager = manager.Characters;
 
-			CommandBank mainDir = commandManager.GetBank(CommandManager.MainBankName);
-			CommandBank charactersDir = commandManager.GetBank(CommandManager.CharacterBankName);
-			CommandBank graphicsCharactersDir = commandManager.GetBank(CommandManager.GraphicsCharacterBankName);
-			CommandBank spriteCharactersDir = commandManager.GetBank(CommandManager.SpriteCharacterBankName);
-			CommandBank model3DCharactersDir = commandManager.GetBank(CommandManager.Model3DCharacterBankName);
+			CommandBank mainDir = manager.GetBank(CommandManager.MainBankName);
+			CommandBank charactersDir = manager.GetBank(CommandManager.CharacterBankName);
+			CommandBank graphicsCharactersDir = manager.GetBank(CommandManager.GraphicsCharacterBankName);
+			CommandBank spriteCharactersDir = manager.GetBank(CommandManager.SpriteCharacterBankName);
+			CommandBank model3DCharactersDir = manager.GetBank(CommandManager.Model3DCharacterBankName);
 
 			// All Characters (cannot be called on specific ones)
-			mainDir.AddCommand("CreateCharacters", new Func<DialogueCommandArguments, Coroutine>(CreateCharacters), CommandSkipType.None);
-			mainDir.AddCommand("CreateCharacter", new Func<DialogueCommandArguments, Coroutine>(CreateCharacter), CommandSkipType.None);
-			mainDir.AddCommand("SetCharacterPriority", new Action<DialogueCommandArguments>(SetCharacterPriority));
+			mainDir.AddCommand("CreateCharacters", new Func<DialogueCommandArguments, CommandProcessBase>(CreateCharacters));
+			mainDir.AddCommand("CreateCharacter", new Func<DialogueCommandArguments, CommandProcessBase>(CreateCharacter));
+			mainDir.AddCommand("SetCharacterPriority", new Func<DialogueCommandArguments, CommandProcessBase>(SetCharacterPriority));
 
 			// All Characters
-			charactersDir.AddCommand("SetName", new Action<DialogueCommandArguments>(SetName));
-			charactersDir.AddCommand("SetDisplayName", new Action<DialogueCommandArguments>(SetDisplayName));
+			charactersDir.AddCommand("SetName", new Func<DialogueCommandArguments, CommandProcessBase>(SetName));
 
 			// Graphics Characters
-			graphicsCharactersDir.AddCommand("SetPriority", new Action<DialogueCommandArguments>(SetPriority));
-			graphicsCharactersDir.AddCommand("SetAnimation", new Action<DialogueCommandArguments>(SetAnimation));
-			graphicsCharactersDir.AddCommand("Show", new Func<DialogueCommandArguments, Coroutine>(Show), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("Hide", new Func<DialogueCommandArguments, Coroutine>(Hide), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("SetPosition", new Func<DialogueCommandArguments, Coroutine>(SetPosition), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("Flip", new Func<DialogueCommandArguments, Coroutine>(Flip), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("FaceLeft", new Func<DialogueCommandArguments, Coroutine>(FaceLeft), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("FaceRight", new Func<DialogueCommandArguments, Coroutine>(FaceRight), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("Highlight", new Func<DialogueCommandArguments, Coroutine>(Highlight), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("Unhighlight", new Func<DialogueCommandArguments, Coroutine>(Unhighlight), CommandSkipType.Transition);
-			graphicsCharactersDir.AddCommand("SetColor", new Func<DialogueCommandArguments, Coroutine>(SetColor), CommandSkipType.Transition);
+			graphicsCharactersDir.AddCommand("SetPriority", new Func<DialogueCommandArguments, CommandProcessBase>(SetPriority));
+			graphicsCharactersDir.AddCommand("SetAnimation", new Func<DialogueCommandArguments, CommandProcessBase>(SetAnimation));
+			graphicsCharactersDir.AddCommand("Show", new Func<DialogueCommandArguments, CommandProcessBase>(Show));
+			graphicsCharactersDir.AddCommand("Hide", new Func<DialogueCommandArguments, CommandProcessBase>(Hide));
+			graphicsCharactersDir.AddCommand("SetPosition", new Func<DialogueCommandArguments, CommandProcessBase>(SetPosition));
+			graphicsCharactersDir.AddCommand("FaceLeft", new Func<DialogueCommandArguments, CommandProcessBase>(FaceLeft));
+			graphicsCharactersDir.AddCommand("FaceRight", new Func<DialogueCommandArguments, CommandProcessBase>(FaceRight));
+			graphicsCharactersDir.AddCommand("Highlight", new Func<DialogueCommandArguments, CommandProcessBase>(Highlight));
+			graphicsCharactersDir.AddCommand("Unhighlight", new Func<DialogueCommandArguments, CommandProcessBase>(Unhighlight));
+			graphicsCharactersDir.AddCommand("SetColor", new Func<DialogueCommandArguments, CommandProcessBase>(SetColor));
 
 			// Sprite Characters
-			spriteCharactersDir.AddCommand("SetSprite", new Func<DialogueCommandArguments, Coroutine>(SetSprite), CommandSkipType.Transition);
+			spriteCharactersDir.AddCommand("SetSprite", new Func<DialogueCommandArguments, CommandProcessBase>(SetSprite));
 
 			// Model3D Characters
-			model3DCharactersDir.AddCommand("SetExpression", new Func<DialogueCommandArguments, Coroutine>(SetExpression), CommandSkipType.Transition);
-			model3DCharactersDir.AddCommand("SetMotion", new Action<DialogueCommandArguments>(SetMotion));
+			model3DCharactersDir.AddCommand("SetExpression", new Func<DialogueCommandArguments, CommandProcessBase>(SetExpression));
+			model3DCharactersDir.AddCommand("SetMotion", new Func<DialogueCommandArguments, CommandProcessBase>(SetMotion));
 		}
 
 
 		/***** All Characters *****/
 
-		static Coroutine CreateCharacters(DialogueCommandArguments args)
+		static CommandProcessBase CreateCharacters(DialogueCommandArguments args)
 		{
 			if (args.IndexedArguments.Count == 0) return null;
 
-			return characterManager.CreateCharacters(args.IndexedArguments);
+			IEnumerator process() => characterManager.CreateCharacters(args.IndexedArguments);
+			return new CoroutineCommandProcess(commandManager, process, true);
 		}
 
-		static Coroutine CreateCharacter(DialogueCommandArguments args)
+		static CommandProcessBase CreateCharacter(DialogueCommandArguments args)
 		{
 			string shortName = args.Get(0, "shortName", "");
-			string castShortName = args.Get(1, "castShortName", "");
+			string castShortName = args.Get(1, "castName", "");
 
 			if (string.IsNullOrWhiteSpace(shortName)) return null;
 
-			return characterManager.CreateCharacter(shortName, castShortName);
+			IEnumerator process() => characterManager.CreateCharacter(shortName, castShortName);
+			return new CoroutineCommandProcess(commandManager, process, true);
 		}
 
-		static void SetName(DialogueCommandArguments args)
+		static CommandProcessBase SetName(DialogueCommandArguments args)
 		{
 			string name = args.Get(1, "name", "");
 
 			Character character = GetCharacterFromArgs<Character>(args);
-			if (character == null) return;
+			if (character == null) return null;
 
-			character.SetName(name);
-		}
-
-		static void SetDisplayName(DialogueCommandArguments args)
-		{
-			string displayName = args.Get(1, "displayName", "");
-
-			Character character = GetCharacterFromArgs<Character>(args);
-			if (character == null) return;
-
-			character.SetDisplayName(displayName);
+			void action() => character.SetName(name);
+			return new ActionCommandProcess(action);
 		}
 
 
 		/***** Graphics Characters *****/
 
-		static void SetCharacterPriority(DialogueCommandArguments args)
+		static CommandProcessBase SetCharacterPriority(DialogueCommandArguments args)
 		{
-			if (args.IndexedArguments.Count == 0) return;
+			if (args.IndexedArguments.Count == 0) return null;
 
-			characterManager.SetPriority(args.IndexedArguments.ToArray());
+			void action() => characterManager.SetPriority(args.IndexedArguments.ToArray());
+			return new ActionCommandProcess(action);
 		}
 
-		static void SetPriority(DialogueCommandArguments args)
+		static CommandProcessBase SetPriority(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) return;
+			if (character == null) return null;
 
 			int priority = args.Get(1, "priority", 0);
 
-			character.SetPriority(priority);
+			void action() => character.SetPriority(priority);
+			return new ActionCommandProcess(action);
 		}
 
-		static void SetAnimation(DialogueCommandArguments args)
+		static CommandProcessBase SetAnimation(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) return;
+			if (character == null) return null;
 
 			string name = args.Get(1, "name", "");
 
+			Action action;
+
 			if (args.Has<bool>(2, "status"))
-				character.SetAnimation(name, args.Get(2, "status", false)); // switch on and off
+				action = () => character.SetAnimation(name, args.Get(2, "status", false)); // switch on and off
 			else
-				character.SetAnimation(name); // one-time
+				action = () => character.SetAnimation(name); // one-time
+
+			return new ActionCommandProcess(action);
 		}
 
-		static Coroutine Show(DialogueCommandArguments args)
+		static CommandProcessBase Show(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return null;
@@ -130,21 +129,29 @@ namespace Commands
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			return character.Show(isImmediate, speed);
+			void runFunc() => character.Show(isImmediate, speed);
+			void skipFunc() => character.SkipVisibilityTransition();
+			bool isCompletedFunc() => !character.IsTransitioningVisibility();
+
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
-		static Coroutine Hide(DialogueCommandArguments args)
+		static CommandProcessBase Hide(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return null;
 
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
+			
+			void runFunc() => character.Hide(isImmediate, speed);
+			void skipFunc() => character.SkipVisibilityTransition();
+			bool isCompletedFunc() => !character.IsTransitioningVisibility();
 
-			return character.Hide(isImmediate, speed);
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
-		static Coroutine SetPosition(DialogueCommandArguments args)
+		static CommandProcessBase SetPosition(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return null;
@@ -154,10 +161,14 @@ namespace Commands
 			bool isImmediate = args.Get(3, "immediate", false);
 			float speed = args.Get(4, "speed", 0f);
 
-			return character.SetPosition(xPos, yPos, isImmediate, speed);
+			void runFunc() => character.SetPosition(xPos, yPos, isImmediate, speed);
+			void skipFunc() => character.SkipPositionTransition();
+			bool isCompletedFunc() => !character.IsTransitioningPosition();
+
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
-		static Coroutine Flip(DialogueCommandArguments args)
+		static CommandProcessBase FaceLeft(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return null;
@@ -165,10 +176,14 @@ namespace Commands
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			return character.Flip(isImmediate, speed);
+			void runFunc() => character.FaceLeft(isImmediate, speed);
+			void skipFunc() => character.SkipDirectionTransition();
+			bool isCompletedFunc() => !character.IsTransitioningDirection();
+
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
-		static Coroutine FaceLeft(DialogueCommandArguments args)
+		static CommandProcessBase FaceRight(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return null;
@@ -176,10 +191,14 @@ namespace Commands
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			return character.FaceLeft(isImmediate, speed);
+			void runFunc() => character.FaceRight(isImmediate, speed);
+			void skipFunc() => character.SkipDirectionTransition();
+			bool isCompletedFunc() => !character.IsTransitioningDirection();
+
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
-		static Coroutine FaceRight(DialogueCommandArguments args)
+		static CommandProcessBase Highlight(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return null;
@@ -187,10 +206,14 @@ namespace Commands
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			return character.FaceRight(isImmediate, speed);
+			void runFunc() => character.Highlight(isImmediate, speed);
+			void skipFunc() => character.SkipColorTransition();
+			bool isCompletedFunc() => !character.IsTransitioningColor();
+
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
-		static Coroutine Highlight(DialogueCommandArguments args)
+		static CommandProcessBase Unhighlight(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return null;
@@ -198,21 +221,14 @@ namespace Commands
 			bool isImmediate = args.Get(1, "immediate", false);
 			float speed = args.Get(2, "speed", 0f);
 
-			return character.Highlight(isImmediate, speed);
+			void runFunc() => character.Unhighlight(isImmediate, speed);
+			void skipFunc() => character.SkipColorTransition();
+			bool isCompletedFunc() => !character.IsTransitioningColor();
+
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
-		static Coroutine Unhighlight(DialogueCommandArguments args)
-		{
-			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
-			if (character == null) return null;
-
-			bool isImmediate = args.Get(1, "immediate", false);
-			float speed = args.Get(2, "speed", 0f);
-
-			return character.Unhighlight(isImmediate, speed);
-		}
-
-		static Coroutine SetColor(DialogueCommandArguments args)
+		static CommandProcessBase SetColor(DialogueCommandArguments args)
 		{
 			GraphicsCharacter character = GetCharacterFromArgs<GraphicsCharacter>(args);
 			if (character == null) return null;
@@ -221,13 +237,17 @@ namespace Commands
 			bool isImmediate = args.Get(2, "immediate", false);
 			float speed = args.Get(3, "speed", 0f);
 
-			return character.SetColor(Utilities.GetColorFromHex(hexColor), isImmediate, speed);
+			void runFunc() => character.SetColor(Utilities.GetColorFromHex(hexColor), isImmediate, speed);
+			void skipFunc() => character.SkipColorTransition();
+			bool isCompletedFunc() => !character.IsTransitioningColor();
+
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
 
 		/***** Sprite Characters *****/
 
-		static Coroutine SetSprite(DialogueCommandArguments args)
+		static CommandProcessBase SetSprite(DialogueCommandArguments args)
 		{
 			SpriteCharacter character = GetCharacterFromArgs<SpriteCharacter>(args);
 			if (character == null) return null;
@@ -237,13 +257,17 @@ namespace Commands
 			bool isImmediate = args.Get(3, "immediate", false);
 			float speed = args.Get(4, "speed", 0f);
 
-			return character.SetSprite(spriteName, layerType, isImmediate, speed);
+			void runFunc() => character.SetSprite(spriteName, layerType, isImmediate, speed);
+			void skipFunc() => character.SkipSpriteTransition();
+			bool isCompletedFunc() => !character.IsTransitioningSprite();
+
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
 
 		/***** Model 3D Characters *****/
 
-		static Coroutine SetExpression(DialogueCommandArguments args)
+		static CommandProcessBase SetExpression(DialogueCommandArguments args)
 		{
 			Model3DCharacter character = GetCharacterFromArgs<Model3DCharacter>(args);
 			if (character == null) return null;
@@ -252,17 +276,22 @@ namespace Commands
 			bool isImmediate = args.Get(2, "immediate", false);
 			float speed = args.Get(3, "speed", 0f);
 
-			return character.SetExpression(expressionName, isImmediate, speed);
+			void runFunc() => character.SetExpression(expressionName, isImmediate, speed);
+			void skipFunc() => character.SkipExpressionTransition();
+			bool isCompletedFunc() => !character.IsTransitioningExpression();
+
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
-		static void SetMotion(DialogueCommandArguments args)
+		static CommandProcessBase SetMotion(DialogueCommandArguments args)
 		{
 			Model3DCharacter character = GetCharacterFromArgs<Model3DCharacter>(args);
-			if (character == null) return;
+			if (character == null) return null;
 
 			string motionName = args.Get(1, "name", "");
 
-			character.SetMotion(motionName);
+			void action() => character.SetMotion(motionName);
+			return new ActionCommandProcess(action);
 		}
 
 

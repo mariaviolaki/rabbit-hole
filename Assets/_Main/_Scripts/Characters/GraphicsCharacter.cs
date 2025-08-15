@@ -7,132 +7,94 @@ namespace Characters
 {
 	public abstract class GraphicsCharacter : Character
 	{
-		const float MoveSpeedMultiplier = 135000f;
+		const float MoveSlowdownStartDistance = 300f;
+		const float MinMoveSlowdownDistanceRatio = 0.01f;
+
+		const float PositionSpeedMultiplier = 100f;
+		const float VisibilitySpeedMultiplier = 0.5f;
+		const float DirectionSpeedMultiplier = 0.2f;
+		protected const float ColorSpeedMultiplier = 50f;
 
 		readonly Dictionary<string, string> animationNames = new(StringComparer.OrdinalIgnoreCase);
+		Vector2 leftDirection;
+		Vector2 rightDirection;
 
-		Vector2 currentPos = Vector2.zero;
+		protected UITransitionHandler transitionHandler;
 		protected CanvasGroup rootCanvasGroup;
 		protected Animator animator;
-		protected bool isFacingRight;
-		protected bool isHighlighted = true;
+		protected GameObject primaryFlipContainer;
+		protected GameObject secondaryFlipContainer;
+		CanvasGroup primaryFlipCanvasGroup;
+		CanvasGroup secondaryFlipCanvasGroup;
 
-		Coroutine moveCoroutine;
-		protected Coroutine directionCoroutine;
-		protected Coroutine visibilityCoroutine;
-		protected Coroutine colorCoroutine;
-		protected Coroutine brightnessCoroutine;
+		Vector2 position;
+		bool isVisible;
+		Vector2 direction;
+		protected Color color;
+		protected bool isHighlighted;
 
-		Coroutine skippedMoveCoroutine;
-		protected Coroutine skippedDirectionCoroutine;
-		protected Coroutine skippedVisibilityCoroutine;
-		protected Coroutine skippedColorCoroutine;
-		protected Coroutine skippedBrightnessCoroutine;
+		TransitionStatus positionStatus = TransitionStatus.Completed;
+		TransitionStatus visibilityStatus = TransitionStatus.Completed;
+		TransitionStatus directionStatus = TransitionStatus.Completed;
+		protected TransitionStatus colorStatus = TransitionStatus.Completed;
 
-		protected UITransitionHandler TransitionHandler { get; private set; }
-		public Color LightColor { get; protected set; } = Color.white;
-		public Color DisplayColor => isHighlighted ? LightColor : DarkColor;
-		protected Color DarkColor => GetDarkColor(LightColor);
-		public int HierarchyPriority => root.GetSiblingIndex();
-		public Vector2 Position => currentPos;
-		public bool IsHighlighted => isHighlighted;
-		public bool IsFacingRight => isFacingRight;
+		float positionSpeed;
+		float visibilitySpeed;
+		float directionSpeed;
+		protected float colorSpeed;
+
 		public Animator RootAnimator => animator;
+		public int HierarchyPriority => root.GetSiblingIndex();
+		public Vector2 Position => position;
+		public bool IsVisible => isVisible;
+		public Vector2 Direction => direction;
+		public Color LightColor => color;
+		public bool IsHighlighted => isHighlighted;
 
-		public abstract Coroutine Flip(bool isImmediate = false, float speed = 0);
-		public abstract Coroutine SetHighlighted(bool isHighlighted, bool isImmediate = false, float speed = 0);
-		public abstract Coroutine SetColor(Color color, bool isImmediate = false, float speed = 0);
+		public bool IsTransitioningPosition() => positionStatus != TransitionStatus.Completed;
+		public bool IsTransitioningVisibility() => visibilityStatus != TransitionStatus.Completed;
+		public bool IsTransitioningDirection() => directionStatus != TransitionStatus.Completed;
+		public bool IsTransitioningColor() => colorStatus != TransitionStatus.Completed;
 
-		protected override IEnumerator Init()
+		abstract protected void SetColorImmediate();
+		abstract protected void TransitionColor();
+
+		override protected void Update()
 		{
-			// Load this character's prefab into the scene
-			yield return manager.FileManager.LoadCharacterPrefab(data.CastName);
+			base.Update();
 
-			GameObject prefab = manager.FileManager.GetCharacterPrefab(data.CastName);
-			if (prefab == null) yield break;
-
-			TransitionHandler = new UITransitionHandler(manager.GameOptions);
-			GameObject rootGameObject = UnityEngine.Object.Instantiate(prefab, manager.Container);
-			root = rootGameObject.GetComponent<RectTransform>();
-			rootCanvasGroup = root.GetComponent<CanvasGroup>();
-			animator = root.GetComponentInChildren<Animator>();
-
-			root.name = data.Name;
-			rootCanvasGroup.alpha = 0f;
-			isFacingRight = manager.GameOptions.Characters.AreSpritesFacingRight;
-			CacheAnimationNames();
+			TransitionPosition();
+			TransitionVisibility();
+			TransitionDirection();
 		}
 
-		public Coroutine Highlight(bool isImmediate = false, float speed = 0) => SetHighlighted(true, isImmediate, speed);
-		public Coroutine Unhighlight(bool isImmediate = false, float speed = 0) => SetHighlighted(false, isImmediate, speed);
-		public Coroutine Show(bool isImmediate = false, float speed = 0) => SetVisibility(true, isImmediate, speed);
-		public Coroutine Hide(bool isImmediate = false, float speed = 0) => SetVisibility(false, isImmediate, speed);
+		override public IEnumerator Initialize(CharacterManager manager, CharacterData data)
+		{
+			yield return base.Initialize(manager, data);
+
+			root = transform.GetComponent<RectTransform>();
+			rootCanvasGroup = root.GetComponent<CanvasGroup>();
+			animator = root.GetComponentInChildren<Animator>();
+			primaryFlipContainer = animator.transform.GetChild(0).gameObject;
+			secondaryFlipContainer = animator.transform.GetChild(1).gameObject;
+			primaryFlipCanvasGroup = primaryFlipContainer.GetComponent<CanvasGroup>();
+			secondaryFlipCanvasGroup = secondaryFlipContainer.GetComponent<CanvasGroup>();
+
+			root.name = data.Name;
+			primaryFlipCanvasGroup.alpha = 1f;
+			secondaryFlipCanvasGroup.alpha = 0f;
+			primaryFlipContainer.SetActive(true);
+			secondaryFlipContainer.SetActive(false);
+
+			CacheAnimationNames();
+			InitVisuals();
+		}
 
 		public void SetPriority(int index)
 		{
 			if (!isVisible) return;
 
 			manager.SetPriority(data.ShortName, index);
-		}
-
-		public Coroutine SetVisibility(bool isVisible, bool isImmediate = false, float speed = 0)
-		{
-			if (isVisible == this.isVisible || skippedVisibilityCoroutine != null) return null;
-			bool isSkipped = manager.StopProcess(ref visibilityCoroutine);
-
-			if (isImmediate)
-			{
-				SetVisibilityImmediate(isVisible);
-				return null;
-			}
-			else if (isSkipped)
-			{
-				skippedVisibilityCoroutine = manager.StartCoroutine(TransitionVisibility(isVisible, speed, isSkipped));
-				return skippedVisibilityCoroutine;
-			}
-			else
-			{
-				visibilityCoroutine = manager.StartCoroutine(TransitionVisibility(isVisible, speed, isSkipped));
-				return visibilityCoroutine;
-			}
-		}
-
-		public Coroutine SetPosition(float x, float y, bool isImmediate = false, float speed = 0)
-		{
-			if (float.IsNaN(x)) x = currentPos.x;
-			if (float.IsNaN(y)) y = currentPos.y;
-			Vector2 inputPos = new(x, y);
-
-			if (Utilities.AreApproximatelyEqual(inputPos, currentPos) || skippedMoveCoroutine != null) return null;
-			bool isSkipped = manager.StopProcess(ref moveCoroutine);
-
-			if (isImmediate)
-			{
-				SetPositionImmediate(inputPos);
-				return null;
-			}
-			else if (isSkipped)
-			{
-				skippedMoveCoroutine = manager.StartCoroutine(TransitionPosition(inputPos, speed, isSkipped));
-				return skippedMoveCoroutine;
-			}
-			else
-			{
-				moveCoroutine = manager.StartCoroutine(TransitionPosition(inputPos, speed, isSkipped));
-				return moveCoroutine;
-			}
-		}
-
-		public Coroutine FaceLeft(bool isImmediate = false, float speed = 0)
-		{
-			if (!isFacingRight) return null;
-			return Flip(isImmediate, speed);
-		}
-
-		public Coroutine FaceRight(bool isImmediate = false, float speed = 0)
-		{
-			if (isFacingRight) return null;
-			return Flip(isImmediate, speed);
 		}
 
 		public void SetAnimation(string animationName)
@@ -157,62 +119,226 @@ namespace Characters
 			animator.SetBool(cachedName, isPlaying);
 		}
 
-		void SetPositionImmediate(Vector2 inputPos)
+		public void SetPosition(float x, float y, bool isImmediate = false, float speed = 0)
 		{
-			Vector2 targetPos = GetTargetPosition(inputPos);
-			root.anchoredPosition = targetPos;
-			currentPos = inputPos;
+			if (float.IsNaN(x)) x = position.x;
+			if (float.IsNaN(y)) y = position.y;
+
+			Vector2 inputPosition = new(x, y);
+			if (inputPosition == position && positionStatus == TransitionStatus.Completed) return;
+
+			position = inputPosition;
+			if (isImmediate)
+			{
+				SetPositionImmediate();
+				positionStatus = TransitionStatus.Completed;
+			}
+			else
+			{
+				float defaultSpeed = gameOptions.Characters.MoveSpeed;
+				bool isSkipped = positionStatus != TransitionStatus.Completed;
+				positionSpeed = GetTransitionSpeed(speed, defaultSpeed, PositionSpeedMultiplier, isSkipped);
+				positionStatus = positionStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
+			}
 		}
 
-		void SetVisibilityImmediate(bool isVisible)
+		public void Show(bool isImmediate = false, float speed = 0) => SetVisibility(true, isImmediate, speed);
+		public void Hide(bool isImmediate = false, float speed = 0) => SetVisibility(false, isImmediate, speed);
+		public void SetVisibility(bool isVisible, bool isImmediate = false, float speed = 0)
+		{
+			if (isVisible == this.isVisible && visibilityStatus == TransitionStatus.Completed) return;
+
+			this.isVisible = isVisible;
+			if (isImmediate)
+			{
+				SetVisibilityImmediate();
+				visibilityStatus = TransitionStatus.Completed;
+			}
+			else
+			{
+				float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+				bool isSkipped = visibilityStatus != TransitionStatus.Completed;
+				visibilitySpeed = GetTransitionSpeed(speed, defaultSpeed, VisibilitySpeedMultiplier, isSkipped);
+				visibilityStatus = visibilityStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
+			}
+		}
+
+		public void FaceLeft(bool isImmediate = false, float speed = 0) => SetDirection(leftDirection, isImmediate, speed);
+		public void FaceRight(bool isImmediate = false, float speed = 0) => SetDirection(rightDirection, isImmediate, speed);
+		public void SetDirection(Vector2 direction, bool isImmediate = false, float speed = 0)
+		{
+			if (direction == this.direction && directionStatus == TransitionStatus.Completed) return;
+
+			this.direction = direction;
+			if (isImmediate)
+			{
+				SetDirectionImmediate();
+				directionStatus = TransitionStatus.Completed;
+			}
+			else
+			{
+				float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+				bool isSkipped = directionStatus != TransitionStatus.Completed;
+				directionSpeed = GetTransitionSpeed(speed, defaultSpeed, DirectionSpeedMultiplier, isSkipped);
+				directionStatus = directionStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
+			}
+		}
+
+		public void SetColor(Color color, bool isImmediate = false, float speed = 0)
+		{
+			if (color == this.color && colorStatus == TransitionStatus.Completed) return;
+
+			this.color = color;
+			if (isImmediate)
+			{
+				SetColorImmediate();
+				colorStatus = TransitionStatus.Completed;
+			}
+			else
+			{
+				float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+				bool isSkipped = colorStatus != TransitionStatus.Completed;
+				colorSpeed = GetTransitionSpeed(speed, defaultSpeed, ColorSpeedMultiplier, isSkipped);
+				colorStatus = colorStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
+			}
+		}
+
+		public void Highlight(bool isImmediate = false, float speed = 0) => SetHighlighted(true, isImmediate, speed);
+		public void Unhighlight(bool isImmediate = false, float speed = 0) => SetHighlighted(false, isImmediate, speed);
+		public void SetHighlighted(bool isHighlighted, bool isImmediate = false, float speed = 0)
+		{
+			if (isHighlighted == this.isHighlighted && colorStatus == TransitionStatus.Completed) return;
+
+			this.isHighlighted = isHighlighted;
+			if (isImmediate)
+			{
+				SetColorImmediate();
+				colorStatus = TransitionStatus.Completed;
+			}
+			else
+			{
+				float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+				bool isSkipped = colorStatus != TransitionStatus.Completed;
+				colorSpeed = GetTransitionSpeed(speed, defaultSpeed, ColorSpeedMultiplier, isSkipped);
+				colorStatus = colorStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
+			}
+		}
+
+		public void SkipPositionTransition()
+		{
+			if (positionStatus == TransitionStatus.Completed) return;
+			
+			float defaultSpeed = gameOptions.Characters.MoveSpeed;
+			positionSpeed = GetTransitionSpeed(defaultSpeed, defaultSpeed, PositionSpeedMultiplier, true);
+			positionStatus = TransitionStatus.Skipped;
+		}
+
+		public void SkipVisibilityTransition()
+		{
+			if (visibilityStatus == TransitionStatus.Completed) return;
+
+			float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+			visibilitySpeed = GetTransitionSpeed(defaultSpeed, defaultSpeed, VisibilitySpeedMultiplier, true);
+			visibilityStatus = TransitionStatus.Skipped;
+		}
+
+		public void SkipDirectionTransition()
+		{
+			if (directionStatus == TransitionStatus.Completed) return;
+
+			float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+			directionSpeed = GetTransitionSpeed(defaultSpeed, defaultSpeed, DirectionSpeedMultiplier, true);
+			directionStatus = TransitionStatus.Skipped;
+		}
+
+		public void SkipColorTransition()
+		{
+			if (colorStatus == TransitionStatus.Completed) return;
+
+			float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+			colorSpeed = GetTransitionSpeed(defaultSpeed, defaultSpeed, ColorSpeedMultiplier, true);
+			colorStatus = TransitionStatus.Skipped;
+		}
+
+		void SetPositionImmediate()
+		{
+			Vector2 targetPos = GetTargetPosition(position);
+			root.anchoredPosition = targetPos;
+		}
+
+		void SetVisibilityImmediate()
 		{
 			rootCanvasGroup.alpha = isVisible ? 1f : 0f;
-			this.isVisible = isVisible;
 		}
 
-		IEnumerator TransitionVisibility(bool isVisible, float speed, bool isSkipped)
+		void SetDirectionImmediate()
 		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.TransitionSpeed, isSkipped);
-
-			yield return TransitionHandler.SetVisibility(rootCanvasGroup, isVisible, speed);
-			this.isVisible = isVisible;
-
-			if (isSkipped) skippedVisibilityCoroutine = null;
-			else visibilityCoroutine = null;
+			primaryFlipContainer.transform.localScale = direction;
+			secondaryFlipContainer.transform.localScale = direction;
+			primaryFlipCanvasGroup.alpha = 1f;
+			secondaryFlipCanvasGroup.alpha = 0f;
+			secondaryFlipContainer.SetActive(false);
 		}
 
-		IEnumerator TransitionPosition(Vector2 inputPos, float speed, bool isSkipped)
+		void TransitionPosition()
 		{
-			speed = GetTransitionSpeed(speed, manager.GameOptions.Characters.MoveSpeed, isSkipped);
+			if (positionStatus == TransitionStatus.Completed) return;
 
-			Vector2 startPos = root.anchoredPosition;
-			Vector2 endPos = GetTargetPosition(inputPos);
-			float distance = (endPos - startPos).sqrMagnitude;
+			Vector2 targetPosition = GetTargetPosition(position);
+			float speed = positionSpeed * Time.deltaTime;
 
-			if (distance <= Mathf.Epsilon)
+			// Slow down proportionally as we get closer to the target
+			float distance = Vector2.Distance(root.anchoredPosition, targetPosition);
+			if (distance < MoveSlowdownStartDistance)
 			{
-				moveCoroutine = null;
-				yield break;
+				float distanceRatio = Mathf.Max(distance / MoveSlowdownStartDistance, MinMoveSlowdownDistanceRatio);
+				speed *= distanceRatio;
 			}
 
-			float distancePercent = 0f;
-			while (distancePercent < 1f)
+			root.anchoredPosition = Vector2.MoveTowards(root.anchoredPosition, targetPosition, speed);
+
+			if (Utilities.AreApproximatelyEqual(root.anchoredPosition, targetPosition))
 			{
-				// Move at the same speed regardless of distance
-				distancePercent += (speed * MoveSpeedMultiplier * Time.deltaTime) / distance;
-				distancePercent = Mathf.Clamp01(distancePercent);
-				// Move smoothly towards the start and end
-				float smoothDistance = Mathf.SmoothStep(0f, 1f, distancePercent);
-				root.anchoredPosition = Vector2.Lerp(startPos, endPos, smoothDistance);
-
-				yield return null;
+				root.anchoredPosition = targetPosition;
+				positionStatus = TransitionStatus.Completed;
 			}
+		}
 
-			root.anchoredPosition = endPos;
-			currentPos = inputPos;
+		void TransitionVisibility()
+		{
+			if (visibilityStatus == TransitionStatus.Completed) return;
 
-			if (isSkipped) skippedMoveCoroutine = null;
-			else moveCoroutine = null;
+			float targetAlpha = isVisible ? 1f : 0f;
+			float speed = visibilitySpeed * Time.deltaTime;
+			rootCanvasGroup.alpha = Mathf.MoveTowards(rootCanvasGroup.alpha, targetAlpha, speed);
+
+			if (Utilities.AreApproximatelyEqual(rootCanvasGroup.alpha, targetAlpha))
+			{
+				rootCanvasGroup.alpha = targetAlpha;
+				visibilityStatus = TransitionStatus.Completed;
+			}
+		}
+
+		void TransitionDirection()
+		{
+			if (directionStatus == TransitionStatus.Completed) return;
+
+			if (!secondaryFlipContainer.activeInHierarchy)
+				secondaryFlipContainer.SetActive(true);
+
+			float speed = directionSpeed * Time.deltaTime;
+			secondaryFlipContainer.transform.localScale = direction;
+			primaryFlipCanvasGroup.alpha = Mathf.MoveTowards(primaryFlipCanvasGroup.alpha, 0f, speed);
+			secondaryFlipCanvasGroup.alpha = Mathf.MoveTowards(secondaryFlipCanvasGroup.alpha, 1f, speed);
+
+			if (Utilities.AreApproximatelyEqual(secondaryFlipCanvasGroup.alpha, 1f))
+			{
+				primaryFlipContainer.transform.localScale = direction;
+				primaryFlipCanvasGroup.alpha = 1f;
+				secondaryFlipCanvasGroup.alpha = 0f;
+				secondaryFlipContainer.SetActive(false);
+				directionStatus = TransitionStatus.Completed;
+			}
 		}
 
 		Vector2 GetTargetPosition(Vector2 normalizedPos)
@@ -241,24 +367,28 @@ namespace Characters
 			return targetPos - anchorOffset;
 		}
 
-		public float GetTransitionSpeed(float speedInput, float defaultSpeed, bool isTransitionSkipped)
+		protected Color GetDisplayColor()
 		{
-			if (isTransitionSkipped || manager.Dialogue.ReadMode == Dialogue.DialogueReadMode.Skip)
-				return manager.GameOptions.General.SkipTransitionSpeed;
-			else if (speedInput <= 0)
-				return defaultSpeed;
-			else
-				return speedInput;
+			if (isHighlighted) return color;
+
+			return new Color(
+				color.r * manager.GameOptions.Characters.DarkenBrightness,
+				color.g * manager.GameOptions.Characters.DarkenBrightness,
+				color.b * manager.GameOptions.Characters.DarkenBrightness,
+				color.a
+			);
 		}
 
-		protected Color GetDarkColor(Color lightColor)
+		public float GetTransitionSpeed(float speedInput, float defaultSpeed, float speedMultiplier, bool isTransitionSkipped)
 		{
-			return new Color(
-				lightColor.r * manager.GameOptions.Characters.DarkenBrightness,
-				lightColor.g * manager.GameOptions.Characters.DarkenBrightness,
-				lightColor.b * manager.GameOptions.Characters.DarkenBrightness,
-				lightColor.a
-			);
+			float baseSpeed = speedInput;
+
+			if (isTransitionSkipped || manager.Dialogue.FlowController.IsSkipping)
+				baseSpeed = manager.GameOptions.General.SkipTransitionSpeed;
+			else if (speedInput < Mathf.Epsilon)
+				baseSpeed = defaultSpeed;
+
+			return baseSpeed * speedMultiplier;
 		}
 
 		void CacheAnimationNames()
@@ -267,6 +397,30 @@ namespace Characters
 			{
 				animationNames[parameter.name] = parameter.name;
 			}
+		}
+
+		void InitVisuals()
+		{
+			// Initialize Position
+			Vector2 startPosition = new Vector2(-1, -1);
+			position = startPosition;
+			SetPositionImmediate();
+
+			// Initialize Visibility
+			isVisible = false;
+			SetVisibilityImmediate();
+
+			// Initialize Direction
+			Vector2 currentDirection = primaryFlipContainer.transform.localScale;
+			float rightX = manager.GameOptions.Characters.AreSpritesFacingRight ? currentDirection.x : -currentDirection.x;
+			leftDirection = new(-rightX, currentDirection.y);
+			rightDirection = new(rightX, currentDirection.y);
+			direction = currentDirection;
+			SetDirectionImmediate();
+
+			// Initialize Color
+			color = Color.white;
+			isHighlighted = !manager.GameOptions.Characters.HighlightOnSpeak;
 		}
 	}
 }

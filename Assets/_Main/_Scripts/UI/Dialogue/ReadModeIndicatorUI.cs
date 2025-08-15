@@ -1,42 +1,40 @@
 using Dialogue;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
 namespace UI
 {
 	[RequireComponent(typeof(CanvasGroup))]
-	public class ReadModeIndicatorUI : BaseFadeableUI
+	public class ReadModeIndicatorUI : FadeableUI
 	{
 		[SerializeField] TextMeshProUGUI autoReadText;
-		Coroutine visibilityCoroutine;
 
-		public void Hide(bool isImmediate = false, float fadeSpeed = 0f)
+		bool isTransitioning = false;
+
+		public IEnumerator Hide(bool isImmediate = false, float fadeSpeed = 0f)
 		{
-			if (IsHidden) return;
+			while (isTransitioning) yield return null;
+			if (IsHidden) yield break;
 
-			StopProcess();
-			visibilityCoroutine = StartCoroutine(FadeOut(isImmediate, fadeSpeed));
+			isTransitioning = true;
+			yield return SetHidden(isImmediate, fadeSpeed);
+			isTransitioning = false;
 		}
 
-		public void Show(DialogueReadMode readMode, bool isImmediate = false, float fadeSpeed = 0f)
+		public IEnumerator Show(DialogueReadMode readMode, bool isImmediate = false, float fadeSpeed = 0f)
 		{
 			string newText = readMode.ToString();
 
 			if (autoReadText.text != newText)
 				autoReadText.text = newText;
 
-			if (IsVisible) return;
+			while (isTransitioning) yield return null;
+			if (IsVisible) yield break;
 
-			StopProcess();
-			visibilityCoroutine = StartCoroutine(FadeIn(isImmediate, fadeSpeed));
-		}
-
-		void StopProcess()
-		{
-			if (visibilityCoroutine == null) return;
-
-			StopCoroutine(visibilityCoroutine);
-			visibilityCoroutine = null;
+			isTransitioning = true;
+			yield return SetVisible(isImmediate, fadeSpeed);
+			isTransitioning = false;
 		}
 	}
 }

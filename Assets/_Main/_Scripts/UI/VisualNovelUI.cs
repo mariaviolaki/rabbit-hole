@@ -19,7 +19,6 @@ namespace UI
 		[SerializeField] Canvas overlayControlsCanvas;
 
 		const float fadeMultiplier = 0.1f;
-		Coroutine fadeCoroutine;
 
 		public DialogueUI Dialogue => dialogue;
 		public GameplayControlsUI GameplayControls => gameplayControls;
@@ -31,32 +30,27 @@ namespace UI
 			ToggleOverlayControls(false);
 		}
 
-		public Coroutine Show(bool isImmediate = false, float fadeSpeed = 0) => SetVisiblity(true, isImmediate, fadeSpeed);
-		public Coroutine Hide(bool isImmediate = false, float fadeSpeed = 0) => SetVisiblity(false, isImmediate, fadeSpeed);
-		Coroutine SetVisiblity(bool isVisible, bool isImmediate = false, float fadeSpeed = 0)
+		public IEnumerator Show(bool isImmediate = false, float fadeSpeed = 0) => SetVisiblity(true, isImmediate, fadeSpeed);
+		public IEnumerator Hide(bool isImmediate = false, float fadeSpeed = 0) => SetVisiblity(false, isImmediate, fadeSpeed);
+		IEnumerator SetVisiblity(bool isVisible, bool isImmediate = false, float fadeSpeed = 0)
 		{
-			if (fadeCoroutine != null) return null;
-
 			if (isImmediate)
 			{
 				ToggleVisualNovelUI(isVisible);
-				return null;
+				yield break;
 			}
-			else
-			{
-				fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
-				fadeCoroutine = StartCoroutine(FadeVisualNovelUI(isVisible, fadeSpeed));
-				return fadeCoroutine;
-			}
+
+			fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
+			yield return FadeVisualNovelUI(isVisible, fadeSpeed);
 		}
 
 		void ToggleVisualNovelUI(bool isShowing)
 		{
-			BaseFadeableUI[] canvases = new BaseFadeableUI[] { dialogue, background, sprites, foreground, gameplayControls };
+			FadeableUI[] canvases = new FadeableUI[] { dialogue, background, sprites, foreground, gameplayControls };
 
 			for (int i = 0; i < canvases.Length; i++)
 			{
-				BaseFadeableUI canvasUI = canvases[i];
+				FadeableUI canvasUI = canvases[i];
 
 				if (isShowing) canvasUI.SetVisibleImmediate();
 				else canvasUI.SetHiddenImmediate();
@@ -68,29 +62,28 @@ namespace UI
 		IEnumerator FadeVisualNovelUI(bool isFadeIn, float fadeSpeed = 0)
 		{
 			// When showing all visual novel canvases, don't include the dialogue box
-			BaseFadeableUI[] canvases = isFadeIn
-				? new BaseFadeableUI[] { background, sprites, foreground, gameplayControls }
-				: new BaseFadeableUI[] { dialogue, background, sprites, foreground, gameplayControls };
+			FadeableUI[] canvases = isFadeIn
+				? new FadeableUI[] { background, sprites, foreground, gameplayControls }
+				: new FadeableUI[] { dialogue, background, sprites, foreground, gameplayControls };
 
 			float speed = fadeSpeed < Mathf.Epsilon ? gameOptions.General.SceneFadeTransitionSpeed : fadeSpeed;
 			speed *= fadeMultiplier;
 
 			List<IEnumerator> fadeProcesses = new();
-			foreach (BaseFadeableUI canvas in canvases)
+			foreach (FadeableUI canvas in canvases)
 			{
 				if (!canvas.gameObject.activeInHierarchy) continue;
 
 				if (isFadeIn)
-					fadeProcesses.Add(canvas.FadeIn(false, speed));
+					fadeProcesses.Add(canvas.SetVisible(false, speed));
 				else
-					fadeProcesses.Add(canvas.FadeOut(false, speed));
+					fadeProcesses.Add(canvas.SetHidden(false, speed));
 			}
 
 			if (fadeProcesses.Count > 0)
 				yield return Utilities.RunConcurrentProcesses(this, fadeProcesses);
 			
 			ToggleOverlayControls(!isFadeIn);
-			fadeCoroutine = null;
 		}
 
 		void ToggleOverlayControls(bool isActive)

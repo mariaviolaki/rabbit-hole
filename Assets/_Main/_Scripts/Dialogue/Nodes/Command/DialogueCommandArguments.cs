@@ -14,6 +14,11 @@ namespace Dialogue
 
 		public List<string> IndexedArguments => indexedArguments;
 
+		public DialogueCommandArguments()
+		{
+			InitArguments(new List<string>());
+		}
+
 		public DialogueCommandArguments(List<string> parsedArguments)
 		{
 			InitArguments(parsedArguments);

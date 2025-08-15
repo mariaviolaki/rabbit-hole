@@ -15,7 +15,6 @@ namespace Dialogue
 
 		string title = "";
 		string userInput = null;
-		bool isWaitingToAdvance;
 
 		public InputNode(DialogueTreeNode treeNode, DialogueFlowController flowController) : base(treeNode, flowController)
 		{
@@ -43,6 +42,8 @@ namespace Dialogue
 
 		protected override IEnumerator ExecuteLogic()
 		{
+			yield return base.ExecuteLogic();
+
 			flowController.InterruptSkipDueToBlockingNode();
 
 			inputManager.OnClearInput += HandleOnClearInputEvent;
@@ -50,11 +51,10 @@ namespace Dialogue
 
 			try
 			{
-				isWaitingToAdvance = true;
 				yield return visualNovelUI.GameplayControls.ShowInput(title);
-				while (userInput == null && isWaitingToAdvance) yield return null;
+				while (userInput == null && !IsExecutionCanceled) yield return null;
 
-				if (!isWaitingToAdvance)
+				if (IsExecutionCanceled)
 					yield return visualNovelUI.GameplayControls.ForceHideInput();
 
 				if (userInput != null)
@@ -67,12 +67,6 @@ namespace Dialogue
 				executionCoroutine = null;
 				flowController.ProceedToNode(treeNode.NextId);
 			}
-		}
-
-		public override void CancelExecution()
-		{
-			base.CancelExecution();
-			isWaitingToAdvance = false;
 		}
 
 		void HandleOnClearInputEvent() => HandleInputEvent(null);

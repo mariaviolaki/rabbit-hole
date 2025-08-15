@@ -4,44 +4,65 @@ using UnityEngine;
 namespace UI
 {
 	[RequireComponent(typeof(CanvasGroup))]
-	public class FadeableUI : BaseFadeableUI
+	public class FadeableUI : MonoBehaviour
 	{
-		Coroutine fadeCoroutine;
+		[SerializeField] protected GameOptionsSO gameOptions;
 
-		public Coroutine Show(bool isImmediate = false, float fadeSpeed = 0)
+		UITransitionHandler transitionHandler;
+		CanvasGroup canvasGroup;
+
+		protected float fadeSpeed;
+		protected bool isImmediateTransition;
+
+		public bool IsVisible => canvasGroup.alpha == 1f;
+		public bool IsHidden => canvasGroup.alpha == 0f;
+
+		protected virtual void OnEnable() { }
+		protected virtual void Start() { }
+		protected virtual void OnDisable() { }
+		protected virtual void OnDestroy() { }
+
+		virtual protected void Awake()
 		{
-			StopFadeCoroutine();
+			canvasGroup = GetComponent<CanvasGroup>();
+			transitionHandler = new UITransitionHandler(gameOptions);
 
-			fadeCoroutine = StartCoroutine(ShowProcess(isImmediate, fadeSpeed));
-			return fadeCoroutine;
+			SetHiddenImmediate();
 		}
 
-		public Coroutine Hide(bool isImmediate = false, float fadeSpeed = 0)
-		{
-			StopFadeCoroutine();
+		public void SetVisibleImmediate() => canvasGroup.alpha = 1f;
+		public void SetHiddenImmediate() => canvasGroup.alpha = 0f;
 
-			fadeCoroutine = StartCoroutine(HideProcess(isImmediate, fadeSpeed));
-			return fadeCoroutine;
+		public virtual IEnumerator SetVisible(bool isImmediate = false, float speed = 0)
+		{
+			if (IsVisible) yield break;
+
+			if (isImmediate)
+			{
+				SetVisibleImmediate();
+				yield break;
+			}
+			else
+			{
+				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : speed;
+				yield return transitionHandler.SetVisibility(canvasGroup, true, fadeSpeed);
+			}
 		}
 
-		IEnumerator ShowProcess(bool isImmediate, float fadeSpeed)
+		public virtual IEnumerator SetHidden(bool isImmediate = false, float speed = 0)
 		{
-			yield return FadeIn(isImmediate, fadeSpeed);
-			fadeCoroutine = null;
-		}
+			if (IsHidden) yield break;
 
-		IEnumerator HideProcess(bool isImmediate, float fadeSpeed)
-		{
-			yield return FadeOut(isImmediate, fadeSpeed);
-			fadeCoroutine = null;
-		}
-
-		void StopFadeCoroutine()
-		{
-			if (fadeCoroutine == null) return;
-
-			StopCoroutine(fadeCoroutine);
-			fadeCoroutine = null;
+			if (isImmediate)
+			{
+				SetHiddenImmediate();
+				yield break;
+			}
+			else
+			{
+				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : speed;
+				yield return transitionHandler.SetVisibility(canvasGroup, false, fadeSpeed);
+			}
 		}
 	}
 }

@@ -8,9 +8,9 @@ namespace Characters
 	public class Model3DExpressionBank : MonoBehaviour
 	{
 		[SerializeField] Model3DExpression[] expressionData;
-		readonly Dictionary<string, SubExpression[]> expressions = new(StringComparer.OrdinalIgnoreCase);
+		readonly Dictionary<string, List<SubExpression>> expressions = new(StringComparer.OrdinalIgnoreCase);
 
-		public Dictionary<string, SubExpression[]> Expressions { get { return expressions; } }
+		public Dictionary<string, List<SubExpression>> Expressions { get { return expressions; } }
 
 		void Awake()
 		{

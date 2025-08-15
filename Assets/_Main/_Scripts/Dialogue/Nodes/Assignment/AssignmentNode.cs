@@ -39,6 +39,8 @@ namespace Dialogue
 
 		protected override IEnumerator ExecuteLogic()
 		{
+			yield return base.ExecuteLogic();
+
 			AssignValue(variableString, assignmentOperatorString, evaluatedValueString, flowController.Dialogue.VariableManager);
 			flowController.ProceedToNode(treeNode.NextId);
 			executionCoroutine = null;

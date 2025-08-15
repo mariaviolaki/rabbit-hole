@@ -13,43 +13,53 @@ MonoBehaviour:
   m_Name: Character Bank
   m_EditorClassIdentifier: 
   gameCharacters:
-  - name: mcName
+  - name: Y/N
     shortName: mc
-    displayName: mcName
     nameColor: {r: 0.9062934, g: 0.5647059, b: 1, a: 1}
     dialogueColor: {r: 0.8196521, g: 0.7830188, b: 1, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
     dialogueFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     type: 0
+    spriteLayers: []
   - name: Void
     shortName: v
-    displayName: OG Blond Boy
     nameColor: {r: 1, g: 0.8501212, b: 0.7058824, a: 1}
     dialogueColor: {r: 1, g: 0.99927163, b: 0.8352941, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
     dialogueFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
     type: 1
+    spriteLayers:
+    - LayerType: 1
+      DefaultSprite: {fileID: 21300000, guid: 05c04e4f90ff08944be9a1d50a0ddbfe, type: 3}
+    - LayerType: 2
+      DefaultSprite: {fileID: 21300000, guid: e2e4dfb62ff5d3747b32976883d73b8e, type: 3}
   - name: Zero
     shortName: z
-    displayName: OG Pink Boy
     nameColor: {r: 0.91241854, g: 0.7905661, b: 1, a: 1}
     dialogueColor: {r: 1, g: 0.8745098, b: 0.9757089, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
     dialogueFont: {fileID: 11400000, guid: 4d653226df26af64eb74b6101908300c, type: 2}
     type: 1
+    spriteLayers:
+    - LayerType: 1
+      DefaultSprite: {fileID: 21300000, guid: f2c1972a316ddca409898c06cf0e3ecb, type: 3}
+    - LayerType: 2
+      DefaultSprite: {fileID: 21300000, guid: c265d206e1c1e8e4c873bf1ab9b2cba8, type: 3}
   - name: Eccentric Guy
     shortName: eg
-    displayName: Eccentric Guy
     nameColor: {r: 0.5318974, g: 0.8415094, b: 0.6268451, a: 1}
     dialogueColor: {r: 0.8352941, g: 1, b: 0.8730959, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
     dialogueFont: {fileID: 11400000, guid: c85ed5e6ef07ade4eba8182e447d5a87, type: 2}
     type: 1
+    spriteLayers:
+    - LayerType: 1
+      DefaultSprite: {fileID: 21300000, guid: 1e5d6f1cf1388ed42ae82efb2080210e, type: 3}
   - name: Marsh
     shortName: m
-    displayName: Marsh
     nameColor: {r: 0.9547169, g: 0.69712347, b: 0.9058067, a: 1}
     dialogueColor: {r: 0.9824421, g: 0.9264151, b: 1, a: 1}
     nameFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
     dialogueFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     type: 2
+    spriteLayers: []

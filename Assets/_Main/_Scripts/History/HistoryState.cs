@@ -31,9 +31,9 @@ namespace History
 		// Resets progress to an older state
 		public IEnumerator Load(DialogueManager dialogueManager, GameOptionsSO gameOptions)
 		{
-			audioData.Load(dialogueManager.Audio, gameOptions);
+			yield return audioData.Load(dialogueManager.Audio, gameOptions);
 			yield return visualData.Load(dialogueManager.Visuals, gameOptions);
-			yield return characterData.Load(dialogueManager.Characters, gameOptions);
+			characterData.Load(dialogueManager.Characters, gameOptions);
 			yield return dialogueData.Load(dialogueManager, dialogueManager.FlowController);
 		}
 	}

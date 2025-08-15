@@ -1,88 +1,134 @@
-using Dialogue;
 using System;
 using System.Collections;
 using UnityEngine;
 
 namespace Commands
 {
-	public class CommandProcess
+	public class CommandProcessBase
 	{
-		readonly Guid id;
-		readonly string name;
-		readonly DialogueCommandArguments arguments;
-		readonly Delegate command;
+		protected bool isBlocking = false;
+		protected bool isCompleted = true;
+
+		public Guid Id { get; set; }
+		virtual public bool IsBlocking { get { return isBlocking; } set { isBlocking = isBlocking ? isBlocking : value; } }
+		virtual public bool IsCompleted => isCompleted;
+
+		virtual public void Run() { }
+		virtual public void Skip() { }
+	}
+
+	public class TransitionCommandProcess : CommandProcessBase
+	{
 		readonly CommandManager commandManager;
-		readonly CommandSkipType skipType;
+		readonly Func<IEnumerator> runProcessFunc;
+		readonly Action runActionFunc;
+		readonly Action skipFunc;
+		readonly Func<bool> isCompletedFunc;
 
-		Coroutine commandCoroutine;
+		Coroutine coroutine;
 
-		public Guid Id => id;
-		public string Name => name;
-		public bool IsCompleted => commandCoroutine == null;
-		public bool IsBlocking => skipType == CommandSkipType.None;
+		override public bool IsCompleted => coroutine == null && isCompletedFunc();
 
-		public CommandProcess(Guid id, string name, DialogueCommandArguments arguments, Delegate command, CommandManager commandManager, CommandSkipType skipType)
+		public TransitionCommandProcess(CommandManager commandManager, Func<IEnumerator> runProcessFunc, Action skipFunc, Func<bool> isCompletedFunc)
 		{
-			this.id = id;
-			this.name = name;
-			this.arguments = arguments;
-			this.command = command;
 			this.commandManager = commandManager;
-			this.skipType = skipType;
+			this.runProcessFunc = runProcessFunc;
+			this.skipFunc = skipFunc;
+			this.isCompletedFunc = isCompletedFunc;
 		}
 
-		public void Start()
+		public TransitionCommandProcess(Action runActionFunc, Action skipFunc, Func<bool> isCompletedFunc)
 		{
-			commandCoroutine = ExecuteProcess();
+			this.runActionFunc = runActionFunc;
+			this.skipFunc = skipFunc;
+			this.isCompletedFunc = isCompletedFunc;
 		}
 
-		public void Stop()
+		override public void Run()
 		{
-			if (skipType == CommandSkipType.None || commandCoroutine == null) return;
-
-			commandManager.StopCoroutine(commandCoroutine);
-			commandCoroutine = null;
-
-			if (skipType == CommandSkipType.Immediate)
-				ExecuteImmediate();
-			else if (skipType == CommandSkipType.Transition)
-				ExecuteProcess();
-		}
-
-		Coroutine ExecuteProcess()
-		{
-			if (command is Func<DialogueCommandArguments, Coroutine> coroutineFunc)
+			if (runActionFunc != null)
 			{
-				Coroutine coroutine = coroutineFunc(arguments);
-				return commandManager.StartCoroutine(CoroutineRunner(coroutine));
+				runActionFunc();
 			}
-
-			return null;
-		}
-
-		Coroutine ExecuteImmediate()
-		{
-			arguments.AddNamedArgument("immediate", "true");
-
-			if (command is Func<DialogueCommandArguments, Coroutine> coroutineFunc)
+			else if (commandManager != null && runProcessFunc != null && coroutine == null)
 			{
-				Coroutine coroutine = coroutineFunc(arguments);
-				return commandManager.StartCoroutine(CoroutineRunner(coroutine));
+				coroutine = commandManager.StartCoroutine(RunProcess());
 			}
-			else if (command is Func<DialogueCommandArguments, IEnumerator> ienumeratorFunc)
-			{
-				return commandManager.StartCoroutine(ienumeratorFunc(arguments));
-			}
-
-			return null;
 		}
 
-		IEnumerator CoroutineRunner(Coroutine wrappedCoroutine)
+		override public void Skip()
 		{
-			if (wrappedCoroutine != null)
-				yield return wrappedCoroutine;
+			if (isBlocking || coroutine != null) return;
 
-			commandCoroutine = null;
+			skipFunc();
 		}
+
+		IEnumerator RunProcess()
+		{
+			try
+			{
+				yield return runProcessFunc();
+			}
+			finally
+			{
+				coroutine = null;
+			}
+		}
+	}
+
+	public class CoroutineCommandProcess : CommandProcessBase
+	{
+		readonly CommandManager commandManager;
+		readonly Func<IEnumerator> processFunc;
+
+		Coroutine coroutine;
+
+		override public bool IsCompleted => coroutine == null;
+
+		public CoroutineCommandProcess(CommandManager commandManager, Func<IEnumerator> processFunc, bool isBlocking)
+		{
+			this.commandManager = commandManager;
+			this.processFunc = processFunc;
+			this.isBlocking = isBlocking;
+		}
+
+		override public void Run()
+		{
+			if (commandManager == null || processFunc == null || coroutine != null) return;
+
+			coroutine = commandManager.StartCoroutine(RunProcess());
+		}
+
+		override public void Skip()
+		{
+			if (isBlocking || coroutine == null) return;
+
+			commandManager.StopCoroutine(coroutine);
+			coroutine = null;
+		}
+
+		IEnumerator RunProcess()
+		{
+			try
+			{
+				yield return processFunc();
+			}
+			finally
+			{
+				coroutine = null;
+			}
+		}
+	}
+
+	public class ActionCommandProcess : CommandProcessBase
+	{
+		readonly Action actionFunc;
+
+		public ActionCommandProcess(Action actionFunc)
+		{
+			this.actionFunc = actionFunc;
+		}
+
+		override public void Run() => actionFunc();
 	}
 }

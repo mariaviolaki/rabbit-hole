@@ -16,6 +16,7 @@ namespace Dialogue
 		static readonly Regex DialogueSegmentRegex = new(@"\{[ac](?:\s+\d+(?:\.\d+)?)?\}", RegexOptions.IgnoreCase);
 
 		readonly GameManager gameManager;
+		readonly DialogueManager dialogueManager;
 		readonly DialogueSpeakerHandler speakerHandler;
 		readonly DialogueTextHandler textHandler;
 
@@ -29,6 +30,7 @@ namespace Dialogue
 		public DialogueNode(DialogueTreeNode treeNode, DialogueFlowController flowController) : base(treeNode, flowController)
 		{
 			gameManager = flowController.Game;
+			dialogueManager = flowController.Dialogue;
 			speakerHandler = flowController.DialogueSpeaker;
 			textHandler = flowController.DialogueText;
 		}
@@ -52,10 +54,18 @@ namespace Dialogue
 
 		protected override IEnumerator ExecuteLogic()
 		{
-			speakerHandler.SetSpeaker(shortName, layerType, visual, xPos, yPos);
+			yield return base.ExecuteLogic();
 
 			if (segments.Count > 0)
-				yield return textHandler.DisplayDialogue(segments);
+			{
+				List<IEnumerator> processes = new()
+				{
+					speakerHandler.SetSpeaker(shortName, layerType, visual, xPos, yPos),
+					textHandler.DisplayDialogue(segments)
+				};
+
+				yield return Utilities.RunConcurrentProcesses(dialogueManager, processes);
+			}
 
 			// Mark this line as read
 			string dialogueLineId = TreeNodeUtilities.GetDialogueNodeId(flowController.CurrentSectionName, flowController.CurrentNodeId);

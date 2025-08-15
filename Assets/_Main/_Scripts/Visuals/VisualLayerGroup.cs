@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -13,51 +12,51 @@ namespace Visuals
 
 		readonly Dictionary<int, VisualLayer> layers = new();
 		VisualGroupManager manager;
-		Coroutine clearCoroutine;
-		Coroutine skippedClearCoroutine;
 
 		public VisualType Type => visualType;
 		public RectTransform Root => root;
 		public VisualGroupManager Manager => manager;
 		public Dictionary<int, VisualLayer> Layers => layers;
 
-		public void Init(VisualGroupManager manager)
+		public void Initialize(VisualGroupManager manager)
 		{
 			this.manager = manager;
 		}
 
-		public Coroutine Clear(int depth = -1, bool isImmediate = false, float speed = 0)
+		public void Clear(int depth = -1, bool isImmediate = false, float speed = 0)
 		{
-			if (skippedClearCoroutine != null) return null;
-
-			List<VisualLayer> layersToClear = GetLayersFromDepth(depth);
-			if (layersToClear.Count == 0) return null;
-
-			bool areLayersIdle = layersToClear.All(layer => layer.IsIdle);
-			bool isSkipped = manager.StopProcess(ref clearCoroutine) || !areLayersIdle;
-
-			if (isImmediate)
+			List<VisualLayer> selectedLayers = GetLayersFromDepth(depth);
+			foreach (VisualLayer layer in selectedLayers)
 			{
-				ClearLayersImmediate(layersToClear, isSkipped);
-				return null;
+				layer.Clear(isImmediate, speed);
 			}
-			else if (isSkipped)
+		}
+
+		public void SkipTransitions(int depth = -1)
+		{
+			List<VisualLayer> selectedLayers = GetLayersFromDepth(depth);
+			foreach (VisualLayer layer in selectedLayers)
 			{
-				skippedClearCoroutine = manager.StartCoroutine(ClearLayers(layersToClear, speed, isSkipped));
-				return skippedClearCoroutine;
+				layer.SkipTransition();
 			}
-			else
+		}
+
+		public bool IsTransitioning(int depth = -1)
+		{
+			List<VisualLayer> selectedLayers = GetLayersFromDepth(depth);
+			foreach (VisualLayer layer in selectedLayers)
 			{
-				clearCoroutine = manager.StartCoroutine(ClearLayers(layersToClear, speed, isSkipped));
-				return clearCoroutine;
+				if (layer.IsTransitioning) return true;
 			}
+
+			return false;
 		}
 
 		public VisualLayer GetLayer(int depth)
 		{
 			if (layers.TryGetValue(depth, out VisualLayer layer)) return layer;
 
-			Debug.LogWarning($"Layer {depth} not found in {visualType.ToString()} layer group.");
+			Debug.LogWarning($"Layer {depth} not found in {visualType} layer group.");
 			return null;
 		}
 
@@ -77,61 +76,31 @@ namespace Visuals
 		void CreateLayer(int depth)
 		{
 			int clampedIndex = Mathf.Clamp(depth, 0, layers.Count);
-
 			if (layers.ContainsKey(clampedIndex))
 			{
-				Debug.LogWarning($"Layer {clampedIndex} already exists in {visualType.ToString()} layer group.");
+				Debug.LogWarning($"Layer {clampedIndex} already exists in {visualType} layer group.");
 				return;
 			}
 
 			GameObject layerObject = new GameObject($"Layer {clampedIndex}", typeof(RectTransform));
-			VisualLayer layer = new VisualLayer(this, layerObject, clampedIndex);
+			VisualLayer layer = layerObject.AddComponent<VisualLayer>();
+			layer.Initialize(this, clampedIndex);
+
 			layers[clampedIndex] = layer;
 
 			if (depth != clampedIndex)
-				Debug.LogWarning($"'Layer {depth}' was created as 'Layer {clampedIndex}' in {visualType.ToString()} layer group because it was out of bounds.");
-		}
-
-		void ClearLayersImmediate(List<VisualLayer> layersToClear, bool isSkipped)
-		{
-			foreach (VisualLayer layer in layersToClear)
-			{
-				layer.ClearInGroupImmediate(isSkipped);
-			}
-		}
-
-		IEnumerator ClearLayers(List<VisualLayer> layersToClear, float speed, bool isSkipped)
-		{
-			List<IEnumerator> clearProcesses = new();
-			foreach (VisualLayer layer in layersToClear)
-			{
-				clearProcesses.Add(layer.ClearInGroup(false, speed, isSkipped));
-			}
-
-			yield return Utilities.RunConcurrentProcesses(manager, clearProcesses);
-			if (isSkipped) skippedClearCoroutine = null;
-			else clearCoroutine = null;
+				Debug.LogWarning($"'Layer {depth}' was created as 'Layer {clampedIndex}' in {visualType} layer group because it was out of bounds.");
 		}
 
 		List<VisualLayer> GetLayersFromDepth(int depth)
 		{
+			if (depth < 0) return layers.Values.ToList();
+
 			List<VisualLayer> layersToClear = new();
 
-			if (depth < 0)
-			{
-				foreach (VisualLayer layer in layers.Values)
-				{
-					if (!layer.IsBusy)
-						layersToClear.Add(layer);
-				}
-				return layersToClear;
-			}
-			else
-			{
-				VisualLayer layerToClear = GetLayer(depth);
-				if (layerToClear != null && !layerToClear.IsBusy)
-					layersToClear.Add(layerToClear);
-			}
+			VisualLayer layerToClear = GetLayer(depth);
+			if (layerToClear != null)
+				layersToClear.Add(layerToClear);
 
 			return layersToClear;
 		}

@@ -25,7 +25,6 @@ namespace Dialogue
 		
 		DialogueFlowController flowController;
 		ScriptVariableManager variableManager;
-		Guid currentDialogueId;
 		DialogueReadMode readMode;
 
 		public VisualNovelUI UI => visualNovelUI;
@@ -38,7 +37,6 @@ namespace Dialogue
 		public VisualGroupManager Visuals => visualManager;
 		public GameState State => gameManager.State;
 		public DialogueFlowController FlowController => flowController;
-		public Guid CurrentDialogueId => currentDialogueId;
 		public DialogueReadMode ReadMode => readMode;
 
 		public event Action<DialogueReadMode> OnChangeReadMode;
@@ -126,9 +124,9 @@ namespace Dialogue
 		void UpdateReadMode(DialogueReadMode newMode)
 		{
 			if (newMode == DialogueReadMode.Auto || newMode == DialogueReadMode.Skip)
-				UI.ReadModeIndicator.Show(newMode);
+				StartCoroutine(UI.ReadModeIndicator.Show(newMode));
 			else
-				UI.ReadModeIndicator.Hide();
+				StartCoroutine(UI.ReadModeIndicator.Hide());
 
 			OnChangeReadMode?.Invoke(newMode);
 		}

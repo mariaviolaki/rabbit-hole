@@ -14,7 +14,7 @@ namespace History
 		public Vector2 position;
 		public Color color;
 		public bool isHighlighted;
-		public bool isFacingRight;
+		public Vector2 direction;
 		public List<HistoryAnimationData> animations = new();
 
 		// Character Data

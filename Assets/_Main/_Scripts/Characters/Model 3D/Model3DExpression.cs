@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Characters
@@ -6,10 +7,10 @@ namespace Characters
 	public class Model3DExpression
 	{
 		[SerializeField] string name;
-		[SerializeField] SubExpression[] subExpressions;
+		[SerializeField] List<SubExpression> subExpressions;
 
 		public string Name { get { return name; } }
-		public SubExpression[] SubExpressions { get { return subExpressions; } }
+		public List<SubExpression> SubExpressions { get { return subExpressions; } }
 	}
 
 	[System.Serializable]

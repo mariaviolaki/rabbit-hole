@@ -14,12 +14,14 @@ namespace Characters
 		[SerializeField] GameOptionsSO gameOptions;
 		[SerializeField] FileManagerSO fileManager;
 		[SerializeField] CharacterBankSO characterBank;
+		[SerializeField] GameObject textCharacterPrefab;
+		[SerializeField] GameObject spriteCharacterPrefab;
+		[SerializeField] GameObject model3DCharacterPrefab;
 		[SerializeField] DialogueManager dialogueManager;
 		[SerializeField] RectTransform characterContainer;
 		[SerializeField] Transform model3DContainer;
 
 		readonly Dictionary<string, Character> characters = new();
-		Coroutine creationCoroutine;
 
 		public GameOptionsSO GameOptions { get { return gameOptions; } }
 		public CharacterBankSO Bank { get { return characterBank; } }
@@ -28,34 +30,12 @@ namespace Characters
 		public RectTransform Container { get { return characterContainer; } }
 		public Transform Model3DContainer { get { return model3DContainer; } }
 
-		void Awake()
-		{
-			Character.OnCreateCharacter += (Character character) => SaveCharacter(character);
-		}
-
 		public Dictionary<string, Character> GetCharacters() => characters;
 		public bool HasCharacter(string shortName) => characters.ContainsKey(shortName);
 
-		public Coroutine CreateCharacters(List<string> names)
-		{
-			if (creationCoroutine != null) return null;
-
-			creationCoroutine = StartCoroutine(CreateCharactersProcess(names));
-			return creationCoroutine;
-		}
-
-		public Coroutine CreateCharacter(string shortName) => CreateCharacter(shortName, shortName);
-		public Coroutine CreateCharacter(string shortName, string castShortName)
-		{
-			if (creationCoroutine != null) return null;
-
-			creationCoroutine = StartCoroutine(CreateSingleCharacterProcess(shortName, castShortName));
-			return creationCoroutine;
-		}
-
 		public Character GetCharacter(string shortName)
 		{
-			if (string.IsNullOrEmpty(shortName)) return null;
+			if (string.IsNullOrWhiteSpace(shortName)) return null;
 
 			if (!characters.ContainsKey(shortName))
 				CreateDefaultCharacter(shortName);
@@ -74,16 +54,6 @@ namespace Characters
 			}
 
 			return count;
-		}
-
-		public bool StopProcess(ref Coroutine process)
-		{
-			if (process == null) return false;
-
-			StopCoroutine(process);
-			process = null;
-
-			return true;
 		}
 
 		// Give a character a specific priority, ignoring invisible characters
@@ -134,13 +104,13 @@ namespace Characters
 			return true;
 		}
 
-		IEnumerator CreateCharactersProcess(List<string> names)
+		public IEnumerator CreateCharacters(List<string> names)
 		{
 			int completedCharacterCount = 0;
 
 			IEnumerator MarkCharacterCompletion(string shortName, string castShortName)
 			{
-				yield return CreateCharacterProcess(shortName, castShortName);
+				yield return CreateCharacter(shortName, castShortName);
 				completedCharacterCount++;
 			}
 
@@ -154,16 +124,10 @@ namespace Characters
 			}
 
 			while (completedCharacterCount != names.Count) yield return null;
-			creationCoroutine = null;
-		}
+		}		
 
-		IEnumerator CreateSingleCharacterProcess(string shortName, string castShortName)
-		{
-			yield return CreateCharacterProcess(shortName, castShortName);
-			creationCoroutine = null;
-		}
-
-		IEnumerator CreateCharacterProcess(string shortName, string castShortName)
+		public IEnumerator CreateCharacter(string shortName) => CreateCharacter(shortName, shortName);
+		public IEnumerator CreateCharacter(string shortName, string castShortName)
 		{
 			if (characters.ContainsKey(shortName))
 			{
@@ -183,22 +147,25 @@ namespace Characters
 			switch (data.Type)
 			{
 				case CharacterType.Model3D:
-					yield return Character.Create<Model3DCharacter>(this, data);
+					GameObject model3DCharacterGameObject = Instantiate(model3DCharacterPrefab, characterContainer, false);
+					Model3DCharacter model3DCharacter = model3DCharacterGameObject.GetComponent<Model3DCharacter>();
+					yield return model3DCharacter.Initialize(this, data);
+					characters[data.ShortName] = model3DCharacter;
 					break;
 				case CharacterType.Sprite:
-					yield return Character.Create<SpriteCharacter>(this, data);
+					GameObject spriteCharacterGameObject = Instantiate(spriteCharacterPrefab, characterContainer, false);
+					SpriteCharacter spriteCharacter = spriteCharacterGameObject.GetComponent<SpriteCharacter>();
+					yield return spriteCharacter.Initialize(this, data);
+					characters[data.ShortName] = spriteCharacter;
 					break;
 				case CharacterType.Text:
 				default:
-					yield return Character.Create<TextCharacter>(this, data);
+					GameObject textCharacterGameObject = Instantiate(textCharacterPrefab, characterContainer, false);
+					TextCharacter textCharacter = textCharacterGameObject.GetComponent<TextCharacter>();
+					yield return textCharacter.Initialize(this, data);
+					characters[data.ShortName] = textCharacter;
 					break;
 			}
-		}
-
-		// Called when a character is initialized asyncronously
-		void SaveCharacter(Character character)
-		{
-			characters[character.Data.ShortName] = character;
 		}
 
 		int SortInvisibleCharacters()
@@ -211,8 +178,8 @@ namespace Characters
 				if (!character.Root) continue;
 
 				// Position all invisible characters at the end (order doesn't matter)
-				bool isInvisible = !character.Root.gameObject.activeInHierarchy || !character.IsVisible;
-				if (isInvisible)
+				bool isVisible = character is GraphicsCharacter graphicsCharacter && graphicsCharacter.IsVisible;
+				if (!isVisible)
 				{
 					characterCount++;
 					character.Root.SetSiblingIndex(0);
@@ -225,7 +192,12 @@ namespace Characters
 		void CreateDefaultCharacter(string shortName)
 		{
 			CharacterData data = characterBank.GetDefaultData(shortName, gameOptions);
-			characters[shortName] = Character.CreateDefault(this, data);
+
+			GameObject textCharacterGameObject = Instantiate(textCharacterPrefab, characterContainer, false);
+			TextCharacter textCharacter = textCharacterGameObject.GetComponent<TextCharacter>();
+			textCharacter.InitializeBase(this, data);
+
+			characters[data.ShortName] = textCharacter;
 		}
 
 		bool IsValidShortName(string input)

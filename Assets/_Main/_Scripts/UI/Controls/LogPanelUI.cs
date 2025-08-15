@@ -42,8 +42,7 @@ namespace UI
 		int visibleLogsCount;
 		Vector2 openPosition;
 
-		Coroutine transitionCoroutine;
-		Coroutine scrollCoroutine;
+		bool isTransitioning = false;
 
 		public event Action OnClose;
 
@@ -63,37 +62,40 @@ namespace UI
 		public void SetVisibleImmediate() => canvasGroup.alpha = 1f;
 		public void SetHiddenImmediate() => canvasGroup.alpha = 0f;
 
-		public void ShowDefault() => Show();
-		public Coroutine Show(bool isImmediate = false, float transitionSpeed = 0)
+		public void OpenDefault() => StartCoroutine(Open());
+		public IEnumerator Open(bool isImmediate = false, float transitionSpeed = 0)
 		{
-			if (transitionCoroutine != null || IsVisible) return null;
+			if (IsVisible || isTransitioning) yield break;
+			isTransitioning = true;
 
-			transitionSpeed = (transitionSpeed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : transitionSpeed;
-
-			transitionCoroutine = StartCoroutine(OpenProcess(isImmediate, transitionSpeed));
-			return transitionCoroutine;
-		}
-
-		public void HideDefault() => Hide();
-		public Coroutine Hide(bool isImmediate = false, float transitionSpeed = 0)
-		{
-			if (transitionCoroutine != null || IsHidden) return null;
-
-			transitionSpeed = (transitionSpeed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : transitionSpeed;
-
-			transitionCoroutine = StartCoroutine(CloseProcess(isImmediate, transitionSpeed));
-			return transitionCoroutine;
-		}
-
-		public IEnumerator OpenProcess(bool isImmediate = false, float speed = 0)
-		{
 			if (!PrepareOpen())
 			{
-				transitionCoroutine = null;
+				isTransitioning = false;
 				OnClose?.Invoke();
 				yield break;
 			}
 
+			transitionSpeed = (transitionSpeed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : transitionSpeed;
+			yield return OpenProcess(isImmediate, transitionSpeed);
+
+			isTransitioning = false;
+		}
+
+		public void CloseDefault() => StartCoroutine(Close());
+		public IEnumerator Close(bool isImmediate = false, float transitionSpeed = 0)
+		{
+			if (IsHidden || isTransitioning) yield break;
+			isTransitioning = true;
+
+			transitionSpeed = (transitionSpeed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : transitionSpeed;
+			yield return CloseProcess(isImmediate, transitionSpeed);
+
+			isTransitioning = false;
+			OnClose?.Invoke();
+		}
+
+		IEnumerator OpenProcess(bool isImmediate = false, float speed = 0)
+		{
 			if (isImmediate)
 			{
 				SetVisibleImmediate();
@@ -111,11 +113,9 @@ namespace UI
 
 				yield return Utilities.RunConcurrentProcesses(this, transitionProcesses);
 			}
-
-			transitionCoroutine = null;
 		}
 
-		public IEnumerator CloseProcess(bool isImmediate = false, float speed = 0)
+		IEnumerator CloseProcess(bool isImmediate = false, float speed = 0)
 		{
 			if (isImmediate)
 			{
@@ -135,9 +135,7 @@ namespace UI
 				yield return Utilities.RunConcurrentProcesses(this, transitionProcesses);
 			}
 
-			CompleteClose();
-			transitionCoroutine = null;
-			OnClose?.Invoke();
+			CompleteClose();			
 		}
 
 		IEnumerator MoveToPosition(Vector2 startPos, Vector2 endPos, float speed)
@@ -189,37 +187,58 @@ namespace UI
 
 		void Scroll(int index)
 		{
-			// Don't overlap scrolling
-			if (scrollCoroutine != null) return;
+			// Don't overlap transitions
+			if (isTransitioning) return;
+			isTransitioning = true;
 
 			// Don't scroll to an invalid index
-			if (index < 0 || index >= logEntryCount || index == currentIndex || logEntries[index].HistoryNode == null) return;
+			if (index < 0 || index >= logEntryCount || index == currentIndex || logEntries[index].HistoryNode == null)
+			{
+				isTransitioning = false;
+				return;
+			}
 
 			bool isScrollDown = index < currentIndex;
 
 			// Don't scroll past the newest/oldest entries
-			if ((isScrollDown && currentNode.Next == null) || (!isScrollDown && currentNode.Previous == null)) return;
+			if ((isScrollDown && currentNode.Next == null) || (!isScrollDown && currentNode.Previous == null))
+			{
+				isTransitioning = false;
+				return;
+			}
 
 			// Don't scroll to more recent logs if currently viewing history
-			if (isScrollDown && historyManager.HistoryNode != null && historyManager.HistoryNode == currentNode.Next) return;
+			if (isScrollDown && historyManager.HistoryNode != null && historyManager.HistoryNode == currentNode.Next)
+			{
+				isTransitioning = false;
+				return;
+			}
 
 			// Don't show newer logs if they are marked as invalid by the history manager
-			if (isScrollDown && (logEntries[index].HistoryIndex == -1 || logEntries[index].HistoryIndex < lastHistoryIndex)) return;
+			if (isScrollDown && (logEntries[index].HistoryIndex == -1 || logEntries[index].HistoryIndex < lastHistoryIndex))
+			{
+				isTransitioning = false;
+				return;
+			}
 
-			scrollCoroutine = StartCoroutine(MoveToEntry(index));
+			StartCoroutine(MoveToEntry(index));
 		}
 
 		void RewindHistory(LinkedListNode<HistoryState> historyNode)
 		{
-			if (historyNode == null || transitionCoroutine != null || scrollCoroutine != null) return;
+			if (historyNode == null || isTransitioning) return;
+			isTransitioning = true;
 
-			transitionCoroutine = StartCoroutine(RewindHistoryProcess(historyNode, false, gameOptions.General.SkipTransitionSpeed));
+			StartCoroutine(RewindHistoryProcess(historyNode, false, gameOptions.General.SkipTransitionSpeed));
 		}
 
 		IEnumerator RewindHistoryProcess(LinkedListNode<HistoryState> historyNode, bool isImmediate = false, float speed = 0f)
 		{
 			yield return historyManager.Load(historyNode);
 			yield return CloseProcess(isImmediate, speed);
+
+			isTransitioning = false;
+			OnClose?.Invoke();
 		}
 
 		IEnumerator MoveToEntry(int entryIndex)
@@ -252,7 +271,7 @@ namespace UI
 			float currentHistoryNum = logEntries[currentIndex].HistoryIndex;
 			scrollbar.SetValueWithoutNotify(currentHistoryNum / (historyStateCount - 1));
 
-			scrollCoroutine = null;
+			isTransitioning = false;
 		}
 
 		void SetNewHistoryNode(int newLogIndex)
@@ -430,7 +449,7 @@ namespace UI
 		void SubscribeListeners()
 		{
 			inputManager.OnScroll += Scroll;
-			backButton.onClick.AddListener(HideDefault);
+			backButton.onClick.AddListener(CloseDefault);
 
 			foreach (HistoryLogEntryUI logEntry in logEntries)
 			{
@@ -442,7 +461,7 @@ namespace UI
 		void UnsubscribeListeners()
 		{
 			inputManager.OnScroll -= Scroll;
-			backButton.onClick.RemoveListener(HideDefault);
+			backButton.onClick.RemoveListener(CloseDefault);
 
 			foreach (HistoryLogEntryUI logEntry in logEntries)
 			{

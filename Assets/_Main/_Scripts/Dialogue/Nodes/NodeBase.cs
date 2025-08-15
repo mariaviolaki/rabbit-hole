@@ -1,32 +1,66 @@
-using Dialogue;
+using Commands;
 using System.Collections;
 using UnityEngine;
 
-public abstract class NodeBase
+namespace Dialogue
 {
-	protected DialogueTreeNode treeNode;
-	protected DialogueFlowController flowController;
-	protected Coroutine executionCoroutine;
-	bool isExecuting;
-
-	public DialogueTreeNode TreeNode => treeNode;
-	public bool IsExecuting => isExecuting;
-
-	abstract protected void ParseTreeNode();
-	abstract protected IEnumerator ExecuteLogic();
-
-	virtual public void SpeedUpExecution() { }
-	virtual public void CancelExecution() { }
-
-	public NodeBase(DialogueTreeNode treeNode, DialogueFlowController flowController)
+	public class NodeBase
 	{
-		this.treeNode = treeNode;
-		this.flowController = flowController;
-		isExecuting = false;
-	}
+		CommandManager commandManager;
+		protected DialogueTreeNode treeNode;
+		protected DialogueFlowController flowController;
+		protected Coroutine executionCoroutine;
+		protected bool isWaitingToAdvance;
+		bool isExecutionCanceled;
+		bool isExecuting;
 
-	virtual public void StartExecution()
-	{
-		isExecuting = true;
+		protected bool IsExecutionCanceled => isExecutionCanceled;
+		public DialogueTreeNode TreeNode => treeNode;
+		public bool IsExecuting => isExecuting;
+
+		virtual protected void ParseTreeNode() { }
+
+		virtual public void SpeedUpExecution()
+		{
+			isWaitingToAdvance = false;
+		}
+
+		virtual public void CancelExecution()
+		{
+			isWaitingToAdvance = false;
+			isExecutionCanceled = true;
+		}
+
+		public NodeBase(DialogueTreeNode treeNode, DialogueFlowController flowController)
+		{
+			commandManager = flowController.Dialogue.Commands;
+			this.treeNode = treeNode;
+			this.flowController = flowController;
+			isWaitingToAdvance = false;
+			isExecutionCanceled = false;
+			isExecuting = false;
+		}
+
+		virtual public void StartExecution()
+		{
+			isExecuting = true;
+		}
+
+		virtual protected IEnumerator ExecuteLogic()
+		{
+			isWaitingToAdvance = true;
+
+			while (!commandManager.IsIdle())
+			{
+				if (!isWaitingToAdvance)
+				{
+					commandManager.SkipCommands();
+					isWaitingToAdvance = true;
+				}
+				yield return null;
+			}
+
+			isWaitingToAdvance = false;
+		}
 	}
 }

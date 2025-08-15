@@ -1,40 +1,42 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Visuals
 {
-	public class VisualLayer
+	public class VisualLayer : MonoBehaviour
 	{
 		const string primaryContainerName = "Primary";
 		const string secondaryContainerName = "Secondary";
 
-		readonly int depth;
-		readonly VisualLayerGroup layerGroup;
-
+		int depth;
+		VisualLayerGroup layerGroup;
 		GameObject primaryGameObject;
 		GameObject secondaryGameObject;
 		VisualContainer primaryContainer;
 		VisualContainer secondaryContainer;
 
-		Coroutine visualCoroutine;
-		Coroutine skippedVisualCoroutine;
-		bool isSwappingContainers;
 		string visualName;
 		bool isImage;
+		float volume;
 		bool isMuted;
 		bool isImmediate;
 
+		public bool IsTransitioning => primaryContainer.IsTransitioning || secondaryContainer.IsTransitioning;
 		public VisualLayerGroup LayerGroup => layerGroup;
 		public string VisualName => visualName;
 		public bool IsImage => isImage;
+		public float Volume => volume;
 		public bool IsMuted => isMuted;
 		public bool IsImmediate => isImmediate;
 		public int Depth => depth;
-		public bool IsIdle => visualCoroutine == null && skippedVisualCoroutine == null;
-		public bool IsBusy => skippedVisualCoroutine != null;
 
-		public VisualLayer(VisualLayerGroup layerGroup, GameObject layerObject, int depth)
+		void Update()
+		{
+			primaryContainer.TransitionVisual();
+			secondaryContainer.TransitionVisual();
+		}
+
+		public void Initialize(VisualLayerGroup layerGroup, int depth)
 		{
 			this.depth = depth;
 			this.layerGroup = layerGroup;
@@ -42,217 +44,95 @@ namespace Visuals
 			// Add the layer as child under the layer group
 			int lastIndex = layerGroup.Root.childCount;
 			int siblingIndex = lastIndex - depth;
-			layerObject.transform.SetParent(layerGroup.Root, false);
-			layerObject.transform.SetSiblingIndex(siblingIndex);
+			transform.SetParent(layerGroup.Root, false);
+			transform.SetSiblingIndex(siblingIndex);
 
-			RectTransform rectTransform = layerObject.GetComponent<RectTransform>();
+			RectTransform rectTransform = GetComponent<RectTransform>();
 			rectTransform.anchorMin = Vector2.zero;
 			rectTransform.anchorMax = Vector2.one;
 			rectTransform.offsetMin = Vector2.zero;
 			rectTransform.offsetMax = Vector2.zero;
 
 			primaryGameObject = new GameObject(primaryContainerName, typeof(RectTransform));
-			primaryGameObject.transform.SetParent(layerObject.transform, false);
+			primaryGameObject.transform.SetParent(transform, false);
 			primaryContainer = new VisualContainer(this, primaryGameObject);
+			primaryContainer.OnCompleteTransition += SwapContainers;
 
 			// Create a secondary visual container for smooth transitions
 			secondaryGameObject = new GameObject(secondaryContainerName, typeof(RectTransform));
-			secondaryGameObject.transform.SetParent(layerObject.transform, false);
+			secondaryGameObject.transform.SetParent(transform, false);
 			secondaryContainer = new VisualContainer(this, secondaryGameObject);
+			secondaryContainer.OnCompleteTransition += SwapContainers;
 
 			secondaryGameObject.SetActive(false);
 		}
 
-		public Coroutine Clear(bool isImmediate = false, float speed = 0)
+		public void Clear(bool isImmediate = false, float speed = 0f)
 		{
-			if (skippedVisualCoroutine != null) return null;
-			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine);
-			RestoreContainerAfterSkip(isSkipped);
+			if (primaryContainer.IsHidden) return;
+
+			primaryContainer.Clear(isImmediate, speed);
 
 			this.visualName = null;
-			this.isImmediate = true;
+			this.isImmediate = isImmediate;
+		}
 
-			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
+		public void SetImage(Sprite sprite, string name, bool isImmediate = false, float speed = 0f)
+		{
+			if (isImage && visualName == name) return;
+
 			if (isImmediate)
 			{
-				skippedVisualCoroutine = layerGroup.Manager.StartCoroutine(ClearVisual(isImmediate, speed, isSkipped));
-				return skippedVisualCoroutine;
-			}
-			else if (isSkipped)
-			{
-				skippedVisualCoroutine = layerGroup.Manager.StartCoroutine(ClearVisual(isImmediate, speed, isSkipped));
-				return skippedVisualCoroutine;
+				primaryContainer.SetImage(sprite, name, true);
 			}
 			else
 			{
-				visualCoroutine = layerGroup.Manager.StartCoroutine(ClearVisual(isImmediate, speed, isSkipped));
-				return visualCoroutine;
-			}
-		}
+				secondaryGameObject.SetActive(true);
+				secondaryContainer.SetImage(sprite, name, false, speed);
 
-		public Coroutine SetImage(string name, bool isImmediate = false, float speed = 0)
-		{
-			if (skippedVisualCoroutine != null) return null;
-			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine);
-			RestoreContainerAfterSkip(isSkipped);
+				if (!primaryContainer.IsHidden)
+					primaryContainer.Clear(false, speed);
+			}
 
 			this.isImage = true;
 			this.visualName = name;
 			this.isImmediate = isImmediate;
+		}
+
+		public IEnumerator SetVideo(string path, string name, float volume = 0.5f, bool isMuted = false, bool isImmediate = false, float speed = 0f)
+		{
+			if (!isImage && visualName == name) yield break;
 
 			if (isImmediate)
 			{
-				skippedVisualCoroutine = layerGroup.Manager.StartCoroutine(SetImageImmediate(name));
-				return skippedVisualCoroutine;
-			}
-			else if (isSkipped)
-			{
-				skippedVisualCoroutine = layerGroup.Manager.StartCoroutine(SwapImage(name, speed, isSkipped));
-				return skippedVisualCoroutine;
+				yield return primaryContainer.SetVideo(path, name, volume, isMuted, true);
 			}
 			else
 			{
-				visualCoroutine = layerGroup.Manager.StartCoroutine(SwapImage(name, speed, isSkipped));
-				return visualCoroutine;
-			}
-		}
+				secondaryGameObject.SetActive(true);
+				yield return secondaryContainer.SetVideo(path, name, volume, isMuted, false, speed);
 
-		public Coroutine SetVideo(string name, bool isMuted = false, bool isImmediate = false, float speed = 0)
-		{
-			if (skippedVisualCoroutine != null) return null;
-			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine);
-			RestoreContainerAfterSkip(isSkipped);
+				if (!primaryContainer.IsHidden)
+					primaryContainer.Clear(false, speed);
+			}
 
 			this.isImage = false;
-			this.visualName = name;
+			this.volume = volume;
 			this.isMuted = isMuted;
+			this.visualName = name;
 			this.isImmediate = isImmediate;
-
-			if (isImmediate)
-			{
-				primaryContainer.SetVideo(name, isMuted, true);
-				return null;
-			}
-			else if (isSkipped)
-			{
-				skippedVisualCoroutine = layerGroup.Manager.StartCoroutine(SwapVideo(name, isMuted, speed, isSkipped));
-				return skippedVisualCoroutine;
-			}
-			else
-			{
-				visualCoroutine = layerGroup.Manager.StartCoroutine(SwapVideo(name, isMuted, speed, isSkipped));
-				return visualCoroutine;
-			}
 		}
 
-		public void ClearInGroupImmediate(bool isGroupSkipped)
+		public void SkipTransition()
 		{
-			if (skippedVisualCoroutine != null) return;
-			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine) || isGroupSkipped;
-			RestoreContainerAfterSkip(isSkipped);
-
-			this.visualName = null;
-			this.isImmediate = true;
-
-			primaryContainer.ClearImmediate();
+			primaryContainer.SkipTransition();
+			secondaryContainer.SkipTransition();
 		}
 
-		public IEnumerator ClearInGroup(bool isImmediate, float speed, bool isGroupSkipped)
+		void SwapContainers(VisualContainer container)
 		{
-			if (skippedVisualCoroutine != null) yield break;
-			bool isSkipped = layerGroup.Manager.StopProcess(ref visualCoroutine) || isGroupSkipped;
-			RestoreContainerAfterSkip(isSkipped);
+			if (container == primaryContainer) return;
 
-			this.visualName = null;
-			this.isImmediate = isImmediate;
-
-			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
-			yield return primaryContainer.Clear(isImmediate, speed);
-		}
-
-		IEnumerator ClearVisual(bool isImmediate, float speed, bool isSkipped)
-		{
-			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
-			yield return primaryContainer.Clear(isImmediate, speed);
-
-			if (isSkipped) skippedVisualCoroutine = null;
-			else visualCoroutine = null;
-		}
-
-		IEnumerator SetImageImmediate(string name)
-		{
-			yield return primaryContainer.SetImage(name, true);
-			skippedVisualCoroutine = null;
-		}
-
-		IEnumerator SwapImage(string name, float speed, bool isSkipped)
-		{
-			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
-
-			while (isSwappingContainers) yield return null;
-			isSwappingContainers = true;
-
-			ToggleSecondaryVisual(true);
-
-			List<IEnumerator> processes = new()
-			{
-				secondaryContainer.SetImage(name, false, speed),
-				primaryContainer.Clear(false, speed)
-			};
-			yield return Utilities.RunConcurrentProcesses(layerGroup.Manager, processes);
-
-			ToggleSecondaryVisual(false);
-
-			isSwappingContainers = false;
-			if (isSkipped) skippedVisualCoroutine = null;
-			else visualCoroutine = null;
-		}
-
-		IEnumerator SwapVideo(string name, bool isMuted, float speed, bool isSkipped)
-		{
-			speed = layerGroup.Manager.GetTransitionSpeed(speed, isSkipped);
-
-			while (isSwappingContainers) yield return null;
-			isSwappingContainers = true;
-
-			ToggleSecondaryVisual(true);
-
-			List<IEnumerator> processes = new()
-			{
-				secondaryContainer.SetVideo(name, isMuted, false, speed),
-				primaryContainer.Clear(false, speed)
-			};
-			yield return Utilities.RunConcurrentProcesses(layerGroup.Manager, processes);
-
-			ToggleSecondaryVisual(false);
-
-			isSwappingContainers = false;
-			if (isSkipped) skippedVisualCoroutine = null;
-			else visualCoroutine = null;
-		}
-
-		void RestoreContainerAfterSkip(bool isSkipped)
-		{
-			if (!isSkipped || primaryGameObject.activeSelf) return;
-
-			ToggleSecondaryVisual(false);
-			isSwappingContainers = false;
-		}
-
-		void ToggleSecondaryVisual(bool isActive)
-		{
-			if (!isActive)
-			{
-				// Swap the visual containers because the graphic is now in the second one
-				SwapContainers();
-				secondaryContainer.ClearImmediate();
-			}
-
-			secondaryGameObject.SetActive(isActive);
-		}
-
-		void SwapContainers()
-		{
 			GameObject tempGameObject = primaryGameObject;
 			VisualContainer tempContainer = primaryContainer;
 
@@ -261,6 +141,8 @@ namespace Visuals
 
 			secondaryGameObject = tempGameObject;
 			secondaryContainer = tempContainer;
+
+			secondaryGameObject.SetActive(false);
 		}
 	}
 }

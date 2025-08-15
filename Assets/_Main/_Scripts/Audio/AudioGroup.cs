@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -34,12 +35,12 @@ namespace Audio
 			root.transform.parent = manager.transform;
 		}
 
-		public void Play(string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false, bool isImmediate = false, float fadeSpeed = 0f, int layerNum = 0)
+		public IEnumerator Play(string audioName, float volume = 0.5f, float pitch = 1f, bool isLooping = false, bool isImmediate = false, float fadeSpeed = 0f, int layerNum = 0)
 		{
 			layerNum = GetValidLayerNum(layerNum);
-			if (layerNum == -1) return;
+			if (layerNum == -1) yield break;
 
-			layers[layerNum].Play(audioName, volume, pitch, isLooping, isImmediate, fadeSpeed);
+			yield return layers[layerNum].Play(audioName, volume, pitch, isLooping, isImmediate, fadeSpeed);
 		}
 
 		public void Stop(string audioName, bool isImmediate = false, float fadeSpeed = 0f, int layerNum = 0)

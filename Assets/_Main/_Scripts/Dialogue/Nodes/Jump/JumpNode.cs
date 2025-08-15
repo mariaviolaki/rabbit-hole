@@ -28,6 +28,8 @@ namespace Dialogue
 
 		protected override IEnumerator ExecuteLogic()
 		{
+			yield return base.ExecuteLogic();
+
 			executionCoroutine = null;
 			yield return flowController.JumpToSection(sectionName);
 		}

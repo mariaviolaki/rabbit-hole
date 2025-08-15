@@ -1,44 +1,34 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
 namespace Characters
 {
-	public abstract class Character
+	public abstract class Character : MonoBehaviour
 	{
-		protected CharacterManager manager;
-		protected RectTransform root;
+		[SerializeField] protected GameOptionsSO gameOptions;
 		protected CharacterData data;
-		protected bool isVisible = false;
+		protected RectTransform root;
+		protected CharacterManager manager;
 
 		public CharacterManager Manager => manager;
 		public RectTransform Root => root;
 		public CharacterData Data => data;
-		public bool IsVisible => isVisible;
+		public GameOptionsSO GameOptions => gameOptions;
 
-		public static event Action<Character> OnCreateCharacter;
-
-		protected Character() { }
-		protected abstract IEnumerator Init();
-
-		public static IEnumerator Create<T>(CharacterManager characterManager, CharacterData data) where T : Character, new()
+		virtual protected void Update()
 		{
-			T character = new T();
-			character.manager = characterManager;
-			character.data = data;
-
-			// Perform any asyncronous operations needed for initialization
-			yield return character.Init();
-			OnCreateCharacter?.Invoke(character);
 		}
 
-		public static TextCharacter CreateDefault(CharacterManager characterManager, CharacterData data)
+		public void InitializeBase(CharacterManager manager, CharacterData data)
 		{
-			TextCharacter textCharacter = new TextCharacter();
-			textCharacter.manager = characterManager;
-			textCharacter.data = data;
+			this.manager = manager;
+			this.data = data;
+		}
 
-			return textCharacter;
+		virtual public IEnumerator Initialize(CharacterManager manager, CharacterData data)
+		{
+			InitializeBase(manager, data);
+			yield break;
 		}
 
 		public void ResetData()
@@ -51,13 +41,6 @@ namespace Characters
 			if (string.IsNullOrEmpty(name)) return;
 
 			data.Name = name;
-		}
-
-		public void SetDisplayName(string displayName)
-		{
-			if (string.IsNullOrEmpty(displayName)) return;
-
-			data.DisplayName = displayName;
 		}
 	}
 }

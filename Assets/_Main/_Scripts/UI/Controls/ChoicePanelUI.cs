@@ -8,7 +8,7 @@ using UnityEngine.Pool;
 
 namespace UI
 {
-	public class ChoicePanelUI : BaseFadeableUI
+	public class ChoicePanelUI : FadeableUI
 	{
 		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] ChoiceButtonUI choiceButtonPrefab;
@@ -18,7 +18,7 @@ namespace UI
 
 		const int poolSize = 5;
 		DialogueChoice lastChoice;
-		Coroutine visibilityCoroutine;
+		bool isTransitioning = false;
 
 		public DialogueChoice LastChoice => lastChoice;
 
@@ -42,41 +42,35 @@ namespace UI
 			CompleteClose();
 		}
 
-		public Coroutine Show(List<DialogueChoice> choices, bool isImmediate = false, float fadeSpeed = 0)
+		public IEnumerator Open(List<DialogueChoice> choices, bool isImmediate = false, float fadeSpeed = 0)
 		{
-			if (IsVisible) return null;
+			if (IsVisible || isTransitioning) yield break;
+			isTransitioning = true;
 
 			base.fadeSpeed = fadeSpeed;
-			StopProcess();
+			base.isImmediateTransition = isImmediate;
 
-			visibilityCoroutine = StartCoroutine(ShowProcess(choices, isImmediate, fadeSpeed));
-			return visibilityCoroutine;
-		}
-
-		public IEnumerator ForceHide(bool isImmediate = false)
-		{
-			while (visibilityCoroutine != null) yield return null;
-
-			fadeSpeed = gameOptions.General.SkipTransitionSpeed;
-			yield return CloseProcess(isImmediate, fadeSpeed);
-		}
-
-		public IEnumerator OpenProcess(List<DialogueChoice> choices, bool isImmediate = false, float speed = 0)
-		{
 			CreateButtons(choices);
-			yield return FadeIn(isImmediate, speed);
+			yield return SetVisible(isImmediate, fadeSpeed);
 			EnableButtonListeners();
+
+			isTransitioning = false;
 		}
 
-		public IEnumerator CloseProcess(bool isImmediate = false, float speed = 0)
+		public IEnumerator Close(bool isImmediate = false, float fadeSpeed = 0)
 		{
+			if (isTransitioning) yield break;
+			isTransitioning = true;
+
+			fadeSpeed = fadeSpeed <= 0 ? gameOptions.General.SkipTransitionSpeed : fadeSpeed;
+
 			foreach (ChoiceButtonUI choiceButton in activeButtons)
 			{
 				choiceButton.DisableListeners();
 				choiceButton.OnSelect -= SelectChoice;
 			}
 
-			yield return FadeOut(isImmediate, speed);
+			yield return SetHidden(isImmediate, fadeSpeed);
 
 			for (int i = activeButtons.Count - 1; i >= 0; i--)
 				activeButtons[i].Release();
@@ -84,19 +78,8 @@ namespace UI
 			if (lastChoice != null)
 				inputManager.OnSelectChoice?.Invoke(lastChoice);
 
+			isTransitioning = false;
 			OnClose?.Invoke();
-		}
-
-		IEnumerator ShowProcess(List<DialogueChoice> choices, bool isImmediate = false, float speed = 0)
-		{
-			yield return OpenProcess(choices, isImmediate, speed);
-			visibilityCoroutine = null;
-		}
-
-		IEnumerator HideProcess(bool isImmediate = false, float speed = 0)
-		{
-			yield return CloseProcess(isImmediate, speed);
-			visibilityCoroutine = null;
 		}
 
 		void PrepareOpen()
@@ -131,9 +114,10 @@ namespace UI
 
 		void SelectChoice(DialogueChoice choice)
 		{
+			if (isTransitioning) return;
+
 			lastChoice = choice;
-			StopProcess();
-			visibilityCoroutine = StartCoroutine(HideProcess(isImmediateTransition, fadeSpeed));
+			StartCoroutine(Close(isImmediateTransition));
 		}
 
 		ChoiceButtonUI OnCreateButton()
@@ -148,7 +132,7 @@ namespace UI
 			choiceButton.transform.SetParent(transform, false);
 			choiceButton.ClearData();
 			choiceButton.gameObject.SetActive(true);
-			choiceButton.Show(true);
+			StartCoroutine(choiceButton.SetVisible(true));
 			activeButtons.Add(choiceButton);
 		}
 
@@ -161,14 +145,6 @@ namespace UI
 		void OnDestroyButton(ChoiceButtonUI choiceButton)
 		{
 			Destroy(choiceButton.gameObject);
-		}
-
-		void StopProcess()
-		{
-			if (visibilityCoroutine == null) return;
-
-			StopCoroutine(visibilityCoroutine);
-			visibilityCoroutine = null;
 		}
 	}
 }

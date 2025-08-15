@@ -26,6 +26,7 @@ namespace History
 					historyVisual.layerDepth = visualLayer.Depth;
 					historyVisual.isImage = visualLayer.IsImage;
 					historyVisual.visualName = visualLayer.VisualName;
+					historyVisual.volume = visualLayer.Volume;
 					historyVisual.isMuted = visualLayer.IsMuted;
 				}
 			}
@@ -51,7 +52,7 @@ namespace History
 
 					if (historyVisual == null)
 					{
-						yield return visualManager.Clear(visualGroup.Type, visualLayer.Depth, false, fadeSpeed);
+						visualManager.Clear(visualGroup.Type, visualLayer.Depth, false, fadeSpeed);
 					}
 					else if (historyVisual.isImage)
 					{
@@ -61,7 +62,7 @@ namespace History
 					else
 					{
 						yield return visualManager.SetVideo(
-							historyVisual.visualType, historyVisual.layerDepth, historyVisual.visualName, historyVisual.isMuted, false, fadeSpeed);
+							historyVisual.visualType, historyVisual.layerDepth, historyVisual.visualName, historyVisual.volume, historyVisual.isMuted, false, fadeSpeed);
 					}
 				}
 			}
