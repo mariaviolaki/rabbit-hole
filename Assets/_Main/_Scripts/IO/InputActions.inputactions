@@ -42,7 +42,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "BackAction",
+                    "name": "DialogueBackAction",
                     "type": "Button",
                     "id": "137331eb-2fa5-441f-a2b7-fd2f70429606",
                     "expectedControlType": "Button",
@@ -67,6 +67,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "MenuNavigationAction",
+                    "type": "Button",
+                    "id": "c84e0024-fce7-4f24-8a0f-d365992aeac6",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ConfirmAction",
+                    "type": "Button",
+                    "id": "45d9eaeb-6494-4b89-94a0-d80642517531",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -74,17 +92,6 @@
                     "name": "",
                     "id": "3e566561-99b2-4b39-8da8-6ff0251f8527",
                     "path": "<Keyboard>/space",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "ForwardAction",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "992dccef-f248-484b-aa45-4e367d2132e9",
-                    "path": "<Keyboard>/enter",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -143,7 +150,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "BackAction",
+                    "action": "DialogueBackAction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -177,6 +184,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "ScrollAction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e74e03c5-f896-4864-9835-7db76c15c082",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MenuNavigationAction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ed71f183-f2ed-48a0-a840-63cd54d8525c",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ConfirmAction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

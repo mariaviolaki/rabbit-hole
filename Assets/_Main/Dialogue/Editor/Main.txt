@@ -20,18 +20,12 @@ v.SetPosition(0.5, 0.5, immediate=true), v.SetSprite(smug, layer=face, immediate
 v.SetName("???")
 v.Show()
 
-v "Curiouser and curiouser..."
-v "I have to test the transitions once again."
-v.SetPosition(0, speed = 1), SetBackgroundImage(Yellow-Forest-Back, layer=1, speed=1), PlayMusic(night, volume=0.05), PlaySFX(magic, volume=0.05)
-v "Again."
-v.SetPosition(1, speed = 0.5), SetBackgroundImage(Red-Forest-Back, layer=1, speed=0.5), PlayMusic(day, volume=0.05), PlaySFX(warp, volume=0.05)
-v "Again."
-v.SetPosition(0.5, speed = 0.5), SetBackgroundVideo(day, layer=1, speed=0.5, volume=0.05), PlaySFX(warp, volume=0.05), PlayVoice(yes, volume=0.05)
-v "Again."
-SetBackgroundVideo(night, layer=1, speed=0.5, mute=true, volume=0.05), PlayAmbient("crowd cheer", volume=0.05), StopMusic(day)
-v "Again."
-SetBackgroundImage(Green-Forest-Back, layer=1, speed=0.5), StopMusic()
+v "Test the input for me."
+input "Testing"
+v "Works fine~"
+v "Now..."
 
+v "Curiouser and curiouser..."
 v "Didn't expect to find a human...{a 0.5} here."
 v (neutral) "Got lost again, did you?"
 choice
@@ -162,18 +156,6 @@ choice
 
 eg (laugh) "Anyway, {$mc.name}, pick a guide!"
 eg "Marshy hasn't offered yet, but I know he wants to."
-
-v.FaceRight(), v.SetSprite(yukata-body, body), v.SetSprite(flustered), v.SetColor(#7B68EE)
-v "Let's test the transitions again."
-m.SetExpression(angry), m.FaceLeft(), eg.FaceRight()
-eg (whiny) "Yes! We have to test the transitions because transitions are important!!"
-v (annoyed) "How nice. Now I'll have to say random things again."
-v.FaceLeft(), v.SetColor(#ff0000), m.SetExpression(happy), eg.FaceLeft()
-eg (laugh) "It's fun to say random things!{a} Woo!"
-v.FaceRight(), v.SetSprite(formal-body, body), eg.FaceRight()
-v "..."
-v (smug) "Of course it is."
-m.SetExpression(), m.FaceRight(), v.FaceLeft(), m.SetColor(#7B68EE)
 
 Autosave()
 

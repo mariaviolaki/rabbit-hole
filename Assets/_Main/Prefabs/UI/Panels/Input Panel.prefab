@@ -664,7 +664,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6349754965752550755}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -682,6 +682,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
   inputManager: {fileID: 11400000, guid: 9b3fa728f456aeb4bb05c35c62b6cfc2, type: 2}
+  dialogueManager: {fileID: 0}
   titleText: {fileID: 6767432697601873347}
   inputField: {fileID: 3116776597744757456}
   submitButton: {fileID: 892046978919442380}

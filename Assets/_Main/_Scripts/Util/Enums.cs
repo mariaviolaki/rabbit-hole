@@ -93,14 +93,6 @@ namespace IO
 	}
 }
 
-namespace Commands
-{
-	public enum CommandSkipType
-	{
-		Default, None, Immediate, Transition
-	}
-}
-
 namespace Variables
 {
 	public enum DataTypeEnum
@@ -109,10 +101,10 @@ namespace Variables
 	}
 }
 
-namespace Logic
+namespace UI
 {
-	public enum BlockingLogicSegmentType
+	public enum MenuType
 	{
-		None, Choice, Input
+		None, SideMenu, Save, Load, Log, Relationships, Settings, Title
 	}
 }

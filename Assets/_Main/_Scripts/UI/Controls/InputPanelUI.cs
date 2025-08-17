@@ -29,7 +29,7 @@ namespace UI
 		override protected void OnEnable()
 		{
 			base.OnEnable();
-			PrepareOpen();
+			StartCoroutine(PrepareOpen());
 		}
 
 		override protected void OnDisable()
@@ -85,8 +85,10 @@ namespace UI
 				submitButton.gameObject.SetActive(false);
 		}
 
-		void PrepareOpen()
+		IEnumerator PrepareOpen()
 		{
+			yield return null;
+
 			inputField.text = string.Empty;
 			inputField.Select();
 			inputField.ActivateInputField();
@@ -110,12 +112,14 @@ namespace UI
 		{
 			inputField.onValueChanged.AddListener(SetButtonVisibility);
 			submitButton.onClick.AddListener(SubmitInput);
+			inputManager.OnConfirm += SubmitInput;
 		}
 
 		void UnsubscribeListeners()
 		{
 			inputField.onValueChanged.RemoveListener(SetButtonVisibility);
 			submitButton.onClick.RemoveListener(SubmitInput);
+			inputManager.OnConfirm -= SubmitInput;
 		}
 	}
 }

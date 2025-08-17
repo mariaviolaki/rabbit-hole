@@ -64,7 +64,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""BackAction"",
+                    ""name"": ""DialogueBackAction"",
                     ""type"": ""Button"",
                     ""id"": ""137331eb-2fa5-441f-a2b7-fd2f70429606"",
                     ""expectedControlType"": ""Button"",
@@ -89,6 +89,24 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""MenuNavigationAction"",
+                    ""type"": ""Button"",
+                    ""id"": ""c84e0024-fce7-4f24-8a0f-d365992aeac6"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ConfirmAction"",
+                    ""type"": ""Button"",
+                    ""id"": ""45d9eaeb-6494-4b89-94a0-d80642517531"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -96,17 +114,6 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""3e566561-99b2-4b39-8da8-6ff0251f8527"",
                     ""path"": ""<Keyboard>/space"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""ForwardAction"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""992dccef-f248-484b-aa45-4e367d2132e9"",
-                    ""path"": ""<Keyboard>/enter"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -165,7 +172,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""BackAction"",
+                    ""action"": ""DialogueBackAction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -201,6 +208,28 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""action"": ""ScrollAction"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e74e03c5-f896-4864-9835-7db76c15c082"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MenuNavigationAction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ed71f183-f2ed-48a0-a840-63cd54d8525c"",
+                    ""path"": ""<Keyboard>/enter"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ConfirmAction"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -213,9 +242,11 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_VN_AutoAction = m_VN.FindAction("AutoAction", throwIfNotFound: true);
         m_VN_SkipAction = m_VN.FindAction("SkipAction", throwIfNotFound: true);
         m_VN_SkipHoldAction = m_VN.FindAction("SkipHoldAction", throwIfNotFound: true);
-        m_VN_BackAction = m_VN.FindAction("BackAction", throwIfNotFound: true);
+        m_VN_DialogueBackAction = m_VN.FindAction("DialogueBackAction", throwIfNotFound: true);
         m_VN_LogAction = m_VN.FindAction("LogAction", throwIfNotFound: true);
         m_VN_ScrollAction = m_VN.FindAction("ScrollAction", throwIfNotFound: true);
+        m_VN_MenuNavigationAction = m_VN.FindAction("MenuNavigationAction", throwIfNotFound: true);
+        m_VN_ConfirmAction = m_VN.FindAction("ConfirmAction", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -281,9 +312,11 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_VN_AutoAction;
     private readonly InputAction m_VN_SkipAction;
     private readonly InputAction m_VN_SkipHoldAction;
-    private readonly InputAction m_VN_BackAction;
+    private readonly InputAction m_VN_DialogueBackAction;
     private readonly InputAction m_VN_LogAction;
     private readonly InputAction m_VN_ScrollAction;
+    private readonly InputAction m_VN_MenuNavigationAction;
+    private readonly InputAction m_VN_ConfirmAction;
     public struct VNActions
     {
         private @InputActions m_Wrapper;
@@ -292,9 +325,11 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @AutoAction => m_Wrapper.m_VN_AutoAction;
         public InputAction @SkipAction => m_Wrapper.m_VN_SkipAction;
         public InputAction @SkipHoldAction => m_Wrapper.m_VN_SkipHoldAction;
-        public InputAction @BackAction => m_Wrapper.m_VN_BackAction;
+        public InputAction @DialogueBackAction => m_Wrapper.m_VN_DialogueBackAction;
         public InputAction @LogAction => m_Wrapper.m_VN_LogAction;
         public InputAction @ScrollAction => m_Wrapper.m_VN_ScrollAction;
+        public InputAction @MenuNavigationAction => m_Wrapper.m_VN_MenuNavigationAction;
+        public InputAction @ConfirmAction => m_Wrapper.m_VN_ConfirmAction;
         public InputActionMap Get() { return m_Wrapper.m_VN; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -316,15 +351,21 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @SkipHoldAction.started += instance.OnSkipHoldAction;
             @SkipHoldAction.performed += instance.OnSkipHoldAction;
             @SkipHoldAction.canceled += instance.OnSkipHoldAction;
-            @BackAction.started += instance.OnBackAction;
-            @BackAction.performed += instance.OnBackAction;
-            @BackAction.canceled += instance.OnBackAction;
+            @DialogueBackAction.started += instance.OnDialogueBackAction;
+            @DialogueBackAction.performed += instance.OnDialogueBackAction;
+            @DialogueBackAction.canceled += instance.OnDialogueBackAction;
             @LogAction.started += instance.OnLogAction;
             @LogAction.performed += instance.OnLogAction;
             @LogAction.canceled += instance.OnLogAction;
             @ScrollAction.started += instance.OnScrollAction;
             @ScrollAction.performed += instance.OnScrollAction;
             @ScrollAction.canceled += instance.OnScrollAction;
+            @MenuNavigationAction.started += instance.OnMenuNavigationAction;
+            @MenuNavigationAction.performed += instance.OnMenuNavigationAction;
+            @MenuNavigationAction.canceled += instance.OnMenuNavigationAction;
+            @ConfirmAction.started += instance.OnConfirmAction;
+            @ConfirmAction.performed += instance.OnConfirmAction;
+            @ConfirmAction.canceled += instance.OnConfirmAction;
         }
 
         private void UnregisterCallbacks(IVNActions instance)
@@ -341,15 +382,21 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @SkipHoldAction.started -= instance.OnSkipHoldAction;
             @SkipHoldAction.performed -= instance.OnSkipHoldAction;
             @SkipHoldAction.canceled -= instance.OnSkipHoldAction;
-            @BackAction.started -= instance.OnBackAction;
-            @BackAction.performed -= instance.OnBackAction;
-            @BackAction.canceled -= instance.OnBackAction;
+            @DialogueBackAction.started -= instance.OnDialogueBackAction;
+            @DialogueBackAction.performed -= instance.OnDialogueBackAction;
+            @DialogueBackAction.canceled -= instance.OnDialogueBackAction;
             @LogAction.started -= instance.OnLogAction;
             @LogAction.performed -= instance.OnLogAction;
             @LogAction.canceled -= instance.OnLogAction;
             @ScrollAction.started -= instance.OnScrollAction;
             @ScrollAction.performed -= instance.OnScrollAction;
             @ScrollAction.canceled -= instance.OnScrollAction;
+            @MenuNavigationAction.started -= instance.OnMenuNavigationAction;
+            @MenuNavigationAction.performed -= instance.OnMenuNavigationAction;
+            @MenuNavigationAction.canceled -= instance.OnMenuNavigationAction;
+            @ConfirmAction.started -= instance.OnConfirmAction;
+            @ConfirmAction.performed -= instance.OnConfirmAction;
+            @ConfirmAction.canceled -= instance.OnConfirmAction;
         }
 
         public void RemoveCallbacks(IVNActions instance)
@@ -373,8 +420,10 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnAutoAction(InputAction.CallbackContext context);
         void OnSkipAction(InputAction.CallbackContext context);
         void OnSkipHoldAction(InputAction.CallbackContext context);
-        void OnBackAction(InputAction.CallbackContext context);
+        void OnDialogueBackAction(InputAction.CallbackContext context);
         void OnLogAction(InputAction.CallbackContext context);
         void OnScrollAction(InputAction.CallbackContext context);
+        void OnMenuNavigationAction(InputAction.CallbackContext context);
+        void OnConfirmAction(InputAction.CallbackContext context);
     }
 }

@@ -1,5 +1,6 @@
 using Dialogue;
 using System;
+using UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Interactions;
@@ -10,8 +11,11 @@ namespace IO
 	public class InputManagerSO : ScriptableObject, InputActions.IVNActions
 	{
 		// Triggered by the InputActions asset
+		public Action OnSideMenuOpen;
+		public Action OnMenuClose;
+		public Action OnConfirm;
 		public Action OnForward;
-		public Action OnBack;
+		public Action OnDialogueBack;
 		public Action OnAuto;
 		public Action OnSkip;
 		public Action OnSkipHold;
@@ -27,11 +31,11 @@ namespace IO
 
 		InputActions inputActions;
 		bool isHoldPerformed = false;
-		bool IsDialoguePanelOpen => IsInputPanelOpen || IsChoicePanelOpen || IsLogPanelOpen;
+		bool IsDialoguePanelOpen => CurrentMenu != MenuType.None || IsInputPanelOpen || IsChoicePanelOpen;
 
+		public MenuType CurrentMenu { get; set; } = MenuType.None;
 		public bool IsInputPanelOpen { get; set; } = false;
 		public bool IsChoicePanelOpen { get; set; } = false;
-		public bool IsLogPanelOpen { get; set; } = false;
 
 		void OnEnable()
 		{
@@ -42,7 +46,7 @@ namespace IO
 			inputActions.VN.Enable();
 		}
 
-		public void OnForwardAction(InputAction.CallbackContext context)
+		void InputActions.IVNActions.OnForwardAction(InputAction.CallbackContext context)
 		{
 			if (IsDialoguePanelOpen) return;
 			if (context.phase != InputActionPhase.Performed) return;
@@ -50,15 +54,15 @@ namespace IO
 			OnForward?.Invoke();
 		}
 
-		public void OnBackAction(InputAction.CallbackContext context)
+		void InputActions.IVNActions.OnDialogueBackAction(InputAction.CallbackContext context)
 		{
-			if (IsLogPanelOpen) return;
+			if (CurrentMenu != MenuType.None) return;
 			if (context.phase != InputActionPhase.Performed) return;
 
-			OnBack?.Invoke();
+			OnDialogueBack?.Invoke();
 		}
 
-		public void OnAutoAction(InputAction.CallbackContext context)
+		void InputActions.IVNActions.OnAutoAction(InputAction.CallbackContext context)
 		{
 			if (IsDialoguePanelOpen) return;
 			if (context.phase != InputActionPhase.Performed) return;
@@ -66,7 +70,7 @@ namespace IO
 			OnAuto?.Invoke();
 		}
 
-		public void OnSkipAction(InputAction.CallbackContext context)
+		void InputActions.IVNActions.OnSkipAction(InputAction.CallbackContext context)
 		{
 			if (IsDialoguePanelOpen) return;
 
@@ -75,7 +79,7 @@ namespace IO
 			OnSkip?.Invoke();
 		}
 
-		public void OnSkipHoldAction(InputAction.CallbackContext context)
+		void InputActions.IVNActions.OnSkipHoldAction(InputAction.CallbackContext context)
 		{
 			if (IsDialoguePanelOpen) return;
 			// Only proceed if the player is holding down the button
@@ -93,16 +97,17 @@ namespace IO
 			}
 		}
 
-		public void OnLogAction(InputAction.CallbackContext context)
+		void InputActions.IVNActions.OnLogAction(InputAction.CallbackContext context)
 		{
+			if (CurrentMenu != MenuType.None) return;
 			if (context.phase != InputActionPhase.Performed) return;
 
 			OnOpenLog?.Invoke();
 		}
 
-		public void OnScrollAction(InputAction.CallbackContext context)
+		void InputActions.IVNActions.OnScrollAction(InputAction.CallbackContext context)
 		{
-			if (!IsLogPanelOpen) return;
+			if (CurrentMenu != MenuType.Log) return;
 			if (context.phase != InputActionPhase.Performed) return;
 
 			Vector2 scrollValue = context.ReadValue<Vector2>();
@@ -111,6 +116,26 @@ namespace IO
 				OnScroll?.Invoke(1f); // scroll up
 			else if (scrollValue.y < -0.1f)
 				OnScroll?.Invoke(-1f); // scroll down
+		}
+
+		void InputActions.IVNActions.OnMenuNavigationAction(InputAction.CallbackContext context)
+		{
+			if (context.phase != InputActionPhase.Performed) return;
+
+			if (CurrentMenu == MenuType.None)
+				OnSideMenuOpen?.Invoke();
+			else
+				OnMenuClose?.Invoke();
+		}
+
+		void InputActions.IVNActions.OnConfirmAction(InputAction.CallbackContext context)
+		{
+			if (context.phase != InputActionPhase.Performed) return;
+
+			if (!IsDialoguePanelOpen)
+				OnForward?.Invoke();
+			else
+				OnConfirm?.Invoke();
 		}
 	}
 }

@@ -666,7 +666,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6716852147955783813}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -719,7 +719,7 @@ MonoBehaviour:
   scrollbar: {fileID: 8007742944781926987}
   closedPositionOffset: -200
   historyManager: {fileID: 0}
-  dialogueSystem: {fileID: 0}
+  dialogueManager: {fileID: 0}
 --- !u!1 &7147732660194003401
 GameObject:
   m_ObjectHideFlags: 0

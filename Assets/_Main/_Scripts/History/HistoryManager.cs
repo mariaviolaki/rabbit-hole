@@ -28,7 +28,7 @@ namespace History
 		
 		void Awake()
 		{
-			inputManager.OnBack += GoBack;
+			inputManager.OnDialogueBack += GoBack;
 		}
 
 		void Start()
@@ -38,7 +38,7 @@ namespace History
 
 		void OnDestroy()
 		{
-			inputManager.OnBack -= GoBack;
+			inputManager.OnDialogueBack -= GoBack;
 		}
 
 		public int GetHistoryStateCount()

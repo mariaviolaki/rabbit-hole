@@ -46,6 +46,7 @@ namespace UI
 
 		public event Action OnClose;
 
+		public bool IsTransitioning => isTransitioning;
 		public bool IsVisible => canvasGroup.alpha == 1f;
 		public bool IsHidden => canvasGroup.alpha == 0f;
 
@@ -167,14 +168,15 @@ namespace UI
 			PrepareHistoryLogs();
 			PrepareScrollbar();
 			SubscribeListeners();
-			inputManager.IsLogPanelOpen = true;
+			inputManager.CurrentMenu = MenuType.Log;
+
 			return true;
 		}
 
 		void CompleteClose()
 		{
 			UnsubscribeListeners();
-			inputManager.IsLogPanelOpen = false;
+			inputManager.CurrentMenu = MenuType.None;
 		}
 
 		void Scroll(float offset)
