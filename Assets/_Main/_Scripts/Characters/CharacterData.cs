@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 namespace Characters
@@ -18,8 +17,6 @@ namespace Characters
 		[SerializeField] string shortName;
 		[SerializeField] Color nameColor;
 		[SerializeField] Color dialogueColor;
-		[SerializeField] TMP_FontAsset nameFont;
-		[SerializeField] TMP_FontAsset dialogueFont;
 		[SerializeField] CharacterType type;
 		[SerializeField] List<CharacterSpriteLayerData> spriteLayers;
 
@@ -28,8 +25,6 @@ namespace Characters
 		public string ShortName { get { return shortName; } set { shortName = value; } }
 		public Color NameColor { get { return nameColor; } set { nameColor = value; } }
 		public Color DialogueColor { get { return dialogueColor; } set { dialogueColor = value; } }
-		public TMP_FontAsset NameFont { get { return nameFont; } set { nameFont = value; } }
-		public TMP_FontAsset DialogueFont { get { return dialogueFont; } set { dialogueFont = value; } }
 		public CharacterType Type { get { return type; } private set { type = value; } }
 		public List<CharacterSpriteLayerData> SpriteLayers { get { return spriteLayers; } private set { spriteLayers = value; } }
 
@@ -43,8 +38,6 @@ namespace Characters
 			copiedData.SpriteLayers = originalData.SpriteLayers;
 			copiedData.NameColor = originalData.nameColor;
 			copiedData.DialogueColor = originalData.dialogueColor;
-			copiedData.NameFont = originalData.nameFont;
-			copiedData.DialogueFont = originalData.dialogueFont;
 
 			return copiedData;
 		}
@@ -59,8 +52,6 @@ namespace Characters
 			defaultData.SpriteLayers = new();
 			defaultData.NameColor = gameOptions.Dialogue.DefaultTextColor;
 			defaultData.DialogueColor = gameOptions.Dialogue.DefaultTextColor;
-			defaultData.NameFont = gameOptions.Dialogue.DefaultFont;
-			defaultData.DialogueFont = gameOptions.Dialogue.DefaultFont;
 
 			return defaultData;
 		}

@@ -25,7 +25,7 @@ MonoBehaviour:
     autoSpeed: 10
     skipSpeed: 10
     defaultTextColor: {r: 1, g: 1, b: 1, a: 1}
-    defaultFont: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+    defaultFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
     dialogueFontSize: 40
     textMode: 3
     skipMode: 0

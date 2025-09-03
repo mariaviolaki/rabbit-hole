@@ -17,7 +17,9 @@ MonoBehaviour:
     sizeMultiplier: 1.05
   - fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     sizeMultiplier: 1
-  - fontAsset: {fileID: 11400000, guid: 4d653226df26af64eb74b6101908300c, type: 2}
-    sizeMultiplier: 1.05
+  - fontAsset: {fileID: 11400000, guid: 094134b77bdae874cb9c1b67f8a0c9a1, type: 2}
+    sizeMultiplier: 1
   - fontAsset: {fileID: 11400000, guid: c85ed5e6ef07ade4eba8182e447d5a87, type: 2}
     sizeMultiplier: 1.02
+  - fontAsset: {fileID: 11400000, guid: ad463068c98817f4284691318766931a, type: 2}
+    sizeMultiplier: 1.05

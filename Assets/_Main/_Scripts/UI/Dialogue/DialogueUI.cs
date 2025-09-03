@@ -43,16 +43,11 @@ namespace UI
 			yield return dialogueNameUI.HideSpeaker(isImmediate, fadeSpeed);
 		}
 
-		void UpdateDialogueText() => UpdateDialogueText(gameOptions.Dialogue.DefaultFont, gameOptions.Dialogue.DefaultTextColor);
-		void UpdateDialogueText(CharacterData characterData) => UpdateDialogueText(characterData?.DialogueFont, characterData.DialogueColor);
-		void UpdateDialogueText(TMP_FontAsset font, Color color)
+		void UpdateDialogueText() => UpdateDialogueText(gameOptions.Dialogue.DefaultTextColor);
+		void UpdateDialogueText(CharacterData characterData) => UpdateDialogueText(characterData.DialogueColor);
+		void UpdateDialogueText(Color color)
 		{
-			if (font == null)
-				font = gameOptions.Dialogue.DefaultFont;
-
 			dialogueText.color = color;
-			dialogueText.font = font;
-			UpdateFontSize(font);
 		}
 
 		void UpdateFontSize(TMP_FontAsset font)

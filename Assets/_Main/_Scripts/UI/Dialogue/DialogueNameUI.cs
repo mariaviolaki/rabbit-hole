@@ -23,16 +23,12 @@ namespace UI
 			yield return SetHidden(isImmediate, fadeSpeed);
 		}
 
-		void UpdateNameText() => UpdateNameText("", gameOptions.Dialogue.DefaultFont, gameOptions.Dialogue.DefaultTextColor);
-		void UpdateNameText(CharacterData characterData) => UpdateNameText(characterData?.Name, characterData?.NameFont, characterData.NameColor);
-		void UpdateNameText(string speakerName, TMP_FontAsset font, Color color)
+		void UpdateNameText() => UpdateNameText("", gameOptions.Dialogue.DefaultTextColor);
+		void UpdateNameText(CharacterData characterData) => UpdateNameText(characterData?.Name, characterData.NameColor);
+		void UpdateNameText(string speakerName, Color color)
 		{
-			if (font == null)
-				font = gameOptions.Dialogue.DefaultFont;
-
 			nameText.text = speakerName;
 			nameText.color = color;
-			nameText.font = font;
 		}
 	}
 }

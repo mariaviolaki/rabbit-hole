@@ -15,8 +15,6 @@ namespace History
 		[SerializeField] string dialogueText;
 		[SerializeField] Color speakerColor;
 		[SerializeField] Color dialogueColor;
-		[SerializeField] string speakerFont;
-		[SerializeField] string dialogueFont;
 
 		public string SceneName => sceneName;
 		public int NodeId => nodeId;
@@ -25,8 +23,6 @@ namespace History
 		public string DialogueText => dialogueText;
 		public Color SpeakerColor => speakerColor;
 		public Color DialogueColor => dialogueColor;
-		public string SpeakerFont => speakerFont;
-		public string DialogueFont => dialogueFont;
 
 		public HistoryDialogueData(DialogueFlowController flowController, DialogueUI dialogueUI)
 		{
@@ -39,8 +35,6 @@ namespace History
 			dialogueText = dialogueTextData.text;
 			speakerColor = speakerTextData.color;
 			dialogueColor = dialogueTextData.color;
-			speakerFont = speakerTextData.font.name;
-			dialogueFont = dialogueTextData.font.name;
 		}
 
 		public IEnumerator Load(DialogueManager dialogueManager, DialogueFlowController flowController)
