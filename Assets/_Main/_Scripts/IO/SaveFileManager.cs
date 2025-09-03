@@ -1,4 +1,5 @@
 using Dialogue;
+using Gameplay;
 using History;
 using System;
 using System.Collections.Generic;
@@ -8,22 +9,22 @@ using UnityEngine;
 
 namespace IO
 {
-	[System.Serializable]
-	public class SaveSlot
-	{
-		public List<HistoryState> HistoryStates;
-	}
-
 	public class SaveFileManager
 	{
+		readonly GameOptionsSO gameOptions;
+
+		const int screenshotQuality = 90;
 		readonly byte[] EncryptionKeyBytes = Encoding.UTF8.GetBytes("VNSaveKey");
 
 		public bool HasSettingsSave() => File.Exists(FilePaths.SettingsSavePath);
 		public bool HasProgressSave() => File.Exists(FilePaths.ProgressSavePath);
 		public bool HasAutosave() => File.Exists(FilePaths.AutosavePath);
+		public bool HasSave(int slot) => File.Exists(Path.Combine(FilePaths.SlotsDirectory, $"{slot}{FilePaths.SaveFileExtension}"));
 
-		public SaveFileManager()
+		public SaveFileManager(GameOptionsSO gameOptions)
 		{
+			this.gameOptions = gameOptions;
+
 			Directory.CreateDirectory(FilePaths.RootDirectory);
 			Directory.CreateDirectory(FilePaths.SlotsDirectory);
 			Directory.CreateDirectory(FilePaths.PersistentDirectory);
@@ -35,7 +36,7 @@ namespace IO
 		public bool SavePlayerProgress(PlayerProgress playerProgress) => SavePersistentData(playerProgress, FilePaths.ProgressSavePath);
 		public PlayerProgress LoadPlayerProgress() => LoadPersistentState<PlayerProgress>(FilePaths.ProgressSavePath);
 
-		public bool SaveSlot(int slot, List<HistoryState> historyStates)
+		public bool SaveSlot(int slot, CharacterRoute route, string sceneTitle, List<HistoryState> historyStates, Texture2D screenshot)
 		{
 			if (slot < 0)
 			{
@@ -49,12 +50,15 @@ namespace IO
 			}
 
 			string filePath = Path.Combine(FilePaths.SlotsDirectory, $"{slot}{FilePaths.SaveFileExtension}");
-			SaveSlot gameSave = new() { HistoryStates = historyStates };
+			SaveSlot gameSave = new(slot, DateTime.Now.Ticks, route, sceneTitle, historyStates, screenshot);
+
+			if (gameOptions.IO.UseSlotScreenshots && screenshot != null)
+				SaveScreenshot(screenshot, slot);
 
 			return SaveJson(gameSave, filePath);
 		}
 
-		public List<HistoryState> LoadSlot(int slot)
+		public SaveSlot LoadSlot(int slot)
 		{
 			if (slot < 0)
 			{
@@ -65,7 +69,11 @@ namespace IO
 			string filePath = Path.Combine(FilePaths.SlotsDirectory, $"{slot}{FilePaths.SaveFileExtension}");
 			SaveSlot gameSave = LoadJson<SaveSlot>(filePath);
 
-			return gameSave?.HistoryStates;
+			Texture2D screenshot = gameOptions.IO.UseSlotScreenshots ? LoadScreenshot(slot) : null;
+			if (gameSave != null && screenshot != null)
+				gameSave.screenshot = screenshot;
+
+			return gameSave;
 		}
 
 		public bool SaveDialogueLookup(DialogueTreeMap dialogueLookup)
@@ -191,7 +199,31 @@ namespace IO
 				Debug.LogWarning($"Unable to load game save from path '{filePath}': {e.Message}");
 				return null;
 			}
-		}		
+		}
+
+		bool SaveScreenshot(Texture2D screenshot, int slot)
+		{
+			if (screenshot == null) return false;
+
+			byte[] screenshotBytes = screenshot.EncodeToJPG(screenshotQuality);
+			string filePath = Path.Combine(FilePaths.SlotsDirectory, $"{slot}.jpg");
+
+			File.WriteAllBytes(filePath, screenshotBytes);
+
+			return true;
+		}
+
+		Texture2D LoadScreenshot(int slot)
+		{
+			string filePath = Path.Combine(FilePaths.SlotsDirectory, $"{slot}.jpg");
+			if (!File.Exists(filePath)) return null;
+
+			byte[] screenshotBytes = File.ReadAllBytes(filePath);
+			Texture2D screenshot = new(1, 1);
+			screenshot.LoadImage(screenshotBytes);
+
+			return screenshot;
+		}
 
 		byte[] GetXORBytes(byte[] historyStateBytes, byte[] keyBytes)
 		{

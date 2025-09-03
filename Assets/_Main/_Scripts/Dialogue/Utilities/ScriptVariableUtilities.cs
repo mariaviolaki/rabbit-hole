@@ -11,17 +11,17 @@ namespace Dialogue
 		static readonly Regex textRegex = new($@"\{{\s*{variablePattern}\s*\}}", RegexOptions.Compiled);
 		static readonly Regex logicRegex = new($@"{variablePattern}", RegexOptions.Compiled);
 
-		public static string ParseText(string text, ScriptVariableManager variableManager)
+		public static string ParseText(string text, VariableManager variableManager)
 		{
 			return Parse(variableManager, textRegex, text, false);
 		}
 
-		public static string ParseLogic(string text, ScriptVariableManager variableManager)
+		public static string ParseLogic(string text, VariableManager variableManager)
 		{
 			return Parse(variableManager, logicRegex, text, true);
 		}
 
-		static string Parse(ScriptVariableManager variableManager, Regex regex, string text, bool isLogic)
+		static string Parse(VariableManager variableManager, Regex regex, string text, bool isLogic)
 		{
 			return regex.Replace(text, match =>
 			{

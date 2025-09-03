@@ -1,4 +1,4 @@
-start VoidRoute
+label VoidRoute "Into the Rabbit Hole"
 
 SetBackgroundImage(Field-Back, 1), SetBackgroundImage(Field-Front)
 PlayMusic(day, volume=0.02)

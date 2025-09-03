@@ -53,7 +53,7 @@ namespace History
 			isUpdatingHistory = true;
 
 			// Capture the current state of the visual novel
-			historyStates.AddLast(new HistoryState(dialogueManager));
+			historyStates.AddLast(new HistoryState(gameManager, dialogueManager));
 
 			// Don't allow the history to grow indefinitely
 			if (historyStates.Count > MaxHistoryStates)
@@ -80,7 +80,7 @@ namespace History
 				yield return null;
 			}
 
-			yield return historyNode.Value.Load(dialogueManager, gameOptions);
+			yield return historyNode.Value.Load(gameManager, dialogueManager, gameOptions);
 			DeleteHistoryAfterCurrentNode(historyNode);
 
 			isUpdatingHistory = false;
@@ -95,7 +95,7 @@ namespace History
 			isUpdatingHistory = true;
 
 			Repopulate(historyStatesArray);
-			yield return historyStates.Last.Value.Load(dialogueManager, gameOptions);
+			yield return historyStates.Last.Value.Load(gameManager, dialogueManager, gameOptions);
 			DeleteHistoryAfterCurrentNode(historyStates.Last);
 
 			isUpdatingHistory = false;

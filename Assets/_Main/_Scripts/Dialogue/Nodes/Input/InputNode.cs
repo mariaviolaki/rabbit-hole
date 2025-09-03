@@ -10,7 +10,7 @@ namespace Dialogue
 		const string InputVariableName = "input";
 
 		readonly InputManagerSO inputManager;
-		readonly ScriptVariableManager variableManager;
+		readonly VariableManager variableManager;
 		readonly VisualNovelUI visualNovelUI;
 
 		string title = "";
@@ -19,7 +19,7 @@ namespace Dialogue
 		public InputNode(DialogueTreeNode treeNode, DialogueFlowController flowController) : base(treeNode, flowController)
 		{
 			inputManager = flowController.Dialogue.InputManager;
-			variableManager = flowController.Dialogue.VariableManager;
+			variableManager = flowController.Game.Variables;
 			visualNovelUI = flowController.Dialogue.UI;
 		}
 

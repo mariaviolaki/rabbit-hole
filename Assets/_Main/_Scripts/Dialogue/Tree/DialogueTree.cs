@@ -6,23 +6,23 @@ namespace Dialogue
 	public class DialogueTree
 	{
 		public string Name;
-		public List<DialogueTreeSection> Sections;
+		public List<DialogueTreeScene> Scenes;
 
-		[System.NonSerialized] Dictionary<string, DialogueTreeSection> sectionLookup;
+		[System.NonSerialized] Dictionary<string, DialogueTreeScene> sceneLookup;
 		[System.NonSerialized] List<DialogueTreeNode> nodeLookup;
 
-		public DialogueTreeSection GetSection(string name) => sectionLookup.TryGetValue(name, out var section) ? section : null;
+		public DialogueTreeScene GetScene(string name) => sceneLookup.TryGetValue(name, out var scene) ? scene : null;
 		public DialogueTreeNode GetNode(int id) => id >= 0 && id < nodeLookup.Count ? nodeLookup[id] : null;
 
 		public void Initialize()
 		{
-			sectionLookup = new();
+			sceneLookup = new();
 			nodeLookup = new();
 
-			foreach (DialogueTreeSection section in Sections)
+			foreach (DialogueTreeScene scene in Scenes)
 			{
-				sectionLookup[section.Name] = section;
-				nodeLookup.AddRange(section.GetNodes());
+				sceneLookup[scene.Name] = scene;
+				nodeLookup.AddRange(scene.GetNodes());
 			}
 		}
 	}

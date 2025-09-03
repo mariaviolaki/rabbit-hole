@@ -89,7 +89,12 @@ namespace IO
 
 	public enum AssetType
 	{
-		Video, Audio, Dialogue, Background, CharacterAtlas, Model3DPrefab
+		Video, Audio, Dialogue, Image, CharacterAtlas, Model3DPrefab
+	}
+
+	public enum SaveMenuMode
+	{
+		Save, Load
 	}
 }
 
@@ -106,5 +111,13 @@ namespace UI
 	public enum MenuType
 	{
 		None, SideMenu, Save, Load, Log, Relationships, Settings, Title
+	}
+}
+
+namespace Gameplay
+{
+	public enum CharacterRoute
+	{
+		Common, Void, Zero, Marsh
 	}
 }

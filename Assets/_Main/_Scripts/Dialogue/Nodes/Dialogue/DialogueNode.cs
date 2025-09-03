@@ -68,8 +68,8 @@ namespace Dialogue
 			}
 
 			// Mark this line as read
-			string dialogueLineId = TreeNodeUtilities.GetDialogueNodeId(flowController.CurrentSectionName, flowController.CurrentNodeId);
-			gameManager.State.AddReadLine(dialogueLineId);
+			string dialogueLineId = TreeNodeUtilities.GetDialogueNodeId(flowController.CurrentSceneName, flowController.CurrentNodeId);
+			gameManager.StateManager.State.AddReadLine(dialogueLineId);
 
 			executionCoroutine = null;
 			flowController.ProceedToNode(treeNode.NextId);

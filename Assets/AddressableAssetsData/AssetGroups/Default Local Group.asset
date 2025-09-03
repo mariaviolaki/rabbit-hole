@@ -30,10 +30,10 @@ MonoBehaviour:
     - Prefabs/Character Models
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 543dc9eefece89848bd56d49e688ec0d
-    m_Address: Assets/_Main/Graphics/Backgrounds
+    m_Address: Assets/_Main/Graphics/Images
     m_ReadOnly: 0
     m_SerializedLabels:
-    - Graphics/Backgrounds
+    - Graphics/Images
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ed834fec4c7177c4e97ee97d2811ead2
     m_Address: Assets/_Main/Audio/Ambient

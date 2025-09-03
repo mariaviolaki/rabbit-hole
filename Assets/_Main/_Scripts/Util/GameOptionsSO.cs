@@ -142,6 +142,7 @@ public class GameOptionsSO : ScriptableObject
 	public class IOOptions
 	{
 		[Header("Save Files")]
+		[SerializeField] bool useSlotScreenshots;
 		[SerializeField] bool autosaveTimer;
 		[SerializeField][Range(30, 600)] float autosaveTimerInterval;
 		[SerializeField] int slotCount;
@@ -150,6 +151,7 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField] IO.FileExtension audioExtension;
 		[SerializeField] IO.FileExtension videoExtension;
 
+		public bool UseSlotScreenshots => useSlotScreenshots;
 		public bool HasAutosaveTimer => autosaveTimer;
 		public float AutosaveTimerInterval => autosaveTimerInterval;
 		public int SlotCount => slotCount;

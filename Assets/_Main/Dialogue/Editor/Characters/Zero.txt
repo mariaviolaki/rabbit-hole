@@ -1,4 +1,4 @@
-start ZeroRoute
+label ZeroRoute "Fooled!"
 
 wait CreateCharacter(z)
 SetBackgroundImage(Snow-Back, layer=1), SetBackgroundImage(Snow-Front)

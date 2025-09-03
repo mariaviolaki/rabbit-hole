@@ -4,9 +4,9 @@ namespace Dialogue
 {
 	public class JumpNode : NodeBase
 	{
-		string sectionName;
+		string sceneName;
 
-		public string SectionName => sectionName;
+		public string SceneName => sceneName;
 
 		public JumpNode(DialogueTreeNode treeNode, DialogueFlowController flowController) : base(treeNode, flowController)
 		{
@@ -23,7 +23,7 @@ namespace Dialogue
 
 		protected override void ParseTreeNode()
 		{
-			sectionName = treeNode.Data[0].Trim();
+			sceneName = treeNode.Data[0].Trim();
 		}
 
 		protected override IEnumerator ExecuteLogic()
@@ -31,7 +31,7 @@ namespace Dialogue
 			yield return base.ExecuteLogic();
 
 			executionCoroutine = null;
-			yield return flowController.JumpToSection(sectionName);
+			yield return flowController.JumpToScene(sceneName);
 		}
 	}
 }

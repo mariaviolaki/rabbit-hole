@@ -12,8 +12,8 @@ TagManager:
   - Water
   - UI
   - 3D Characters
-  - 
-  - 
+  - Gameplay UI
+  - Overlay UI
   - 
   - 
   - 
@@ -55,6 +55,9 @@ TagManager:
     locked: 0
   - name: Gameplay Controls
     uniqueID: 2075256777
+    locked: 0
+  - name: Menus
+    uniqueID: 3213238671
     locked: 0
   - name: Cinematic
     uniqueID: 4159017233

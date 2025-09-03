@@ -13,7 +13,7 @@ namespace Preprocessing
 		{
 			const char DialogueDirectoryDelimiter = '.';
 
-			SaveFileManager saveFileManager = new();
+			SaveFileManager saveFileManager = new(null);
 			DialogueTreeBuilder treeBuilder = new();
 			DialogueTreeMap treeLookup = new();
 
@@ -27,10 +27,11 @@ namespace Preprocessing
 				string[] rawLines = File.ReadAllLines(filePath);
 
 				DialogueTree dialogueTree = treeBuilder.GetDialogueTree(fileName, rawLines);
-				foreach (DialogueTreeSection section in dialogueTree.Sections)
+				foreach (DialogueTreeScene section in dialogueTree.Scenes)
 				{
-					treeLookup.SectionNames.Add(section.Name);
+					treeLookup.SceneNames.Add(section.Name);
 					treeLookup.TreeNames.Add(dialogueTree.Name);
+					treeLookup.SceneTitles.Add(section.Title);
 				}
 
 				saveFileManager.SaveCompiledDialogue(dialogueTree);

@@ -2,11 +2,11 @@ namespace Dialogue
 {
 	public static class TreeNodeUtilities
 	{
-		public static string GetDialogueNodeId(string sectionName, int nodeId)
+		public static string GetDialogueNodeId(string sceneName, int nodeId)
 		{
-			if (sectionName == null || nodeId < 0) return null;
+			if (sceneName == null || nodeId < 0) return null;
 
-			return $"{sectionName}:{nodeId}";
+			return $"{sceneName}:{nodeId}";
 		}
 	}
 }

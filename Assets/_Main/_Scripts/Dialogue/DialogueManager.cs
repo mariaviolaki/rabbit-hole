@@ -6,7 +6,6 @@ using System;
 using System.Collections;
 using UI;
 using UnityEngine;
-using Variables;
 using Visuals;
 
 namespace Dialogue
@@ -24,18 +23,15 @@ namespace Dialogue
 		[SerializeField] VisualNovelUI visualNovelUI;
 		
 		DialogueFlowController flowController;
-		ScriptVariableManager variableManager;
 		DialogueReadMode readMode;
-
+		
 		public VisualNovelUI UI => visualNovelUI;
 		public CharacterManager Characters => characterManager;
 		public CommandManager Commands => commandManager;
 		public FileManagerSO FileManager => fileManager;
 		public InputManagerSO InputManager => inputManager;
-		public ScriptVariableManager VariableManager => variableManager;
 		public AudioManager Audio => audioManager;
 		public VisualGroupManager Visuals => visualManager;
-		public GameState State => gameManager.State;
 		public DialogueFlowController FlowController => flowController;
 		public DialogueReadMode ReadMode => readMode;
 
@@ -50,7 +46,6 @@ namespace Dialogue
 		{
 			SubscribeEvents();
 
-			variableManager = new();
 			flowController = new(gameManager, this);
 		}
 

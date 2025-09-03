@@ -1,23 +1,29 @@
 using Audio;
 using Dialogue;
+using Gameplay;
 using History;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GameState
 {
-	readonly PlayerSettings settings;
-	readonly PlayerProgress progress;
-	readonly AudioManager audioManager;
-	readonly GameOptionsSO gameOptions;
+	PlayerSettings settings;
+	PlayerProgress progress;
+	AudioManager audioManager;
+	GameOptionsSO gameOptions;
 
-	readonly HashSet<string> readLines;
+	HashSet<string> readLines;
 
 	public string LastAutosaveNodeId { get; set; } = null;
 	public bool HasPendingSettings { get; set; } = false;
 	public bool HasPendingProgress { get; set; } = false;
 	public PlayerSettings Settings => settings;
 	public PlayerProgress Progress => progress;
+
+	public string PlayerName => progress.playerName;
+	public CharacterRoute Route => progress.route;
+	public string Scene => progress.sceneTitle;
+	public int SaveMenuPage => progress.saveMenuPage;
 
 	public float AudioVolume => settings.audioVolume;
 	public float AmbientAudioVolume => settings.ambientAudioVolume;
@@ -34,7 +40,7 @@ public class GameState
 
 	public bool HasReadLine(string lineId) => readLines.Contains(lineId);
 
-	public GameState(PlayerSettings settings, PlayerProgress progress, AudioManager audioManager, GameOptionsSO gameOptions)
+	public void Initialize(PlayerSettings settings, PlayerProgress progress, AudioManager audioManager, GameOptionsSO gameOptions)
 	{
 		this.settings = settings;
 		this.progress = progress;
@@ -71,6 +77,38 @@ public class GameState
 
 		readLines.Add(lineId);
 		progress.readLines.Add(lineId);
+		HasPendingProgress = true;
+	}
+
+	public void SetPlayerName(string playerName)
+	{
+		if (progress.playerName == playerName) return;
+
+		progress.playerName = playerName;
+		HasPendingProgress = true;
+	}
+
+	public void SetRoute(CharacterRoute route)
+	{
+		if (progress.route == route) return;
+
+		progress.route = route;
+		HasPendingProgress = true;
+	}
+
+	public void SetScene(string sceneTitle)
+	{
+		if (progress.sceneTitle == sceneTitle) return;
+
+		progress.sceneTitle = sceneTitle;
+		HasPendingProgress = true;
+	}
+
+	public void SetSaveMenuPage(int pageNumber)
+	{
+		if (progress.saveMenuPage == pageNumber) return;
+
+		progress.saveMenuPage = pageNumber;
 		HasPendingProgress = true;
 	}
 

@@ -6,30 +6,31 @@ namespace Dialogue
 {
 	public class DialogueFlowController
 	{
-		const string StartSectionName = "Main";
+		public const string StartSceneName = "Main";
 
 		readonly DialogueManager dialogueManager;
 		readonly FileManagerSO fileManager;
 		readonly SaveFileManager saveFileManager;
+		readonly GameStateManager gameStateManager;
 		readonly GameManager gameManager;
-		readonly GameOptionsSO gameOptions;
 		readonly DialogueSpeakerHandler dialogueSpeakerHandler;
 		readonly DialogueTextHandler dialogueTextHandler;
 
 		DialogueTreeMap dialogueMap;
 		DialogueTree currentTree;
 		NodeBase currentNode;
-		string currentSectionName;
+		string currentSceneName;
 		bool isRunning;
 		bool isSkipping;
-		bool isJumpingToSection;
+		bool isJumpingToScene;
 
 		public GameManager Game => gameManager;
 		public DialogueManager Dialogue => dialogueManager;
 		public DialogueSpeakerHandler DialogueSpeaker => dialogueSpeakerHandler;
 		public DialogueTextHandler DialogueText => dialogueTextHandler;
 		public NodeBase CurrentNode => currentNode;
-		public string CurrentSectionName => currentSectionName;
+		public string CurrentSceneName => currentSceneName;
+		public string CurrentSceneTitle => dialogueMap?.GetSceneTitle(currentSceneName);
 		public int CurrentNodeId => currentNode == null ? -1 : currentNode.TreeNode.Id;
 		public bool IsRunning => isRunning;
 		public bool IsSkipping => isSkipping;
@@ -40,13 +41,13 @@ namespace Dialogue
 			this.dialogueManager = dialogueManager;
 			saveFileManager = gameManager.SaveManager;
 			fileManager = dialogueManager.FileManager;
-			gameOptions = gameManager.Options;
+			gameStateManager = gameManager.StateManager;
 			dialogueSpeakerHandler = new(dialogueManager, gameManager.Options);
 			dialogueTextHandler = new(gameManager, dialogueManager, this);
 
 			isRunning = false;
 			isSkipping = false;
-			isJumpingToSection = false;
+			isJumpingToScene = false;
 
 			dialogueManager.OnChangeReadMode += UpdateReadMode;
 
@@ -86,7 +87,7 @@ namespace Dialogue
 		// Called by the tree nodes when they finish execution
 		public void ProceedToNode(int nodeId)
 		{
-			if (isJumpingToSection || gameManager.History.IsUpdatingHistory)
+			if (isJumpingToScene || gameManager.History.IsUpdatingHistory)
 			{
 				currentNode = null;
 				return;
@@ -100,42 +101,42 @@ namespace Dialogue
 				SetCurrentNode(treeNode);
 		}
 		
-		public IEnumerator JumpToSection(string sectionName, int nodeId = -1)
+		public IEnumerator JumpToScene(string sceneName, int nodeId = -1)
 		{
 			if (dialogueMap == null) yield break;
-			isJumpingToSection = true;
+			isJumpingToScene = true;
 
-			// Don't proceed to the next section while the current node is still executing
+			// Don't proceed to the next scene while the current node is still executing
 			while (currentNode != null && currentNode.TreeNode.Type != DialogueNodeType.Jump)
 			{
 				StopDialogue();
 				yield return null;
 			}
 
-			// Check if this section is defined inside any tree listed in the map
-			string treeName = dialogueMap.GetTreeName(sectionName);
+			// Check if this scene is defined inside any tree listed in the map
+			string treeName = dialogueMap.GetTreeName(sceneName);
 			if (treeName == null)
 			{
-				Debug.LogWarning($"No dialogue tree found for section '{sectionName}'.");
-				isJumpingToSection = false;
+				Debug.LogWarning($"No dialogue tree found for scene '{sceneName}'.");
+				isJumpingToScene = false;
 				yield break;
 			}
 
-			// If the new section is inside another tree, load the tree from the new file
+			// If the new scene is inside another tree, load the tree from the new file
 			if (currentTree == null || currentTree.Name != treeName)
 			{
 				yield return LoadNewTree(treeName);
-				isJumpingToSection = false;
+				isJumpingToScene = false;
 				if (currentTree == null) yield break;
 			}
 
-			currentSectionName = sectionName;
+			currentSceneName = sceneName;
 
-			// Start from the first node inside the new section by default, or from the specified node if provided
-			int startNodeId = nodeId == -1 ? currentTree.GetSection(sectionName).MinId : nodeId;
+			// Start from the first node inside the new scene by default, or from the specified node if provided
+			int startNodeId = nodeId == -1 ? currentTree.GetScene(sceneName).MinId : nodeId;
 			DialogueTreeNode startTreeNode = currentTree.GetNode(startNodeId);
 
-			isJumpingToSection = false;
+			isJumpingToScene = false;
 			SetCurrentNode(startTreeNode);	
 		}
 
@@ -151,7 +152,7 @@ namespace Dialogue
 
 		public void InterruptSkipDueToBlockingNode()
 		{
-			if (gameManager.State.SkipMode == DialogueSkipMode.AfterChoices) return;
+			if (gameStateManager.State.SkipMode == DialogueSkipMode.AfterChoices) return;
 			isSkipping = false;
 		}
 
@@ -215,12 +216,12 @@ namespace Dialogue
 		{
 			while (!fileManager.InitializedKeys.TryGetValue(AssetType.Dialogue, out bool value) || !value) yield return null;
 
-			// Load the dialogue map first to be able to find trees from section names
+			// Load the dialogue map first to be able to find trees from scene names
 			yield return InitializeDialogueMap();
 			if (dialogueMap == null) yield break;
 
-			// Jump to the beginning of the default first section
-			yield return JumpToSection(StartSectionName);
+			// Jump to the beginning of the default first scene
+			yield return JumpToScene(StartSceneName);
 		}
 
 		IEnumerator InitializeDialogueMap()

@@ -34,23 +34,23 @@ namespace Dialogue
 			variableString = treeNode.Data[0].Trim();
 			assignmentOperatorString = treeNode.Data[1].Trim();
 			string valueString = treeNode.Data[2].Trim();
-			evaluatedValueString = ScriptLogicUtilities.EvaluateExpression(valueString, flowController.Dialogue.VariableManager);
+			evaluatedValueString = ScriptLogicUtilities.EvaluateExpression(valueString, flowController.Game.Variables);
 		}
 
 		protected override IEnumerator ExecuteLogic()
 		{
 			yield return base.ExecuteLogic();
 
-			AssignValue(variableString, assignmentOperatorString, evaluatedValueString, flowController.Dialogue.VariableManager);
+			AssignValue(variableString, assignmentOperatorString, evaluatedValueString, flowController.Game.Variables);
 			flowController.ProceedToNode(treeNode.NextId);
 			executionCoroutine = null;
 			yield break;
 		}
 
-		void AssignValue(string variableString, string assignmentOperator, string valueString, ScriptVariableManager variableManager)
+		void AssignValue(string variableString, string assignmentOperator, string valueString, VariableManager variableManager)
 		{
 			string newValue;
-			string variableName = variableString.StartsWith(ScriptVariableManager.VariablePrefix)
+			string variableName = variableString.StartsWith(VariableManager.VariablePrefix)
 				? variableString.Substring(1)
 				: variableString;
 

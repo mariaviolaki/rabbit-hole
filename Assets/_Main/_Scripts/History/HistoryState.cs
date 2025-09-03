@@ -19,22 +19,23 @@ namespace History
 		public HistoryCharacterData Characters => characterData;
 		public HistoryVariableData Variables => variableData;
 
-		public HistoryState(DialogueManager dialogueManager)
+		public HistoryState(GameManager gameManager, DialogueManager dialogueManager)
 		{
 			dialogueData = new(dialogueManager.FlowController, dialogueManager.UI.Dialogue);
 			audioData = new(dialogueManager.Audio);
 			visualData = new(dialogueManager.Visuals);
 			characterData = new(dialogueManager.Characters);
-			variableData = new(dialogueManager.VariableManager);
+			variableData = new(gameManager.Variables);
 		}
 
 		// Resets progress to an older state
-		public IEnumerator Load(DialogueManager dialogueManager, GameOptionsSO gameOptions)
+		public IEnumerator Load(GameManager gameManager, DialogueManager dialogueManager, GameOptionsSO gameOptions)
 		{
 			yield return audioData.Load(dialogueManager.Audio, gameOptions);
 			yield return visualData.Load(dialogueManager.Visuals, gameOptions);
 			characterData.Load(dialogueManager.Characters, gameOptions);
 			yield return dialogueData.Load(dialogueManager, dialogueManager.FlowController);
+			variableData.Load(gameManager.Variables);
 		}
 	}
 }

@@ -5,20 +5,27 @@ namespace Dialogue
 	[System.Serializable]
 	public class DialogueTreeMap
 	{
-		public List<string> SectionNames = new();
+		public List<string> SceneNames = new();
 		public List<string> TreeNames = new();
-		[System.NonSerialized] Dictionary<string, string> SectionLookup;
+		public List<string> SceneTitles = new();
+		[System.NonSerialized] Dictionary<string, string> SceneLookup;
+		[System.NonSerialized] Dictionary<string, string> SceneTitleLookup;
 
-		public string GetTreeName(string sectionName) => SectionLookup.TryGetValue(sectionName, out string treeName) ? treeName : null;
+		public string GetTreeName(string sceneName) =>
+			sceneName != null && SceneLookup.TryGetValue(sceneName, out string treeName) ? treeName : null;
+		public string GetSceneTitle(string sceneName) =>
+			sceneName != null && SceneTitleLookup.TryGetValue(sceneName, out string sceneTitle) ? sceneTitle : null;
 
 		public void Initialize()
 		{
-			SectionLookup = new();
+			SceneLookup = new();
+			SceneTitleLookup = new();
 
-			for (int i = 0; i < SectionNames.Count; i++)
+			for (int i = 0; i < SceneNames.Count; i++)
 			{
-				string sectionName = SectionNames[i];
-				SectionLookup[sectionName] = TreeNames[i];
+				string sceneName = SceneNames[i];
+				SceneLookup[sceneName] = TreeNames[i];
+				SceneTitleLookup[sceneName] = SceneTitles[i];
 			}
 		}
 	}

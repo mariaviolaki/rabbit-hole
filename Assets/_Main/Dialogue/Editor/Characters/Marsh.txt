@@ -1,4 +1,4 @@
-﻿start MarshRoute
+﻿label MarshRoute "Marsh is a Yandere?!"
 
 SetBackgroundImage(Red-Forest-Back, layer=1), SetBackgroundImage(Red-Forest-Front)
 eg.SetPosition(x=1.5), v.SetPosition(x=0.7, speed=5)

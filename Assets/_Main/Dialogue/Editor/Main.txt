@@ -1,4 +1,4 @@
-﻿start Main
+﻿label Main
 
 CreateBackground(2), CreateForeground(), CreateCinematic()
 CreateAmbient(2), CreateMusic(2), CreateSFX(2), CreateVoice(2)
@@ -11,7 +11,7 @@ end Main
 
 
 
-start Prologue
+label Prologue
 
 SetBackgroundImage(Green-Forest-Back, layer=1, immediate=true), SetBackgroundImage(Green-Forest-Front, immediate=true)
 PlayMusic(day, volume=0.05)
@@ -19,11 +19,6 @@ PlayMusic(day, volume=0.05)
 v.SetPosition(0.5, 0.5, immediate=true), v.SetSprite(smug, layer=face, immediate=true), v.SetSprite(casual-body, layer=body, immediate=true)
 v.SetName("???")
 v.Show()
-
-v "Test the input for me."
-input "Testing"
-v "Works fine~"
-v "Now..."
 
 v "Curiouser and curiouser..."
 v "Didn't expect to find a human...{a 0.5} here."
@@ -167,6 +162,7 @@ choice
 {
 	- "Void"
 	{
+		$route = "Void"
 		if ($v.affinity > 0)
 		{
 			v.affinity += 1
@@ -175,11 +171,13 @@ choice
 	}
 	- "Eccentric Guy"
 	{
+		$route = "Zero"
 		$z.affinity += 1
 		jump ZeroRoute
 	}
 	- "Marsh"
 	{
+		$route = "Marsh"
 		$m.affinity += 1
 		jump MarshRoute
 	}

@@ -233,7 +233,7 @@ namespace Visuals
 
 			if (isImage)
 			{
-				visualLayer.LayerGroup.Manager.FileManager.UnloadBackgroundImage(visualName);
+				visualLayer.LayerGroup.Manager.FileManager.UnloadImage(visualName);
 			}
 			else
 			{

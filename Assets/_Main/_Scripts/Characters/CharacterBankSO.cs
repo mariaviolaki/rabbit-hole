@@ -7,7 +7,7 @@ namespace Characters
 	public class CharacterBankSO : ScriptableObject
 	{
 		[SerializeField] CharacterData[] gameCharacters;
-		Dictionary<string, CharacterData> characters = new Dictionary<string, CharacterData>();
+		readonly Dictionary<string, CharacterData> characters = new Dictionary<string, CharacterData>();
 
 		public Dictionary<string, CharacterData> Characters { get { return characters; } }
 

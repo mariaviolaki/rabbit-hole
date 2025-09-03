@@ -1,4 +1,4 @@
-start CommonEnding
+label CommonEnding "The Fourth Wall"
 
 ClearBackground(speed=5)
 StopMusic()

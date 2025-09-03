@@ -18,7 +18,7 @@ namespace Dialogue
 		const float SkipSpeedMultiplier = 0.1f;
 
 		readonly DialogueManager dialogueManager;
-		readonly ScriptVariableManager variableManager;
+		readonly VariableManager variableManager;
 		readonly HistoryManager historyManager;
 		readonly DialogueFlowController flowController;
 		readonly GameState gameState;
@@ -36,11 +36,11 @@ namespace Dialogue
 		{
 			this.dialogueManager = dialogueManager;
 			this.flowController = flowController;
-			variableManager = dialogueManager.VariableManager;
 			continuePrompt = dialogueManager.UI.ContinuePrompt;
 
+			variableManager = gameManager.Variables;
 			historyManager = gameManager.History;
-			gameState = gameManager.State;
+			gameState = gameManager.StateManager.State;
 			gameOptions = gameManager.Options;
 
 			textBuilder = new(dialogueManager.UI.Dialogue.DialogueText);
@@ -150,8 +150,8 @@ namespace Dialogue
 			if (!flowController.IsSkipping || gameState.SkipMode != DialogueSkipMode.Read)
 				return flowController.IsSkipping;
 
-			string dialogueNodeId = TreeNodeUtilities.GetDialogueNodeId(flowController.CurrentSectionName, flowController.CurrentNodeId);
-			return dialogueManager.State.HasReadLine(dialogueNodeId);
+			string dialogueNodeId = TreeNodeUtilities.GetDialogueNodeId(flowController.CurrentSceneName, flowController.CurrentNodeId);
+			return gameState.HasReadLine(dialogueNodeId);
 		}
 
 		float GetAutoReadDelay(int textLength)

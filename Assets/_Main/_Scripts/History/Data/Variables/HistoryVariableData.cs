@@ -9,7 +9,7 @@ namespace History
 	{
 		[SerializeField] List<HistoryVariable> variables = new();
 
-		public HistoryVariableData(ScriptVariableManager variableManager)
+		public HistoryVariableData(VariableManager variableManager)
 		{
 			foreach (var variableBank in variableManager.VariableBanks)
 			{
@@ -26,7 +26,7 @@ namespace History
 			}
 		}
 
-		public void Apply(ScriptVariableManager variableManager)
+		public void Load(VariableManager variableManager)
 		{
 			variableManager.RemoveAllBanks();
 			

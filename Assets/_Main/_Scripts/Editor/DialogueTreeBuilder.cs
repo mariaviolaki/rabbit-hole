@@ -13,11 +13,11 @@ namespace Preprocessing
 		const string BlockStartDelimiter = "{";
 		const string BlockEndDelimiter = "}";
 
-		// Keep track of the start and end of each section in a dialogue file (cannot be nested)
-		static readonly Regex SectionStartRegex = new(@"^\s*start\s+([A-Za-z0-9_]+)\s*$", RegexOptions.IgnoreCase);
-		static readonly Regex SectionEndRegex = new(@"^\s*end\s+([A-Za-z0-9_]+)\s*$", RegexOptions.IgnoreCase);
+		// Keep track of the start and end of each scene in a dialogue file (cannot be nested)
+		static readonly Regex SceneStartRegex = new(@"^\s*label\s+([A-Za-z0-9_]+)(?:\s+""([^""]+)"")?\s*$", RegexOptions.IgnoreCase);
+		static readonly Regex SceneEndRegex = new(@"^\s*end\s+([A-Za-z0-9_]+)\s*$", RegexOptions.IgnoreCase);
 
-		// Keep track of the regexes that will be used to match each dialogue line inside a section
+		// Keep track of the regexes that will be used to match each dialogue line inside a scene
 		// Condition nodes are empty containers and cannot be tracked, unlike their branching children
 		readonly Dictionary<DialogueNodeType, Regex> NodeTypePatterns = new()
 		{
@@ -38,47 +38,50 @@ namespace Preprocessing
 		public DialogueTree GetDialogueTree(string fileName, string[] rawLines)
 		{
 			nodeId = -1;
-			List<DialogueTreeSection> sections = new();
+			List<DialogueTreeScene> scenes = new();
 
-			DialogueTreeSection currentSection = null;
+			DialogueTreeScene currentScene = null;
 
 			for (int i = 0; i < rawLines.Length; i++)
 			{
 				string line = rawLines[i].Trim();
 				if (!IsValidLine(line)) continue;
 
-				// Create a new section for this file
-				Match sectionMatch = SectionStartRegex.Match(line);
-				if (sectionMatch.Success)
+				// Create a new scene for this file
+				Match sceneMatch = SceneStartRegex.Match(line);
+				if (sceneMatch.Success)
 				{
-					DialogueTreeSection newSection = new(sectionMatch.Groups[1].Value);
-					newSection.MinId = nodeId + 1; // this will be set back to -1 if no nodes are found in this section
-					sections.Add(newSection);
-					currentSection = newSection;
+					string sceneName = sceneMatch.Groups[1].Value.Trim();
+					string sceneTitle = sceneMatch.Groups.Count > 2 ? sceneMatch.Groups[2].Value.Trim() : null;
+
+					DialogueTreeScene newScene = new(sceneName, sceneTitle);
+					newScene.MinId = nodeId + 1; // this will be set back to -1 if no nodes are found in this scene
+					scenes.Add(newScene);
+					currentScene = newScene;
 					continue;
 				}
 
-				// Mark the current section as complete
-				sectionMatch = SectionEndRegex.Match(line);
-				if (sectionMatch.Success)
+				// Mark the current scene as complete
+				sceneMatch = SceneEndRegex.Match(line);
+				if (sceneMatch.Success)
 				{
-					currentSection = null;
+					currentScene = null;
 					continue;
 				}
 
-				if (currentSection == null) continue;
+				if (currentScene == null) continue;
 
 				i--;
-				currentSection.Nodes = GetChildNodes(rawLines, null, ref i);
+				currentScene.Nodes = GetChildNodes(rawLines, null, ref i);
 
 				// Don't use valid ids if no nodes were found
-				if (currentSection.Nodes.Count == 0)
-					currentSection.MinId = -1;
+				if (currentScene.Nodes.Count == 0)
+					currentScene.MinId = -1;
 				else // Set the max id to the most recent id created
-					currentSection.MaxId = nodeId;
+					currentScene.MaxId = nodeId;
 			}
 
-			DialogueTree dialogueTree = new() { Name = fileName, Sections = sections };
+			DialogueTree dialogueTree = new() { Name = fileName, Scenes = scenes };
 			InitializeNextIds(dialogueTree);
 
 			return dialogueTree;
@@ -93,15 +96,15 @@ namespace Preprocessing
 				string line = rawLines[lineIndex].Trim();
 				if (line == string.Empty || line.StartsWith(CommentDelimiter)) continue;
 
-				bool isLastSectionLine = SectionEndRegex.Match(line).Success;
-				if (parentNode == null && isLastSectionLine) break;
+				bool isLastSceneLine = SceneEndRegex.Match(line).Success;
+				if (parentNode == null && isLastSceneLine) break;
 
 				bool isBlockStartLine = line.StartsWith(BlockStartDelimiter);
 				bool isBlockEndLine = line.StartsWith(BlockEndDelimiter);
 				if (isBlockStartLine) continue;
 
 				DialogueTreeNode node = isBlockEndLine ? null : GetNodeFromLine(line, parentNode);
-				if (node == null && !isBlockEndLine && !isLastSectionLine) continue;
+				if (node == null && !isBlockEndLine && !isLastSceneLine) continue;
 
 				// Parse condition blocks
 				if (parentNode != null && parentNode.Type == DialogueNodeType.ConditionBranch && isBlockEndLine)
@@ -123,7 +126,7 @@ namespace Preprocessing
 						if (NodeTypePatterns[DialogueNodeType.ConditionBranch].Match(rawLines[nextLineIndex]).Success) continue;
 						else break;
 					}
-					if (isLastSectionLine || node.Type != DialogueNodeType.ConditionBranch)
+					if (isLastSceneLine || node.Type != DialogueNodeType.ConditionBranch)
 					{
 						lineIndex--;
 						break;
@@ -155,7 +158,7 @@ namespace Preprocessing
 				{
 					// Check whether the choice option branch needs to end here
 					if (isBlockEndLine) break;
-					if (isLastSectionLine || node.Type != DialogueNodeType.ChoiceBranch)
+					if (isLastSceneLine || node.Type != DialogueNodeType.ChoiceBranch)
 					{
 						lineIndex--;
 						break;
@@ -190,9 +193,9 @@ namespace Preprocessing
 		void InitializeNextIds(DialogueTree dialogueTree)
 		{
 			dialogueTree.Initialize();
-			foreach (DialogueTreeSection section in dialogueTree.Sections)
+			foreach (DialogueTreeScene scene in dialogueTree.Scenes)
 			{
-				InitializeSectionNextIds(dialogueTree, section);
+				InitializeSceneNextIds(dialogueTree, scene);
 			}
 		}
 
@@ -226,9 +229,9 @@ namespace Preprocessing
 			children.Add(node);
 		}
 
-		void InitializeSectionNextIds(DialogueTree dialogueTree, DialogueTreeSection section)
+		void InitializeSceneNextIds(DialogueTree dialogueTree, DialogueTreeScene scene)
 		{
-			for (int i = section.MinId; i < section.MaxId; i++)
+			for (int i = scene.MinId; i < scene.MaxId; i++)
 			{
 				DialogueTreeNode current = dialogueTree.GetNode(i);
 				DialogueTreeNode next = dialogueTree.GetNode(i + 1);

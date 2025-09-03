@@ -25,15 +25,9 @@ MonoBehaviour:
     m_LabelString: Audio/Voice
   dialogueLabel:
     m_LabelString: Dialogue
-  dialogueCharactersLabel:
-    m_LabelString: Dialogue/Characters
-  dialogueEndingsLabel:
-    m_LabelString: Dialogue/Endings
-  backgroundImageLabel:
-    m_LabelString: Graphics/Backgrounds
+  imageLabel:
+    m_LabelString: Graphics/Images
   characterAtlasLabel:
     m_LabelString: Sprite Atlas/Characters
   model3DPrefabLabel:
     m_LabelString: Prefabs/Character Models
-  characterPrefabLabel:
-    m_LabelString: Prefabs/Characters

@@ -13,7 +13,7 @@ namespace Dialogue
 		public const char BlockEndDelimiter = '}';
 		static readonly string CalculationOperatorPattern = @"(<=|>=|==|!=|&&|\|\||<|>|\+|-|\*|/|%)";
 		static readonly string AssignmentOperatorPattern = @"(\+=|-=|\*=|/=|=)";
-		static readonly string AssignmentPattern = @$"^\s*{ScriptVariableManager.VariablePattern}\s*{AssignmentOperatorPattern}";
+		static readonly string AssignmentPattern = @$"^\s*{VariableManager.VariablePattern}\s*{AssignmentOperatorPattern}";
 		public static readonly Regex AssignmentRegex = new(AssignmentPattern);
 		public static readonly Regex AssignmentOperatorRegex = new(AssignmentOperatorPattern);
 		public static readonly Regex CalculationOperatorRegex = new(CalculationOperatorPattern);
@@ -28,7 +28,7 @@ namespace Dialogue
 			new[] { "||" }
 		};
 
-		public static string EvaluateExpression(string valueString, ScriptVariableManager variableManager)
+		public static string EvaluateExpression(string valueString, VariableManager variableManager)
 		{
 			if (string.IsNullOrWhiteSpace(valueString)) return string.Empty;
 
@@ -86,7 +86,7 @@ namespace Dialogue
 			return valueOperands[0];
 		}
 
-		public static string CalculateValue(string leftOperand, string middleOperator, string rightOperand, ScriptVariableManager variableManager)
+		public static string CalculateValue(string leftOperand, string middleOperator, string rightOperand, VariableManager variableManager)
 		{
 			// Convert any tags and variables to their assigned values first
 			leftOperand = EvaluateStringValue(leftOperand, variableManager);
@@ -162,7 +162,7 @@ namespace Dialogue
 			}
 		}
 
-		public static string EvaluateStringValue(string rawValue, ScriptVariableManager variableManager)
+		public static string EvaluateStringValue(string rawValue, VariableManager variableManager)
 		{
 			if (string.IsNullOrWhiteSpace(rawValue)) return string.Empty;
 

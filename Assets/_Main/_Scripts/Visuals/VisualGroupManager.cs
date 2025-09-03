@@ -67,8 +67,8 @@ namespace Visuals
 			VisualLayer visualLayer = visualLayerGroup.GetLayer(layerDepth);
 			if (visualLayer == null) yield break;
 
-			yield return fileManager.LoadBackgroundImage(name);
-			Sprite sprite = fileManager.GetBackgroundImage(name);
+			yield return fileManager.LoadImage(name);
+			Sprite sprite = fileManager.GetImage(name);
 			if (sprite == null) yield break;
 
 			visualLayer.SetImage(sprite, name, isImmediate, speed);

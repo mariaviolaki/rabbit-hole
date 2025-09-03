@@ -32,7 +32,7 @@ namespace Commands
 
 		static CommandProcessBase Autosave(DialogueCommandArguments args)
 		{
-			void action() => gameManager.Autosave();
+			void action() => gameManager.StateManager.Autosave();
 			return new ActionCommandProcess(action);
 		}
 	}
