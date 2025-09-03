@@ -16,7 +16,7 @@ namespace Dialogue
 			MinId = -1;
 			MaxId = -1;
 			Name = name;
-			Title = title ?? name;
+			Title = string.IsNullOrWhiteSpace(title) ? name : title;
 			Nodes = new List<DialogueTreeNode>();
 		}
 
