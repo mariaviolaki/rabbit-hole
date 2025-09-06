@@ -14,7 +14,7 @@ end Main
 label Prologue
 
 SetBackgroundImage(Green-Forest-Back, layer=1, immediate=true), SetBackgroundImage(Green-Forest-Front, immediate=true)
-PlayMusic(day, volume=0.05)
+PlayMusic(day)
 
 v.SetPosition(0.5, 0.5, immediate=true), v.SetSprite(smug, layer=face, immediate=true), v.SetSprite(casual-body, layer=body, immediate=true)
 v.SetName("???")

@@ -2,6 +2,7 @@ using Audio;
 using Dialogue;
 using Gameplay;
 using History;
+using IO;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,7 +34,7 @@ public class GameState
 	public DialogueSkipMode SkipMode => settings.skipMode;
 	public float TextSpeed => settings.textSpeed;
 	public float AutoSpeed => settings.autoSpeed;
-	public bool IsFullscreen => settings.isFullscreen;
+	public ScreenMode GameScreenMode => settings.screenMode;
 	public int GraphicsQuality => settings.graphicsQuality;
 	public int ResolutionWidth => settings.resolutionWidth;
 	public int ResolutionHeight => settings.resolutionHeight;
@@ -59,7 +60,7 @@ public class GameState
 		progress.readLines.Clear();
 	}
 
-	public void ResetVolume() => SetVolume(gameOptions.Audio.DefaultVolume);
+	public void ResetVolume() => SetVolume(gameOptions.Audio.MasterVolume);
 	public void ResetAmbientVolume() => SetAmbientVolume(gameOptions.Audio.AmbientVolume);
 	public void ResetMusicVolume() => SetMusicVolume(gameOptions.Audio.MusicVolume);
 	public void ResetSFXVolume() => SetSFXVolume(gameOptions.Audio.SFXVolume);
@@ -67,7 +68,7 @@ public class GameState
 	public void ResetSkipMode() => SetSkipMode(gameOptions.Dialogue.SkipMode);
 	public void ResetTextSpeed() => SetTextSpeed(gameOptions.Dialogue.TextSpeed);
 	public void ResetAutoSpeed() => SetAutoSpeed(gameOptions.Dialogue.AutoSpeed);
-	public void ResetFullscreen() => SetFullscreen(gameOptions.General.IsFullscreen);
+	public void ResetScreenMode() => SetScreenMode(gameOptions.General.GameScreenMode);
 	public void ResetGraphicsQuality() => SetGraphicsQuality((int)gameOptions.General.GraphicsQuality);
 	public void ResetResolution() => SetResolution(gameOptions.General.ResolutionWidth, gameOptions.General.ResolutionHeight);
 
@@ -165,10 +166,10 @@ public class GameState
 		HasPendingSettings = true;
 	}
 
-	public void SetFullscreen(bool isFullscreen)
+	public void SetScreenMode(ScreenMode screenMode)
 	{
-		Screen.fullScreen = isFullscreen;
-		settings.isFullscreen = isFullscreen;
+		Screen.fullScreen = screenMode == ScreenMode.Fullscreen;
+		settings.screenMode = screenMode;
 		HasPendingSettings = true;
 	}
 
@@ -181,26 +182,9 @@ public class GameState
 
 	public void SetResolution(int width, int height)
 	{
-		Screen.SetResolution(width, height, settings.isFullscreen);
+		Screen.SetResolution(width, height, settings.screenMode == ScreenMode.Fullscreen);
 		settings.resolutionWidth = width;
 		settings.resolutionHeight = height;
 		HasPendingSettings = true;
-	}
-
-	public void ResetOptions()
-	{
-		ResetVolume();
-		ResetAmbientVolume();
-		ResetMusicVolume();
-		ResetSFXVolume();
-		ResetVoiceVolume();
-
-		ResetSkipMode();
-		ResetTextSpeed();
-		ResetAutoSpeed();
-
-		ResetFullscreen();
-		ResetGraphicsQuality();
-		ResetResolution();
 	}
 }

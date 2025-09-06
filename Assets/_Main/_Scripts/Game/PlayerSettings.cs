@@ -1,4 +1,5 @@
 using Dialogue;
+using IO;
 
 namespace History
 {
@@ -15,7 +16,7 @@ namespace History
 		public float textSpeed;
 		public float autoSpeed;
 
-		public bool isFullscreen;
+		public ScreenMode screenMode;
 		public int graphicsQuality;
 		public int resolutionWidth;
 		public int resolutionHeight;
@@ -26,7 +27,7 @@ namespace History
 		// Default constructor in case this class couldn't be loaded from a file
 		public PlayerSettings(GameOptionsSO gameOptions)
 		{
-			audioVolume = gameOptions.Audio.DefaultVolume;
+			audioVolume = gameOptions.Audio.MasterVolume;
 			ambientAudioVolume = gameOptions.Audio.AmbientVolume;
 			musicAudioVolume = gameOptions.Audio.MusicVolume;
 			sfxAudioVolume = gameOptions.Audio.SFXVolume;
@@ -36,7 +37,7 @@ namespace History
 			textSpeed = gameOptions.Dialogue.TextSpeed;
 			autoSpeed = gameOptions.Dialogue.AutoSpeed;
 
-			isFullscreen = gameOptions.General.IsFullscreen;
+			screenMode = gameOptions.General.GameScreenMode;
 			graphicsQuality = (int)gameOptions.General.GraphicsQuality;
 			resolutionWidth = gameOptions.General.ResolutionWidth;
 			resolutionHeight = gameOptions.General.ResolutionHeight;

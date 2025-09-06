@@ -1,4 +1,5 @@
 using Dialogue;
+using IO;
 using TMPro;
 using UnityEngine;
 using Visuals;
@@ -31,7 +32,7 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField] float sceneFadeTransitionSpeed;
 
 		[Header("Screen")]
-		[SerializeField] bool isFullscreen;
+		[SerializeField] ScreenMode screenMode;
 		[SerializeField] GraphicsQuality graphicsQuality;
 		[SerializeField] int resolutionWidth;
 		[SerializeField] int resolutionHeight;
@@ -40,7 +41,7 @@ public class GameOptionsSO : ScriptableObject
 		public float SkipTransitionSpeed => skipTransitionSpeed;
 		public float SceneFadeTransitionSpeed => sceneFadeTransitionSpeed;
 
-		public bool IsFullscreen => isFullscreen;
+		public ScreenMode GameScreenMode => screenMode;
 		public GraphicsQuality GraphicsQuality => graphicsQuality;
 		public int ResolutionWidth => resolutionWidth;
 		public int ResolutionHeight => resolutionHeight;
@@ -50,8 +51,16 @@ public class GameOptionsSO : ScriptableObject
 	public class DialogueOptions
 	{
 		[Header("Text Speed")]
-		[SerializeField][Range(1, 12)] float textSpeed;
+		[SerializeField] float textSpeed;
+		[SerializeField] float minTextSpeed;
+		[SerializeField] float maxTextSpeed;
+
+		[Header("Auto Speed")]
 		[SerializeField] float autoSpeed;
+		[SerializeField] float minAutoSpeed;
+		[SerializeField] float maxAutoSpeed;
+
+		[Header("Skip Speed")]
 		[SerializeField] float skipSpeed;
 
 		[Header("Text Style")]
@@ -66,8 +75,11 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField] bool stopAutoOnClick;
 
 		public float TextSpeed => textSpeed;
-		public DialogueSkipMode SkipMode => skipMode;
+		public float MinTextSpeed => minTextSpeed;
+		public float MaxTextSpeed => maxTextSpeed;
 		public float AutoSpeed => autoSpeed;
+		public float MinAutoSpeed => minAutoSpeed;
+		public float MaxAutoSpeed => maxAutoSpeed;
 		public float SkipSpeed => skipSpeed;
 
 		public Color DefaultTextColor => defaultTextColor;
@@ -75,6 +87,7 @@ public class GameOptionsSO : ScriptableObject
 		public float DialogueFontSize => dialogueFontSize;
 
 		public TextBuildMode TextMode => textMode;
+		public DialogueSkipMode SkipMode => skipMode;
 		public PromptPosition PromptPos => promptPos;
 		public bool StopAutoOnClick => stopAutoOnClick;
 	}
@@ -124,14 +137,14 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField] float transitionSpeed;
 
 		[Header("Mixer Volumes")]
-		[SerializeField] float defaultVolume;
+		[SerializeField] float masterVolume;
 		[SerializeField] float ambientVolume;
 		[SerializeField] float musicVolume;
 		[SerializeField] float sfxVolume;
 		[SerializeField] float voiceVolume;
 
 		public float TransitionSpeed => transitionSpeed;
-		public float DefaultVolume => defaultVolume;
+		public float MasterVolume => masterVolume;
 		public float AmbientVolume => ambientVolume;
 		public float MusicVolume => musicVolume;
 		public float SFXVolume => sfxVolume;

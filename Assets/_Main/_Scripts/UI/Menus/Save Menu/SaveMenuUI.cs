@@ -83,7 +83,7 @@ namespace UI
 			if (IsHidden || isTransitioning) yield break;
 			isTransitioning = true;
 
-			fadeSpeed = fadeSpeed <= 0 ? gameOptions.General.SkipTransitionSpeed : fadeSpeed;
+			fadeSpeed = fadeSpeed <= 0 ? gameOptions.General.TransitionSpeed : fadeSpeed;
 			yield return SetHidden(isImmediate, fadeSpeed);
 
 			isTransitioning = false;

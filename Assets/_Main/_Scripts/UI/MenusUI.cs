@@ -11,6 +11,7 @@ namespace UI
 		[SerializeField] SideMenuUI sideMenu;
 		[SerializeField] SaveMenuUI saveMenu;
 		[SerializeField] LogMenuUI logMenu;
+		[SerializeField] SettingsMenuUI settingsMenu;
 
 		bool isTransitioning = false;
 
@@ -23,6 +24,7 @@ namespace UI
 			sideMenu.OnClose += CloseSideMenuRoot;
 			logMenu.OnClose += CloseLogMenuRoot;
 			saveMenu.OnClose += CloseSaveMenuRoot;
+			settingsMenu.OnClose += CloseSettingsMenuRoot;
 		}
 
 		void Start()
@@ -30,6 +32,7 @@ namespace UI
 			CloseSideMenuRoot();
 			CloseSaveMenuRoot();
 			CloseLogMenuRoot();
+			CloseSettingsMenuRoot();
 
 			inputManager.CurrentMenu = MenuType.None;
 			inputManager.IsChoicePanelOpen = false;
@@ -45,6 +48,7 @@ namespace UI
 			sideMenu.OnClose -= CloseSideMenuRoot;
 			logMenu.OnClose -= CloseLogMenuRoot;
 			saveMenu.OnClose -= CloseSaveMenuRoot;
+			settingsMenu.OnClose -= CloseSettingsMenuRoot;
 		}
 
 		public void OpenSideMenu() => StartCoroutine(ShowSideMenu());
@@ -104,6 +108,13 @@ namespace UI
 				yield return Utilities.RunConcurrentProcesses(this, transitions);
 				inputManager.CurrentMenu = logMenu.gameObject.activeInHierarchy ? MenuType.Log : MenuType.None;
 			}
+			else if (menuType == MenuType.Settings)
+			{
+				settingsMenu.gameObject.SetActive(true);
+				transitions.Add(settingsMenu.Open(isImmediate, fadeSpeed));
+				yield return Utilities.RunConcurrentProcesses(this, transitions);
+				inputManager.CurrentMenu = settingsMenu.gameObject.activeInHierarchy ? MenuType.Settings : MenuType.None;
+			}
 
 			isTransitioning = false;
 		}
@@ -130,11 +141,17 @@ namespace UI
 				if (logMenu.IsTransitioning) yield break;
 				yield return logMenu.Close(isImmediate, transitionSpeed);
 			}
+			else if (inputManager.CurrentMenu == MenuType.Settings)
+			{
+				if (settingsMenu.IsTransitioning) yield break;
+				yield return settingsMenu.Close(isImmediate, transitionSpeed);
+			}
 		}
 
 		void OpenSaveMenu() => OpenMenu(MenuType.Save);
 		void OpenLoadMenu() => OpenMenu(MenuType.Load);
 		void OpenLogMenu() => OpenMenu(MenuType.Log);
+		void OpenSettingsMenu() => OpenMenu(MenuType.Settings);
 
 		void CloseSideMenuRoot()
 		{
@@ -153,6 +170,13 @@ namespace UI
 		void CloseSaveMenuRoot()
 		{
 			saveMenu.gameObject.SetActive(false);
+			inputManager.CurrentMenu = MenuType.None;
+			isTransitioning = false;
+		}
+
+		void CloseSettingsMenuRoot()
+		{
+			settingsMenu.gameObject.SetActive(false);
 			inputManager.CurrentMenu = MenuType.None;
 			isTransitioning = false;
 		}

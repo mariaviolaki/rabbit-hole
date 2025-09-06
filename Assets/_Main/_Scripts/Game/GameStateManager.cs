@@ -52,17 +52,6 @@ public class GameStateManager : MonoBehaviour
 			Debug.Log("Saving Progress");
 			SavePlayerProgress();
 		}
-		else if (Input.GetKeyDown(KeyCode.O))
-		{
-			Debug.Log("Closing Options Menu");
-			SavePlayerSettings();
-		}
-		else if (Input.GetKeyDown(KeyCode.X))
-		{
-			Debug.Log("Making Options Changes");
-			gameState.SetTextSpeed(10);
-			gameState.SetVolume(0);
-		}
 		else if (Input.GetKeyDown(KeyCode.C))
 		{
 			Debug.Log("Continuing");

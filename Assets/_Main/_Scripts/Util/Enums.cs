@@ -96,6 +96,11 @@ namespace IO
 	{
 		Save, Load
 	}
+
+	public enum ScreenMode
+	{
+		None, Windowed, Fullscreen
+	}
 }
 
 namespace Variables
@@ -111,6 +116,11 @@ namespace UI
 	public enum MenuType
 	{
 		None, SideMenu, Save, Load, Log, Relationships, Settings, Title
+	}
+
+	public enum SettingsSection
+	{
+		None, Display, Text, Audio
 	}
 }
 

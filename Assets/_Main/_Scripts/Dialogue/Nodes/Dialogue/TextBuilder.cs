@@ -8,27 +8,32 @@ namespace Dialogue
 	{
 		enum BuildMode { Write, Append }
 
-		public const float MaxSpeed = 15f;
 		const float MinWaitTime = 0.02f;
 		const float InstantSpeedMultiplier = 5f;
-		const float TypeSpeedMultiplier = 0.1f;
+		const float TypeSpeedMultiplier = 0.21f;
 		const float FadeSpeedMultiplier = 0.095f;
 
-		Coroutine buildProcess;
+		readonly GameOptionsSO gameOptions;
+		readonly TMP_Text tmpText;
 
-		// Configurable from outside
-		TMP_Text tmpText;
+		Coroutine buildProcess;
 		TextBuildMode textType;
 		float speed;
 
-		public bool IsBuilding { get { return buildProcess != null; } }
-		public float Speed { get { return speed; } set { speed = Mathf.Clamp(value, 1f, MaxSpeed); } }
+		public bool IsBuilding => buildProcess != null;
+		public float Speed
+		{
+			get { return speed; }
+			set { speed = Mathf.Clamp(value, gameOptions.Dialogue.MinTextSpeed, gameOptions.Dialogue.MaxTextSpeed); }
+		}
 
-		public TextBuilder(TMP_Text tmpText)
+		public TextBuilder(TMP_Text tmpText, GameOptionsSO gameOptions)
 		{
 			this.tmpText = tmpText;
 			this.tmpText.text = "";
-			speed = MaxSpeed / 2;
+			this.gameOptions = gameOptions;
+
+			speed = gameOptions.Dialogue.MaxTextSpeed / 2;
 		}
 
 		public bool Write(string newText, TextBuildMode textType)
@@ -105,7 +110,7 @@ namespace Dialogue
 			if (textType == TextBuildMode.TypedFade)
 				tmpText.maxVisibleCharacters = fullTextLength;
 
-			float rawTimePerCharacter = 1f / speed * TypeSpeedMultiplier;
+			float rawTimePerCharacter = (1f / speed) * TypeSpeedMultiplier;
 			float timePerCharacter = Mathf.Max(MinWaitTime, rawTimePerCharacter);
 			int charactersPerIteration = GetCharactersPerIteration(newTextLength, rawTimePerCharacter);
 			float maxTime = timePerCharacter * Mathf.CeilToInt((float)newTextLength / charactersPerIteration);

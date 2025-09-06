@@ -13,8 +13,8 @@ namespace Dialogue
 		const float MaxAutoTime = 100f;
 		const float MinSkipTime = 0.001f;
 		const float MaxSkipTime = 2f;
-		const float BaseAutoTime = 0.8f;
-		const float AutoTimePerCharacter = 0.8f;
+		const float BaseAutoTime = 1.2f;
+		const float AutoTimePerCharacter = 1f;
 		const float SkipSpeedMultiplier = 0.1f;
 
 		readonly DialogueManager dialogueManager;
@@ -43,7 +43,8 @@ namespace Dialogue
 			gameState = gameManager.StateManager.State;
 			gameOptions = gameManager.Options;
 
-			textBuilder = new(dialogueManager.UI.Dialogue.DialogueText);
+			textBuilder = new(dialogueManager.UI.Dialogue.DialogueText, gameOptions);
+			textMode = gameOptions.Dialogue.TextMode;
 
 			dialogueManager.OnChangeReadMode += UpdateTextBuildMode;
 		}
@@ -56,7 +57,7 @@ namespace Dialogue
 		public void UpdateTextBuildMode(DialogueReadMode readMode)
 		{
 			if (readMode == DialogueReadMode.Skip)
-				readSpeed = TextBuilder.MaxSpeed;
+				readSpeed = gameOptions.Dialogue.MaxTextSpeed;
 			else
 				readSpeed = gameState.TextSpeed;
 
@@ -91,7 +92,7 @@ namespace Dialogue
 					while (flowController.IsRunning && isWaitingToAdvance && Time.time < startTime + segment.WaitTime) yield return null;
 
 				continuePrompt.Hide();
-				textBuilder.Speed = readSpeed;
+				textBuilder.Speed = gameState.TextSpeed;
 
 				if (segment.IsAppended)
 					textBuilder.Append(dialogueText, textMode);
