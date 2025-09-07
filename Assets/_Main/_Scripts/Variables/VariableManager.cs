@@ -1,4 +1,3 @@
-using Gameplay;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,18 +6,6 @@ namespace Variables
 {
 	public class VariableManager
 	{
-		public const string PlayerNameVariable = "playerName";
-		public const string RouteVariable = "route";
-
-		public const string DefaultPlayerName = "Player";
-		public const string DefaultRoute = "Common";
-
-		static readonly Dictionary<string, string> DefaultVariables = new(StringComparer.OrdinalIgnoreCase)
-		{
-			{ PlayerNameVariable, DefaultPlayerName },
-			{ RouteVariable, DefaultRoute }
-		};
-
 		public const char VariablePrefix = '$';
 		const string identifierPattern = @"[a-zA-Z][a-zA-Z0-9]*";
 		public static readonly string VariablePattern = $@"\{VariablePrefix}{identifierPattern}(?:\s*\.\s*{identifierPattern})*";
@@ -40,44 +27,44 @@ namespace Variables
 			return variableBank.Get(variableName);
 		}
 
-		public void Set(string name, object value, Func<object> getter = null, Action<object> setter = null)
+		public void Set(string name, object value)
 		{
 			(string bankName, string variableName) = ParseVariableName(name);
 
 			if (variableBanks.TryGetValue(bankName, out ScriptVariableBank variableBank))
 			{
-				variableBank.Set(variableName, value, getter, setter);
+				variableBank.Set(variableName, value);
 			}
 			else
 			{
 				variableBank = new ScriptVariableBank();
-				variableBank.Set(variableName, value, getter, setter);
+				variableBank.Set(variableName, value);
 				variableBanks.Add(bankName, variableBank);
 			}
 
 			UpdatePlayerProgress(name, value);
 		}
 
-		public void SetTyped(string name, string value, DataTypeEnum dataType, Func<object> getter = null, Action<object> setter = null)
+		public void SetTyped(string name, string value, DataTypeEnum dataType)
 		{
 			if (dataType == DataTypeEnum.Int)
 			{
 				int.TryParse(value, out int intValue);
-				Set(name, intValue, getter, setter);
+				Set(name, intValue);
 			}
 			else if (dataType == DataTypeEnum.Float)
 			{
 				float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float floatValue);
-				Set(name, floatValue, getter, setter);
+				Set(name, floatValue);
 			}
 			else if (dataType == DataTypeEnum.Bool)
 			{
 				bool.TryParse(value, out bool boolValue);
-				Set(name, boolValue, getter, setter);
+				Set(name, boolValue);
 			}
 			else
 			{
-				Set(name, value, getter, setter);
+				Set(name, value);
 			}
 		}
 
@@ -107,7 +94,7 @@ namespace Variables
 			this.gameStateManager = gameStateManager;
 
 			// Initialize default variables
-			foreach (var (variableName, variableValue) in DefaultVariables)
+			foreach (var (variableName, variableValue) in DefaultVariables.Variables)
 			{
 				Set(variableName, variableValue);
 			}
@@ -115,17 +102,9 @@ namespace Variables
 
 		void UpdatePlayerProgress(string variableName, object variableValue)
 		{
-			if (!DefaultVariables.ContainsKey(variableName)) return;
+			if (variableName.ToLower() != DefaultVariables.PlayerNameVariable.ToLower()) return;
 
-			if (string.Equals(variableName, PlayerNameVariable))
-			{
-				gameStateManager.State.SetPlayerName((string)variableValue);
-			}
-			else if (string.Equals(variableName, RouteVariable))
-			{
-				CharacterRoute route = (CharacterRoute)Enum.Parse(typeof(CharacterRoute), (string)variableValue, ignoreCase: true);
-				gameStateManager.State.SetRoute(route);
-			}
+			gameStateManager.State.SetPlayerName(variableValue.ToString());
 		}
 
 		(string bankName, string variableName) ParseVariableName(string name)

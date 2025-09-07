@@ -144,7 +144,7 @@ public class GameStateManager : MonoBehaviour
 
 	bool SaveGameplay(int slot)
 	{
-		object routeObject = variableManager.Get(VariableManager.RouteVariable);
+		object routeObject = variableManager.Get(DefaultVariables.RouteVariable);
 		string routeString = routeObject == null ? CharacterRoute.Common.ToString() : routeObject.ToString();
 		CharacterRoute route = (CharacterRoute)Enum.Parse(typeof(CharacterRoute), routeString, ignoreCase: true);
 

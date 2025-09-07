@@ -16,7 +16,7 @@ MonoBehaviour:
     transitionSpeed: 10
     skipTransitionSpeed: 100
     sceneFadeTransitionSpeed: 10
-    screenMode: 0
+    screenMode: 1
     graphicsQuality: 3
     resolutionWidth: 1920
     resolutionHeight: 1080

@@ -3,8 +3,12 @@
 CreateBackground(2), CreateForeground(), CreateCinematic()
 CreateAmbient(2), CreateMusic(2), CreateSFX(2), CreateVoice(2)
 ShowVN(immediate=true)
-wait CreateCharacters(v, eg, v1:v, mc, m, all)
+wait CreateCharacters(v, eg, v1:v, mc, m, all, z)
 all.SetName("Everyone")
+
+$honesty = 0
+$kindness = 0
+$curiosity = 0
 
 jump Prologue
 end Main
@@ -27,8 +31,9 @@ choice
 {
 	- "I never lose my way"
 	{
+		$honesty -= 1
+		$kindness -= 1
 		$mc.isLost = false
-		$v.affinity -= 1
 		v "Oh, really?{a} Then why are you here?"
 		v "I know this place like the back of my hand."
 		v (evil) "No human who ends up here ever knew where they were heading."
@@ -36,7 +41,7 @@ choice
 		{
 			- "I was looking for you"
 			{
-				$v.affinity += 2
+				$honesty += 1
 				v (neutral) "Oh, so you were looking for me?"
 				v (smug) "How flattering."
 				v "I guess I can forgive you for getting lost then."
@@ -44,17 +49,22 @@ choice
 				{
 					- Can you?
 					{
+						$curiosity += 1
+						$honesty -= 1
 						v "That's a secret, human~"
 					}
 					- Yay!
 					{
-						$v.affinity += 1
+						$curiosity -= 2
+						$honesty += 2
 						v "How gullible~{a} <i>Adorable.</i>"
 					}
 				}
 			}
 			- "You know a lot about this place, don't you?"
 			{
+				$curiosity += 1
+				$honesty -= 1
 				v "I might."
 				v "But I wouln't tell <i>you</i> any time soon."
 			}
@@ -62,8 +72,9 @@ choice
 	}
 	- "Umm... You got me there"
 	{
+		$honesty += 2
+		$kindness += 2
 		$mc.isLost = true
-		$v.affinity += 1
 		v "I thought so.{c 0.5}You're an honest one, aren't you?"
 		v (smug) "Well, let me be your guide then.{c}You can call me Void."
 		v.SetName("Void")
@@ -118,28 +129,27 @@ choice
 	- "Yes"
 	{
 		input "Enter your name"
-		$mc.name = $input
-		"My name is {$mc.name}."
+		$playerName = $input
+		"My name is {$playerName}."
 		v (neutral) "Well, then."
-		v "Nice to meet you, {$mc.name}."
+		v "Nice to meet you, {$playerName}."
 	}
 	- "Pick a name for me?"
 	{
-		$v.affinity += 1
 		v (smug) "Huh. How interesting~"
-		$mc.name = "Rabbit"
+		$playerName = "Rabbit"
 		v "In that case, I shall name you... <b>{$mc.name}</b>."
 		choice
 		{
 			- "Thank you! That's a nice name"
 			{
-				$v.affinity += 1
+				$kindness += 2
 				v (smug) "I know, right?"
 				v "You can thank me later."
 			}
 			- "I don't like it"
 			{
-				$v.affinity -= 1
+				$kindness -= 5
 				v (annoyed) "Oh, really?"
 				v "Well, I don't care."
 				v "You can re-enter this world and change it if you want."
@@ -162,30 +172,18 @@ choice
 {
 	- "Void"
 	{
-		$route = "Void"
-		if ($v.affinity > 0)
-		{
-			v.affinity += 1
-		}
 		jump VoidRoute
 	}
 	- "Eccentric Guy"
 	{
-		$route = "Zero"
-		$z.affinity += 1
 		jump ZeroRoute
 	}
 	- "Marsh"
 	{
-		$route = "Marsh"
-		$m.affinity += 1
 		jump MarshRoute
 	}
 	- "None of you"
 	{
-		$v.affinity -= 1
-		$z.affinity -= 1
-		$m.affinity -= 1
 		jump CommonEnding
 	}
 }

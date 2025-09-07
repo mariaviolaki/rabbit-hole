@@ -100,7 +100,7 @@ namespace UI
 					return portraitAtlas.GetSprite(route.ToString());
 				case CharacterRoute.Common:
 				default:
-					return portraitAtlas.GetSprite(VariableManager.DefaultPlayerName);
+					return portraitAtlas.GetSprite(DefaultVariables.DefaultPlayerName);
 			}
 		}
 

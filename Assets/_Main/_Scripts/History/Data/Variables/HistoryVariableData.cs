@@ -32,7 +32,7 @@ namespace History
 			
 			foreach (HistoryVariable historyVariable in variables)
 			{
-				variableManager.SetTyped(historyVariable.name, historyVariable.value, historyVariable.dataType, null, null);
+				variableManager.SetTyped(historyVariable.name, historyVariable.value, historyVariable.dataType);
 			}
 		}
 	}

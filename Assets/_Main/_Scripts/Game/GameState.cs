@@ -22,8 +22,6 @@ public class GameState
 	public PlayerProgress Progress => progress;
 
 	public string PlayerName => progress.playerName;
-	public CharacterRoute Route => progress.route;
-	public string Scene => progress.sceneTitle;
 	public int SaveMenuPage => progress.saveMenuPage;
 
 	public float AudioVolume => settings.audioVolume;
@@ -86,22 +84,6 @@ public class GameState
 		if (progress.playerName == playerName) return;
 
 		progress.playerName = playerName;
-		HasPendingProgress = true;
-	}
-
-	public void SetRoute(CharacterRoute route)
-	{
-		if (progress.route == route) return;
-
-		progress.route = route;
-		HasPendingProgress = true;
-	}
-
-	public void SetScene(string sceneTitle)
-	{
-		if (progress.sceneTitle == sceneTitle) return;
-
-		progress.sceneTitle = sceneTitle;
 		HasPendingProgress = true;
 	}
 

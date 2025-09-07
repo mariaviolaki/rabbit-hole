@@ -92,21 +92,21 @@ namespace UI
 			switch (settingsSection)
 			{
 				case SettingsSection.Display:
-					UpdateSettingButton(displaySettingsButton, new Button[] { textSettingsButton, audioSettingsButton });
-					UpdateSettingsSection(displaySettings, new SettingsSectionBaseUI[] { textSettings, audioSettings });
+					UpdateSettingButton(displaySettingsButton, textSettingsButton, audioSettingsButton);
+					UpdateSettingsSection(displaySettings, textSettings, audioSettings);
 					break;
 				case SettingsSection.Text:
-					UpdateSettingButton(textSettingsButton, new Button[] { displaySettingsButton, audioSettingsButton });
-					UpdateSettingsSection(textSettings, new SettingsSectionBaseUI[] { displaySettings, audioSettings });
+					UpdateSettingButton(textSettingsButton, displaySettingsButton, audioSettingsButton);
+					UpdateSettingsSection(textSettings, displaySettings, audioSettings);
 					break;
 				case SettingsSection.Audio:
-					UpdateSettingButton(audioSettingsButton, new Button[] { displaySettingsButton, textSettingsButton });
-					UpdateSettingsSection(audioSettings, new SettingsSectionBaseUI[] { displaySettings, textSettings });
+					UpdateSettingButton(audioSettingsButton, displaySettingsButton, textSettingsButton);
+					UpdateSettingsSection(audioSettings, displaySettings, textSettings);
 					break;
 			}
 		}
 
-		void UpdateSettingButton(Button selectedButton, Button[] unselectedButtons)
+		void UpdateSettingButton(Button selectedButton, params Button[] unselectedButtons)
 		{
 			selectedButton.image.color = selectedImageColor;
 			selectedButton.GetComponentInChildren<TextMeshProUGUI>().color = selectedTextColor;
@@ -118,7 +118,7 @@ namespace UI
 			}
 		}
 
-		void UpdateSettingsSection(SettingsSectionBaseUI selectedSection, SettingsSectionBaseUI[] unselectedSections)
+		void UpdateSettingsSection(SettingsSectionBaseUI selectedSection, params SettingsSectionBaseUI[] unselectedSections)
 		{
 			foreach (SettingsSectionBaseUI section in unselectedSections)
 				section.gameObject.SetActive(false);

@@ -17,7 +17,7 @@ namespace Variables
 			return variable.Get();
 		}
 
-		public void Set(string name, object value, Func<object> getter = null, Action<object> setter = null)
+		public void Set(string name, object value)
 		{
 			if (variables.TryGetValue(name, out ScriptVariable variable))
 			{
@@ -28,11 +28,11 @@ namespace Variables
 				{
 					variable.Set(value);
 				}
-				else if (newVariableType == typeof(string) || (variableType == typeof(int) && newVariableType == typeof(float)))
+				else if (CanOverwriteVariable(variableType, newVariableType))
 				{
 					// In certain cases overwrite the type of the initial variable
 					Remove(name);
-					variables.Add(name, new ScriptVariable(value, getter, setter));
+					variables.Add(name, new ScriptVariable(value));
 				}
 				else
 				{
@@ -41,7 +41,7 @@ namespace Variables
 			}
 			else
 			{
-				variables.Add(name, new ScriptVariable(value, getter, setter));
+				variables.Add(name, new ScriptVariable(value));
 			}
 		}
 
@@ -53,6 +53,13 @@ namespace Variables
 		public void RemoveAll()
 		{
 			variables.Clear();
+		}
+
+		bool CanOverwriteVariable(Type existingType, Type newType)
+		{
+			if (newType == typeof(string) || existingType == typeof(string)) return true;
+			if (existingType == typeof(int) && newType == typeof(float)) return true;
+			return false;
 		}
 	}
 }

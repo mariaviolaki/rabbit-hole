@@ -115,7 +115,7 @@ namespace UI
 {
 	public enum MenuType
 	{
-		None, SideMenu, Save, Load, Log, Relationships, Settings, Title
+		None, SideMenu, Save, Load, Log, Traits, Settings, Title
 	}
 
 	public enum SettingsSection

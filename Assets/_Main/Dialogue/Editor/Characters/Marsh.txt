@@ -1,13 +1,24 @@
 ﻿label MarshRoute "Marsh is a Yandere?!"
 
+$route = "Marsh"
 SetBackgroundImage(Red-Forest-Back, layer=1), SetBackgroundImage(Red-Forest-Front)
 eg.SetPosition(x=1.5), v.SetPosition(x=0.7, speed=5)
 v.FaceLeft()
 
 m "Think I'm the nicest one, huh?"
-m (evil) "..."
 
-v.SetSprite(smug)
-m "You'd better start running now."
+if ($honesty >= 0 && $kindness >= 0 && $curiosity < 0)
+{
+	m (happy) "How kind..."
+	v.SetSprite(smug)
+	m (crazy) "Adorable."
+}
+else
+{
+	m (evil) "..."
+	v.SetSprite(smug)
+	m "You'd better start running now."
+	jump CommonEnding
+}
 
 end MarshRoute

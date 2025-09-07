@@ -1057,7 +1057,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7936562404357511468, guid: d1ac8741a6fa4c1498604e815655274a, type: 3}
       propertyPath: m_Name
-      value: Relationships
+      value: Traits
       objectReference: {fileID: 0}
     - target: {fileID: 7936562404357511468, guid: d1ac8741a6fa4c1498604e815655274a, type: 3}
       propertyPath: m_Layer

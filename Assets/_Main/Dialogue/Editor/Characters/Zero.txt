@@ -1,8 +1,7 @@
 label ZeroRoute "Fooled!"
 
-wait CreateCharacter(z)
+$route = "Zero"
 SetBackgroundImage(Snow-Back, layer=1), SetBackgroundImage(Snow-Front)
-PlayMusic(day, volume=0.02)
 
 z.SetName("???")
 
@@ -12,7 +11,17 @@ z.SetPosition(x=0.5), v.SetPosition(x=0.2, speed=5)
 
 z "Oh no, you won't."
 z "Wanna learn what happened to that weird guy, huh?"
-z "Well, you're gonna have to take a detour for that."
-v (smug) "This should be fun~"
+
+if ($honesty >= 0 && $kindness >= 0 && $curiosity > 0)
+{
+	z (happy) "Well, you're gonna have to take a detour for that."
+	v (smug) "This should be fun~"
+}
+else
+{
+	v.SetSprite(smug)
+	z (crazy) "LET ME SHOW YOU MYSELF RIGHT NOW!!!!"
+	jump CommonEnding
+}
 
 end ZeroRoute
