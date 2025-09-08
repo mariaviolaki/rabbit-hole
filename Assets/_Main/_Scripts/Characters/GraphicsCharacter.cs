@@ -8,7 +8,7 @@ namespace Characters
 	public abstract class GraphicsCharacter : Character
 	{
 		const float MoveSlowdownStartDistance = 300f;
-		const float MinMoveSlowdownDistanceRatio = 0.01f;
+		const float MinMoveSlowdownDistanceRatio = 0.05f;
 
 		const float PositionSpeedMultiplier = 100f;
 		const float VisibilitySpeedMultiplier = 0.5f;

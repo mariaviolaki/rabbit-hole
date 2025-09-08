@@ -89,7 +89,7 @@ eg.SetName("???")
 eg "Voooooid!"
 eg.Show(immediate=true), v.SetSprite("neutral", layer="face")
 
-eg.SetPosition(0.8, immediate=false, speed = 0.1)
+eg.SetPosition(0.8, immediate=false)
 if ($mc.isLost)
 {
 	eg "I wanted to guide this human first!"
