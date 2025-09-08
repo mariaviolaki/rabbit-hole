@@ -48,7 +48,7 @@ namespace IO
 
 		void InputActions.IVNActions.OnForwardAction(InputAction.CallbackContext context)
 		{
-			if (IsDialoguePanelOpen) return;
+			if (CurrentMenu != MenuType.None) return;
 			if (context.phase != InputActionPhase.Performed) return;
 
 			OnForward?.Invoke();
@@ -64,7 +64,7 @@ namespace IO
 
 		void InputActions.IVNActions.OnAutoAction(InputAction.CallbackContext context)
 		{
-			if (IsDialoguePanelOpen) return;
+			if (CurrentMenu != MenuType.None) return;
 			if (context.phase != InputActionPhase.Performed) return;
 
 			OnAuto?.Invoke();
@@ -72,7 +72,7 @@ namespace IO
 
 		void InputActions.IVNActions.OnSkipAction(InputAction.CallbackContext context)
 		{
-			if (IsDialoguePanelOpen) return;
+			if (CurrentMenu != MenuType.None) return;
 
 			// Only trigger successful button presses
 			if (context.interaction is not PressInteraction || context.phase != InputActionPhase.Performed) return;
@@ -81,7 +81,7 @@ namespace IO
 
 		void InputActions.IVNActions.OnSkipHoldAction(InputAction.CallbackContext context)
 		{
-			if (IsDialoguePanelOpen) return;
+			if (CurrentMenu != MenuType.None) return;
 			// Only proceed if the player is holding down the button
 			if (context.interaction is not HoldInteraction) return;
 

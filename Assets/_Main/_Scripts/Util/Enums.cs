@@ -38,7 +38,7 @@ namespace Dialogue
 		Read, Unread, AfterChoices
 	}
 
-	public enum TextBuildMode
+	public enum TextTypeMode
 	{
 		Instant, Typed, InstantFade, TypedFade
 	}

@@ -6,6 +6,8 @@ ShowVN(immediate=true)
 wait CreateCharacters(v, eg, v1:v, mc, m, all, z)
 all.SetName("Everyone")
 
+$playerName = Player
+$route = Common
 $honesty = 0
 $kindness = 0
 $curiosity = 0
@@ -138,7 +140,7 @@ choice
 	{
 		v (smug) "Huh. How interesting~"
 		$playerName = "Rabbit"
-		v "In that case, I shall name you... <b>{$mc.name}</b>."
+		v "In that case, I shall name you... <b>{$playerName}</b>."
 		choice
 		{
 			- "Thank you! That's a nice name"
@@ -159,7 +161,7 @@ choice
 	}
 }
 
-eg (laugh) "Anyway, {$mc.name}, pick a guide!"
+eg (laugh) "Anyway, {$playerName}, pick a guide!"
 eg "Marshy hasn't offered yet, but I know he wants to."
 
 Autosave()

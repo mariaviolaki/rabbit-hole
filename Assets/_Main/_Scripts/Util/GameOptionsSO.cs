@@ -69,7 +69,7 @@ public class GameOptionsSO : ScriptableObject
 		[SerializeField][Range(1, 100)] float dialogueFontSize;
 
 		[Header("Reading Options")]
-		[SerializeField] TextBuildMode textMode;
+		[SerializeField] TextTypeMode textMode;
 		[SerializeField] DialogueSkipMode skipMode;
 		[SerializeField] PromptPosition promptPos;
 		[SerializeField] bool stopAutoOnClick;
@@ -86,7 +86,7 @@ public class GameOptionsSO : ScriptableObject
 		public TMP_FontAsset DefaultFont => defaultFont;
 		public float DialogueFontSize => dialogueFontSize;
 
-		public TextBuildMode TextMode => textMode;
+		public TextTypeMode TextMode => textMode;
 		public DialogueSkipMode SkipMode => skipMode;
 		public PromptPosition PromptPos => promptPos;
 		public bool StopAutoOnClick => stopAutoOnClick;

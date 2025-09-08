@@ -15,7 +15,7 @@ namespace Dialogue
 		const float MaxSkipTime = 2f;
 		const float BaseAutoTime = 1.2f;
 		const float AutoTimePerCharacter = 1f;
-		const float SkipSpeedMultiplier = 0.1f;
+		const float SkipSpeedMultiplier = 1f;
 
 		readonly DialogueManager dialogueManager;
 		readonly VariableManager variableManager;
@@ -26,7 +26,8 @@ namespace Dialogue
 		readonly TextBuilder textBuilder;
 		readonly DialogueContinuePromptUI continuePrompt;
 
-		TextBuildMode textMode;
+		const TextTypeMode skippedTypeMode = TextTypeMode.Instant;
+		readonly TextTypeMode typeMode;
 		float readSpeed;
 		bool isWaitingToAdvance;
 
@@ -44,7 +45,7 @@ namespace Dialogue
 			gameOptions = gameManager.Options;
 
 			textBuilder = new(dialogueManager.UI.Dialogue.DialogueText, gameOptions);
-			textMode = gameOptions.Dialogue.TextMode;
+			typeMode = gameOptions.Dialogue.TextMode;
 
 			dialogueManager.OnChangeReadMode += UpdateTextBuildMode;
 		}
@@ -66,18 +67,16 @@ namespace Dialogue
 
 		public IEnumerator DisplayDialogue(List<DialogueTextSegment> textSegments)
 		{
-			bool isSkippableDialogue = IsSkippableDialogue();
-
 			for (int i = 0; i < textSegments.Count; i++)
 			{
 				DialogueTextSegment segment = textSegments[i];
 				DialogueTextSegment nextSegment = (i == textSegments.Count - 1) ? null : textSegments[i + 1];
 
-				yield return DisplayDialogueSegment(segment, nextSegment, isSkippableDialogue);
+				yield return DisplayDialogueSegment(segment, nextSegment);
 			}
 		}
 
-		IEnumerator DisplayDialogueSegment(DialogueTextSegment segment, DialogueTextSegment nextSegment, bool isSkippableLine)
+		IEnumerator DisplayDialogueSegment(DialogueTextSegment segment, DialogueTextSegment nextSegment)
 		{
 			string dialogueText = ScriptVariableUtilities.ParseText(segment.Text, variableManager);
 			bool hasNewHistory = nextSegment == null;
@@ -88,19 +87,26 @@ namespace Dialogue
 				float startTime = Time.time;
 
 				// Wait for a specified duration before showing the text (unless forced to continue)
-				if (segment != null && segment.IsAuto && !isSkippableLine)
+				if (segment != null && segment.IsAuto && !IsSkippableDialogue())
 					while (flowController.IsRunning && isWaitingToAdvance && Time.time < startTime + segment.WaitTime) yield return null;
 
 				continuePrompt.Hide();
+
 				textBuilder.Speed = gameState.TextSpeed;
+				textBuilder.TypeMode = typeMode;
+				if (IsSkippableDialogue())
+				{
+					textBuilder.Speed = gameOptions.Dialogue.MaxTextSpeed;
+					textBuilder.TypeMode = skippedTypeMode;
+				}
 
 				if (segment.IsAppended)
-					textBuilder.Append(dialogueText, textMode);
+					textBuilder.Append(dialogueText);
 				else
-					textBuilder.Write(dialogueText, textMode);
+					textBuilder.Write(dialogueText);
 
 				isWaitingToAdvance = true;
-				while (!CanContinueDialogue(nextSegment, dialogueText, startTime, textBuilder.IsBuilding, isSkippableLine))
+				while (!CanContinueDialogue(nextSegment, dialogueText, startTime, textBuilder.IsBuilding, IsSkippableDialogue()))
 				{
 					ProcessCompletedText(hasNewHistory, ref hasCapturedHistory);
 					yield return null;

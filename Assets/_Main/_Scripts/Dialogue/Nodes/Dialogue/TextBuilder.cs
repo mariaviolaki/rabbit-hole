@@ -17,7 +17,7 @@ namespace Dialogue
 		readonly TMP_Text tmpText;
 
 		Coroutine buildProcess;
-		TextBuildMode textType;
+		TextTypeMode typeMode;
 		float speed;
 
 		public bool IsBuilding => buildProcess != null;
@@ -26,6 +26,7 @@ namespace Dialogue
 			get { return speed; }
 			set { speed = Mathf.Clamp(value, gameOptions.Dialogue.MinTextSpeed, gameOptions.Dialogue.MaxTextSpeed); }
 		}
+		public TextTypeMode TypeMode { get { return typeMode; } set { typeMode = value; } }
 
 		public TextBuilder(TMP_Text tmpText, GameOptionsSO gameOptions)
 		{
@@ -36,14 +37,14 @@ namespace Dialogue
 			speed = gameOptions.Dialogue.MaxTextSpeed / 2;
 		}
 
-		public bool Write(string newText, TextBuildMode textType)
+		public bool Write(string newText)
 		{
-			return StartProcess(newText, BuildMode.Write, textType);
+			return StartProcess(newText, BuildMode.Write);
 		}
 
-		public bool Append(string newText, TextBuildMode textType)
+		public bool Append(string newText)
 		{
-			return StartProcess(newText, BuildMode.Append, textType);
+			return StartProcess(newText, BuildMode.Append);
 		}
 
 		public bool Stop()
@@ -55,18 +56,18 @@ namespace Dialogue
 			return true;
 		}
 
-		bool StartProcess(string newText, BuildMode buildType, TextBuildMode textType)
+		bool StartProcess(string newText, BuildMode buildType)
 		{
 			bool isProcessInterrupted = Stop();
 
-			this.textType = isProcessInterrupted ? TextBuildMode.Instant : textType;
+			typeMode = isProcessInterrupted ? TextTypeMode.Instant : typeMode;
 			string oldText = tmpText.text;
 			string preText = buildType == BuildMode.Append || isProcessInterrupted ? oldText : "";
 			int preTextLength = BuildPreText(preText);
 
 			if (isProcessInterrupted) return false;
 
-			if (textType == TextBuildMode.Instant || textType == TextBuildMode.InstantFade)
+			if (typeMode == TextTypeMode.Instant || typeMode == TextTypeMode.InstantFade)
 				BuildInstantText(newText, preTextLength);
 			else
 				BuildTypedText(newText, preTextLength);
@@ -93,7 +94,7 @@ namespace Dialogue
 			int fullTextLenth = tmpText.textInfo.characterCount;
 			tmpText.maxVisibleCharacters = fullTextLenth;
 
-			if (textType == TextBuildMode.InstantFade)
+			if (typeMode == TextTypeMode.InstantFade)
 			{
 				int newTextLength = fullTextLenth - preTextLength;
 				buildProcess = tmpText.StartCoroutine(StartInstantFadingIn(preTextLength, newTextLength));
@@ -107,7 +108,7 @@ namespace Dialogue
 
 			int fullTextLength = tmpText.textInfo.characterCount;
 			int newTextLength = fullTextLength - preTextLength;
-			if (textType == TextBuildMode.TypedFade)
+			if (typeMode == TextTypeMode.TypedFade)
 				tmpText.maxVisibleCharacters = fullTextLength;
 
 			float rawTimePerCharacter = (1f / speed) * TypeSpeedMultiplier;
@@ -115,9 +116,9 @@ namespace Dialogue
 			int charactersPerIteration = GetCharactersPerIteration(newTextLength, rawTimePerCharacter);
 			float maxTime = timePerCharacter * Mathf.CeilToInt((float)newTextLength / charactersPerIteration);
 
-			if (textType == TextBuildMode.Typed)
+			if (typeMode == TextTypeMode.Typed)
 				buildProcess = tmpText.StartCoroutine(StartTyping(maxTime, timePerCharacter, newTextLength, charactersPerIteration));
-			else if (textType == TextBuildMode.TypedFade)
+			else if (typeMode == TextTypeMode.TypedFade)
 				buildProcess = tmpText.StartCoroutine(StartFadingIn(maxTime, preTextLength, newTextLength, charactersPerIteration));
 		}
 
