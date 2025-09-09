@@ -24,17 +24,18 @@ namespace History
 		public Color SpeakerColor => speakerColor;
 		public Color DialogueColor => dialogueColor;
 
-		public HistoryDialogueData(DialogueFlowController flowController, DialogueUI dialogueUI)
+		public HistoryDialogueData(DialogueFlowController flowController)
 		{
-			TextMeshProUGUI speakerTextData = dialogueUI.SpeakerText;
-			TextMeshProUGUI dialogueTextData = dialogueUI.DialogueText;
-
 			sceneName = flowController.CurrentSceneName;
 			nodeId = flowController.CurrentNodeId;
-			speakerText = speakerTextData.text;
-			dialogueText = dialogueTextData.text;
-			speakerColor = speakerTextData.color;
-			dialogueColor = dialogueTextData.color;
+
+			if (flowController.CurrentNode is DialogueNode dialogueNode)
+			{
+				speakerText = dialogueNode.SpeakerData.Name;
+				dialogueText = dialogueNode.FinalDialogueText;
+				speakerColor = dialogueNode.SpeakerData.NameColor;
+				dialogueColor = dialogueNode.SpeakerData.DialogueColor;
+			}
 		}
 
 		public IEnumerator Load(DialogueManager dialogueManager, DialogueFlowController flowController)

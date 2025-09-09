@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Dialogue
@@ -26,6 +27,12 @@ namespace Dialogue
 		SpriteLayerType layerType = SpriteLayerType.None;
 		float xPos = float.NaN;
 		float yPos = float.NaN;
+
+		string finalDialogueText;
+		CharacterData characterData;
+
+		public string FinalDialogueText => finalDialogueText;
+		public CharacterData SpeakerData => characterData;
 		
 		public DialogueNode(DialogueTreeNode treeNode, DialogueFlowController flowController) : base(treeNode, flowController)
 		{
@@ -50,6 +57,7 @@ namespace Dialogue
 
 			ExtractDialogueParameters(treeNode.Data[1].Trim());
 			ExtractDialogueSegments(treeNode.Data[2].Trim());
+			SaveFinalDialogueState();
 		}
 
 		protected override IEnumerator ExecuteLogic()
@@ -156,6 +164,22 @@ namespace Dialogue
 				float.TryParse(startModeParams[1], NumberStyles.Float, CultureInfo.InvariantCulture, out waitTime);
 
 			return new DialogueTextSegment(text, startMode, waitTime);
+		}
+
+		void SaveFinalDialogueState()
+		{
+			StringBuilder finalText = new();
+			foreach (DialogueTextSegment segment in segments)
+			{
+				// Cleared text should not appear in the final text cached in history
+				if (segment.StartMode == SegmentStartMode.InputClear || segment.StartMode == SegmentStartMode.AutoClear)
+					finalText.Clear();
+
+				finalText.Append(segment.Text);
+			}
+
+			finalDialogueText = finalText.ToString();
+			characterData = speakerHandler.GetCharacterDataFromShortName(shortName);
 		}
 
 		SpriteLayerType GetLayerFromText(string layerText)

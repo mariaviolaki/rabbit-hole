@@ -23,6 +23,7 @@ namespace Characters
 		{
 			this.manager = manager;
 			this.data = data;
+			gameObject.name = data.Name;
 		}
 
 		virtual public IEnumerator Initialize(CharacterManager manager, CharacterData data)

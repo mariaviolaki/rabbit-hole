@@ -232,7 +232,9 @@ namespace UI
 
 		IEnumerator RewindHistoryProcess(LinkedListNode<HistoryState> historyNode, bool isImmediate = false, float speed = 0f)
 		{
-			yield return historyManager.Load(historyNode);
+			while (historyManager.IsUpdatingHistory) yield return null;
+			historyManager.Load(historyNode);
+
 			yield return CloseProcess(isImmediate, speed);
 
 			isTransitioning = false;

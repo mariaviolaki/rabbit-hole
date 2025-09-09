@@ -21,7 +21,7 @@ namespace History
 
 		public HistoryState(GameManager gameManager, DialogueManager dialogueManager)
 		{
-			dialogueData = new(dialogueManager.FlowController, dialogueManager.UI.Dialogue);
+			dialogueData = new(dialogueManager.FlowController);
 			audioData = new(dialogueManager.Audio);
 			visualData = new(dialogueManager.Visuals);
 			characterData = new(dialogueManager.Characters);

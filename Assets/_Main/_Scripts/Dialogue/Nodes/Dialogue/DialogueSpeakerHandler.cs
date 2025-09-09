@@ -1,6 +1,5 @@
 using Characters;
 using Commands;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UI;
@@ -20,6 +19,14 @@ namespace Dialogue
 			this.commandManager = dialogueManager.Commands;
 			this.visualNovelUI = dialogueManager.UI;
 			this.gameOptions = gameOptions;
+		}
+
+		public CharacterData GetCharacterDataFromShortName(string shortName)
+		{
+			Character character = characterManager.GetCharacter(shortName);
+			if (character == null) return null;
+
+			return character.Data;
 		}
 
 		public IEnumerator SetSpeaker(string shortName, SpriteLayerType layerType, string visualName, float xPos, float yPos)

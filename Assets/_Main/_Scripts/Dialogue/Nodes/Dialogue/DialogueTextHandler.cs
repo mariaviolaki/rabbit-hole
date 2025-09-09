@@ -92,7 +92,7 @@ namespace Dialogue
 
 				continuePrompt.Hide();
 
-				textBuilder.Speed = gameState.TextSpeed;
+				textBuilder.Speed = readSpeed;
 				textBuilder.TypeMode = typeMode;
 				if (IsSkippableDialogue())
 				{

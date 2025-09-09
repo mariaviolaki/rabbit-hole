@@ -69,6 +69,7 @@ namespace Dialogue
 		{
 			isRunning = true;
 
+			dialogueTextHandler.UpdateTextBuildMode(DialogueReadMode.Forward);
 			if (currentNode != null && !currentNode.IsExecuting)
 				currentNode.StartExecution();
 		}

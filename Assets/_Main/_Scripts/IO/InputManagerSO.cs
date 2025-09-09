@@ -10,6 +10,8 @@ namespace IO
 	[CreateAssetMenu(fileName = "InputManager", menuName = "Scriptable Objects/Input Manager")]
 	public class InputManagerSO : ScriptableObject, InputActions.IVNActions
 	{
+		const float InputDelay = 0.2f;
+
 		// Triggered by the InputActions asset
 		public Action OnSideMenuOpen;
 		public Action OnMenuClose;
@@ -30,7 +32,9 @@ namespace IO
 		public Action<DialogueChoice> OnSelectChoice;
 
 		InputActions inputActions;
+		float lastInputTime;
 		bool isHoldPerformed = false;
+
 		bool IsDialoguePanelOpen => CurrentMenu != MenuType.None || IsInputPanelOpen || IsChoicePanelOpen;
 
 		public MenuType CurrentMenu { get; set; } = MenuType.None;
@@ -44,6 +48,7 @@ namespace IO
 			inputActions = new InputActions();
 			inputActions.VN.SetCallbacks(this);
 			inputActions.VN.Enable();
+			lastInputTime = Time.time;
 		}
 
 		void InputActions.IVNActions.OnForwardAction(InputAction.CallbackContext context)
@@ -54,10 +59,21 @@ namespace IO
 			OnForward?.Invoke();
 		}
 
+		void InputActions.IVNActions.OnConfirmAction(InputAction.CallbackContext context)
+		{
+			if (context.phase != InputActionPhase.Performed) return;
+
+			if (!IsDialoguePanelOpen)
+				OnForward?.Invoke();
+			else
+				OnConfirm?.Invoke();
+		}
+
 		void InputActions.IVNActions.OnDialogueBackAction(InputAction.CallbackContext context)
 		{
 			if (CurrentMenu != MenuType.None) return;
 			if (context.phase != InputActionPhase.Performed) return;
+			if (IsOnInputCooldown()) return;
 
 			OnDialogueBack?.Invoke();
 		}
@@ -128,14 +144,13 @@ namespace IO
 				OnMenuClose?.Invoke();
 		}
 
-		void InputActions.IVNActions.OnConfirmAction(InputAction.CallbackContext context)
+		bool IsOnInputCooldown()
 		{
-			if (context.phase != InputActionPhase.Performed) return;
+			float currentTime = Time.time;
+			if (currentTime < lastInputTime + InputDelay) return true;
 
-			if (!IsDialoguePanelOpen)
-				OnForward?.Invoke();
-			else
-				OnConfirm?.Invoke();
+			lastInputTime = currentTime;
+			return false;
 		}
 	}
 }
