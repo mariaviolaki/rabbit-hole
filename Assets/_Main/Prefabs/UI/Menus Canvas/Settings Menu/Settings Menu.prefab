@@ -266,7 +266,7 @@ MonoBehaviour:
     m_Top: 60
     m_Bottom: 40
   m_ChildAlignment: 1
-  m_Spacing: 120
+  m_Spacing: 150
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 1
@@ -386,8 +386,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 70
-  m_fontSizeBase: 70
+  m_fontSize: 64
+  m_fontSizeBase: 64
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -844,7 +844,6 @@ MonoBehaviour:
   unselectedImageColor: {r: 0.34901962, g: 0.16470589, b: 0.3254902, a: 1}
   selectedTextColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   unselectedTextColor: {r: 1, g: 1, b: 1, a: 1}
-  resetButton: {fileID: 4941304871324197991}
   backButton: {fileID: 2561221343441258897}
   displaySettings: {fileID: 8594510756172168578}
   textSettings: {fileID: 7374611739131381672}
@@ -943,8 +942,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 70
-  m_fontSizeBase: 70
+  m_fontSize: 64
+  m_fontSizeBase: 64
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1079,8 +1078,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 42
-  m_fontSizeBase: 42
+  m_fontSize: 38
+  m_fontSizeBase: 38
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1213,8 +1212,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 70
-  m_fontSizeBase: 70
+  m_fontSize: 64
+  m_fontSizeBase: 64
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1767,9 +1766,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
-  m_MinWidth: 600
+  m_MinWidth: 700
   m_MinHeight: -1
-  m_PreferredWidth: 600
+  m_PreferredWidth: 700
   m_PreferredHeight: -1
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
@@ -1866,8 +1865,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 42
-  m_fontSizeBase: 42
+  m_fontSize: 38
+  m_fontSizeBase: 38
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2262,6 +2261,10 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4821891716304431682, guid: 7aaa0121c8698784796b3838a9114ccb, type: 3}
+      propertyPath: resetButton
+      value: 
+      objectReference: {fileID: 4941304871324197991}
     - target: {fileID: 5202857195332862211, guid: 7aaa0121c8698784796b3838a9114ccb, type: 3}
       propertyPath: descriptionText
       value: 
@@ -2701,7 +2704,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2922254543966916926, guid: df7e2629beeb57741883294d0375322f, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 1050
+      value: 1045
       objectReference: {fileID: 0}
     - target: {fileID: 2922254543966916926, guid: df7e2629beeb57741883294d0375322f, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -2843,6 +2846,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4714772759630882302, guid: df7e2629beeb57741883294d0375322f, type: 3}
+      propertyPath: resetButton
+      value: 
+      objectReference: {fileID: 4941304871324197991}
     - target: {fileID: 4769662578454722321, guid: df7e2629beeb57741883294d0375322f, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -2877,7 +2884,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4828642447814211958, guid: df7e2629beeb57741883294d0375322f, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 1450
+      value: 1435
       objectReference: {fileID: 0}
     - target: {fileID: 4828642447814211958, guid: df7e2629beeb57741883294d0375322f, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -3240,6 +3247,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -140
       objectReference: {fileID: 0}
+    - target: {fileID: 3904550656357488476, guid: e63504aadaf5a4845bf4e6c0bbcdf11c, type: 3}
+      propertyPath: resetButton
+      value: 
+      objectReference: {fileID: 4941304871324197991}
     - target: {fileID: 4033924580051161371, guid: e63504aadaf5a4845bf4e6c0bbcdf11c, type: 3}
       propertyPath: descriptionText
       value: 

@@ -116,6 +116,7 @@ namespace UI
 
 		override protected void SubscribeListeners()
 		{
+			resetButton.onClick.AddListener(Reset);
 			windowButton.onClick.AddListener(SetWindowed);
 			fullscreenButton.onClick.AddListener(SetFullscreen);
 			resolutionDropdown.onValueChanged.AddListener(SetResolutionSetting);
@@ -124,6 +125,7 @@ namespace UI
 
 		override protected void UnsubscribeListeners()
 		{
+			resetButton.onClick.RemoveListener(Reset);
 			windowButton.onClick.RemoveListener(SetWindowed);
 			fullscreenButton.onClick.RemoveListener(SetFullscreen);
 			resolutionDropdown.onValueChanged.RemoveListener(SetResolutionSetting);

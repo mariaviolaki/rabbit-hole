@@ -87,6 +87,7 @@ namespace UI
 
 		override protected void SubscribeListeners()
 		{
+			resetButton.onClick.AddListener(Reset);
 			skipReadButton.onClick.AddListener(SetReadSkipMode);
 			skipUnreadButton.onClick.AddListener(SetUnreadSkipMode);
 			skipAfterChoicesButton.onClick.AddListener(SetAfterChoicesSkipMode);
@@ -96,6 +97,7 @@ namespace UI
 
 		override protected void UnsubscribeListeners()
 		{
+			resetButton.onClick.RemoveListener(Reset);
 			skipReadButton.onClick.RemoveListener(SetReadSkipMode);
 			skipUnreadButton.onClick.RemoveListener(SetUnreadSkipMode);
 			skipAfterChoicesButton.onClick.RemoveListener(SetAfterChoicesSkipMode);

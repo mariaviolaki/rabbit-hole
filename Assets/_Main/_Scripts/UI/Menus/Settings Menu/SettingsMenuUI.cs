@@ -15,7 +15,6 @@ namespace UI
 		[SerializeField] Color unselectedImageColor;
 		[SerializeField] Color selectedTextColor;
 		[SerializeField] Color unselectedTextColor;
-		[SerializeField] Button resetButton;
 		[SerializeField] Button backButton;
 		[SerializeField] DisplaySettingsUI displaySettings;
 		[SerializeField] TextSettingsUI textSettings;
@@ -34,9 +33,9 @@ namespace UI
 		{
 			base.Start();
 
-			displaySettings.InitCommonSettings(gameStateManager, resetButton);
-			textSettings.InitCommonSettings(gameStateManager, resetButton);
-			audioSettings.InitCommonSettings(gameStateManager, resetButton);
+			displaySettings.InitCommonSettings(gameStateManager);
+			textSettings.InitCommonSettings(gameStateManager);
+			audioSettings.InitCommonSettings(gameStateManager);
 
 			SelectDisplaySetting();
 		}

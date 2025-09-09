@@ -5,7 +5,7 @@ namespace UI
 {
 	public abstract class SettingsSectionBaseUI : MonoBehaviour
 	{
-		protected Button resetButton;
+		[SerializeField] protected Button resetButton;
 		protected GameStateManager gameStateManager;
 
 		abstract public void Reset();
@@ -22,10 +22,9 @@ namespace UI
 			UnsubscribeListeners();
 		}
 
-		public void InitCommonSettings(GameStateManager gameStateManager, Button resetButton)
+		public void InitCommonSettings(GameStateManager gameStateManager)
 		{
 			this.gameStateManager = gameStateManager;
-			this.resetButton = resetButton;
 		}
 	}
 }

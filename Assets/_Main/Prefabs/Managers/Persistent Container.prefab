@@ -1181,6 +1181,10 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 721967906927338184}
+    - target: {fileID: 9178972272991295665, guid: 7c9475cc1dba3104cbae19f45d8bebbf, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 45
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

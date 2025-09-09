@@ -20,6 +20,21 @@ namespace UI
 			voiceVolumeSlider.SetValueWithoutNotify(gameStateManager.State.VoiceAudioVolume);
 		}
 
+		public override void Reset()
+		{
+			gameStateManager.State.ResetVolume();
+			gameStateManager.State.ResetAmbientVolume();
+			gameStateManager.State.ResetMusicVolume();
+			gameStateManager.State.ResetSFXVolume();
+			gameStateManager.State.ResetVoiceVolume();
+
+			masterVolumeSlider.SetValueWithoutNotify(gameStateManager.State.AudioVolume);
+			ambientVolumeSlider.SetValueWithoutNotify(gameStateManager.State.AmbientAudioVolume);
+			musicVolumeSlider.SetValueWithoutNotify(gameStateManager.State.MusicAudioVolume);
+			sfxVolumeSlider.SetValueWithoutNotify(gameStateManager.State.SFXAudioVolume);
+			voiceVolumeSlider.SetValueWithoutNotify(gameStateManager.State.VoiceAudioVolume);
+		}
+
 		void SetMasterVolume(float volume)
 		{
 			gameStateManager.State.SetVolume(volume);
@@ -45,17 +60,9 @@ namespace UI
 			gameStateManager.State.SetVoiceVolume(volume);
 		}
 
-		public override void Reset()
-		{
-			gameStateManager.State.ResetVolume();
-			gameStateManager.State.ResetAmbientVolume();
-			gameStateManager.State.ResetMusicVolume();
-			gameStateManager.State.ResetSFXVolume();
-			gameStateManager.State.ResetVoiceVolume();
-		}
-
 		override protected void SubscribeListeners()
 		{
+			resetButton.onClick.AddListener(Reset);
 			masterVolumeSlider.onValueChanged.AddListener(SetMasterVolume);
 			ambientVolumeSlider.onValueChanged.AddListener(SetAmbientVolume);
 			musicVolumeSlider.onValueChanged.AddListener(SetMusicVolume);
@@ -65,6 +72,7 @@ namespace UI
 
 		override protected void UnsubscribeListeners()
 		{
+			resetButton.onClick.RemoveListener(Reset);
 			masterVolumeSlider.onValueChanged.RemoveListener(SetMasterVolume);
 			ambientVolumeSlider.onValueChanged.RemoveListener(SetAmbientVolume);
 			musicVolumeSlider.onValueChanged.RemoveListener(SetMusicVolume);
