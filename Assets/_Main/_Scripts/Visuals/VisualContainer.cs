@@ -12,7 +12,7 @@ namespace Visuals
 	{
 		readonly VisualLayer visualLayer;
 		readonly DialogueFlowController flowController;
-		readonly GameOptionsSO gameOptions;
+		readonly VNOptionsSO vnOptions;
 		readonly CanvasGroup canvasGroup;
 		readonly RawImage rawImage;
 		readonly VideoPlayer videoPlayer;
@@ -41,7 +41,7 @@ namespace Visuals
 		{
 			this.visualLayer = visualLayer;
 			this.flowController = visualLayer.LayerGroup.Manager.Dialogue.FlowController;
-			this.gameOptions = visualLayer.LayerGroup.Manager.GameOptions;
+			this.vnOptions = visualLayer.LayerGroup.Manager.GameOptions;
 
 			RectTransform rectTransform = layerObject.GetComponent<RectTransform>();
 			canvasGroup = layerObject.AddComponent<CanvasGroup>();
@@ -151,7 +151,7 @@ namespace Visuals
 		{
 			if (transitionStatus == TransitionStatus.Completed) return;
 
-			SetTransitionSpeed(gameOptions.General.SkipTransitionSpeed);
+			SetTransitionSpeed(vnOptions.General.SkipTransitionSpeed);
 		}
 
 		void ClearImmediate()
@@ -233,7 +233,7 @@ namespace Visuals
 
 			if (isImage)
 			{
-				visualLayer.LayerGroup.Manager.FileManager.UnloadImage(visualName);
+				visualLayer.LayerGroup.Manager.Assets.UnloadImage(visualName);
 			}
 			else
 			{
@@ -266,9 +266,9 @@ namespace Visuals
 			float baseSpeed = speed;
 
 			if (flowController.IsSkipping || transitionStatus == TransitionStatus.Skipped)
-				baseSpeed = gameOptions.General.SkipTransitionSpeed;
+				baseSpeed = vnOptions.General.SkipTransitionSpeed;
 			else if (speed < Mathf.Epsilon)
-				baseSpeed = gameOptions.BackgroundLayers.TransitionSpeed;
+				baseSpeed = vnOptions.Images.TransitionSpeed;
 
 			this.transitionSpeed = baseSpeed * TransitionSpeedMultiplier;
 		}

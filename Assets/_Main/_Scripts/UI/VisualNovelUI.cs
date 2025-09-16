@@ -7,17 +7,19 @@ namespace UI
 {
 	public class VisualNovelUI : MonoBehaviour
 	{
-		[SerializeField] GameOptionsSO gameOptions;
+		[SerializeField] VNOptionsSO vnOptions;
 		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] DialogueUI dialogue;
 		[SerializeField] FadeableUI background;
-		[SerializeField] FadeableUI sprites;
+		[SerializeField] FadeableUI characters;
 		[SerializeField] FadeableUI foreground;
 		[SerializeField] GameplayControlsUI gameplayControls;
+		[SerializeField] FadeableUI cinematics;
 		[SerializeField] DialogueContinuePromptUI continuePrompt;
 		[SerializeField] ReadModeIndicatorUI readModeIndicator;
 		[SerializeField] Canvas overlayControlsCanvas;
-
+		[SerializeField] ScreenshotCamera screenshotCamera;
+		
 		const float fadeMultiplier = 0.1f;
 
 		public DialogueUI Dialogue => dialogue;
@@ -28,6 +30,14 @@ namespace UI
 		void Start()
 		{
 			ToggleOverlayControls(false);
+
+			dialogue.UICanvas.worldCamera = screenshotCamera.VNCamera;
+			background.UICanvas.worldCamera = screenshotCamera.VNCamera;
+			characters.UICanvas.worldCamera = screenshotCamera.VNCamera;
+			foreground.UICanvas.worldCamera = screenshotCamera.VNCamera;
+			cinematics.UICanvas.worldCamera = screenshotCamera.VNCamera;
+			gameplayControls.UICanvas.worldCamera = screenshotCamera.VNCamera;
+			overlayControlsCanvas.worldCamera = screenshotCamera.VNCamera;
 		}
 
 		public IEnumerator Show(bool isImmediate = false, float fadeSpeed = 0) => SetVisiblity(true, isImmediate, fadeSpeed);
@@ -40,13 +50,13 @@ namespace UI
 				yield break;
 			}
 
-			fadeSpeed = fadeSpeed <= Mathf.Epsilon ? gameOptions.General.TransitionSpeed : fadeSpeed;
+			fadeSpeed = fadeSpeed <= Mathf.Epsilon ? vnOptions.General.TransitionSpeed : fadeSpeed;
 			yield return FadeVisualNovelUI(isVisible, fadeSpeed);
 		}
 
 		void ToggleVisualNovelUI(bool isShowing)
 		{
-			FadeableUI[] canvases = new FadeableUI[] { dialogue, background, sprites, foreground, gameplayControls };
+			FadeableUI[] canvases = new FadeableUI[] { dialogue, background, characters, foreground, gameplayControls, cinematics };
 
 			for (int i = 0; i < canvases.Length; i++)
 			{
@@ -63,10 +73,10 @@ namespace UI
 		{
 			// When showing all visual novel canvases, don't include the dialogue box
 			FadeableUI[] canvases = isFadeIn
-				? new FadeableUI[] { background, sprites, foreground, gameplayControls }
-				: new FadeableUI[] { dialogue, background, sprites, foreground, gameplayControls };
+				? new FadeableUI[] { background, characters, foreground, gameplayControls, cinematics }
+				: new FadeableUI[] { dialogue, background, characters, foreground, gameplayControls, cinematics };
 
-			float speed = fadeSpeed < Mathf.Epsilon ? gameOptions.General.SceneFadeTransitionSpeed : fadeSpeed;
+			float speed = fadeSpeed < Mathf.Epsilon ? vnOptions.General.SceneFadeTransitionSpeed : fadeSpeed;
 			speed *= fadeMultiplier;
 
 			List<IEnumerator> fadeProcesses = new();
@@ -82,7 +92,7 @@ namespace UI
 
 			if (fadeProcesses.Count > 0)
 				yield return Utilities.RunConcurrentProcesses(this, fadeProcesses);
-			
+
 			ToggleOverlayControls(!isFadeIn);
 		}
 

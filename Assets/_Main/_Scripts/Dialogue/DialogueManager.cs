@@ -1,52 +1,43 @@
-using Audio;
 using Characters;
 using Commands;
 using IO;
 using System;
 using System.Collections;
-using UI;
 using UnityEngine;
 using Visuals;
+using VN;
 
 namespace Dialogue
 {
 	public class DialogueManager : MonoBehaviour
 	{
-		[SerializeField] GameOptionsSO gameOptions;
-		[SerializeField] InputManagerSO inputManager;
-		[SerializeField] FileManagerSO fileManager;
-		[SerializeField] GameManager gameManager;
+		[SerializeField] VNOptionsSO vnOptions;
+		[SerializeField] VNManager vnManager;
 		[SerializeField] CommandManager commandManager;
 		[SerializeField] CharacterManager characterManager;
-		[SerializeField] AudioManager audioManager;
 		[SerializeField] VisualGroupManager visualManager;
-		[SerializeField] VisualNovelUI visualNovelUI;
 		
 		DialogueFlowController flowController;
 		DialogueReadMode readMode;
-		
-		public VisualNovelUI UI => visualNovelUI;
+
+		public event Action<DialogueReadMode> OnChangeReadMode;
+
+		public VNManager VN => vnManager;
 		public CharacterManager Characters => characterManager;
 		public CommandManager Commands => commandManager;
-		public FileManagerSO FileManager => fileManager;
-		public InputManagerSO InputManager => inputManager;
-		public AudioManager Audio => audioManager;
 		public VisualGroupManager Visuals => visualManager;
 		public DialogueFlowController FlowController => flowController;
 		public DialogueReadMode ReadMode => readMode;
 
-		public event Action<DialogueReadMode> OnChangeReadMode;
-
 		void Awake()
 		{
 			readMode = DialogueReadMode.Forward;
+			flowController = new(vnManager);
 		}
 
 		void Start()
 		{
 			SubscribeEvents();
-
-			flowController = new(gameManager, this);
 		}
 
 		void OnDestroy()
@@ -56,9 +47,9 @@ namespace Dialogue
 			flowController.Dispose();
 		}
 
-		public void StartDialogue()
+		public void StartDialogue(string sceneName, int nodeNum)
 		{
-			flowController.StartDialogue();
+			flowController.StartDialogue(sceneName, nodeNum);
 		}
 
 		public IEnumerator Wait(float time)
@@ -75,7 +66,7 @@ namespace Dialogue
 		void HandleOnForwardEvent()
 		{
 			DialogueReadMode lastReadMode = readMode;
-			bool shouldAdvanceDuringAuto = lastReadMode == DialogueReadMode.Auto && !gameOptions.Dialogue.StopAutoOnClick;
+			bool shouldAdvanceDuringAuto = lastReadMode == DialogueReadMode.Auto && !vnOptions.Dialogue.StopAutoOnClick;
 
 			readMode = DialogueReadMode.Forward;
 
@@ -119,29 +110,29 @@ namespace Dialogue
 		void UpdateReadMode(DialogueReadMode newMode)
 		{
 			if (newMode == DialogueReadMode.Auto || newMode == DialogueReadMode.Skip)
-				StartCoroutine(UI.ReadModeIndicator.Show(newMode));
+				StartCoroutine(vnManager.UI.ReadModeIndicator.Show(newMode));
 			else
-				StartCoroutine(UI.ReadModeIndicator.Hide());
+				StartCoroutine(vnManager.UI.ReadModeIndicator.Hide());
 
 			OnChangeReadMode?.Invoke(newMode);
 		}
 
 		void SubscribeEvents()
 		{
-			inputManager.OnForward += HandleOnForwardEvent;
-			inputManager.OnAuto += HandleOnAutoEvent;
-			inputManager.OnSkip += HandleOnSkipToggleEvent;
-			inputManager.OnSkipHold += HandleOnSkipHoldEvent;
-			inputManager.OnSkipHoldEnd += HandleOnSkipHoldEndEvent;
+			vnManager.Input.OnForward += HandleOnForwardEvent;
+			vnManager.Input.OnAuto += HandleOnAutoEvent;
+			vnManager.Input.OnSkip += HandleOnSkipToggleEvent;
+			vnManager.Input.OnSkipHold += HandleOnSkipHoldEvent;
+			vnManager.Input.OnSkipHoldEnd += HandleOnSkipHoldEndEvent;
 		}
 
 		void UnsubscribeEvents()
 		{
-			inputManager.OnForward -= HandleOnForwardEvent;
-			inputManager.OnAuto -= HandleOnAutoEvent;
-			inputManager.OnSkip -= HandleOnSkipToggleEvent;
-			inputManager.OnSkipHold -= HandleOnSkipHoldEvent;
-			inputManager.OnSkipHoldEnd -= HandleOnSkipHoldEndEvent;
+			vnManager.Input.OnForward -= HandleOnForwardEvent;
+			vnManager.Input.OnAuto -= HandleOnAutoEvent;
+			vnManager.Input.OnSkip -= HandleOnSkipToggleEvent;
+			vnManager.Input.OnSkipHold -= HandleOnSkipHoldEvent;
+			vnManager.Input.OnSkipHoldEnd -= HandleOnSkipHoldEndEvent;
 		}
 	}
 }

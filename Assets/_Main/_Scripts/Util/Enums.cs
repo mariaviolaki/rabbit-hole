@@ -115,12 +115,17 @@ namespace UI
 {
 	public enum MenuType
 	{
-		None, SideMenu, Save, Load, Log, Traits, Settings, Title
+		None, Title, Dialogue, SideMenu, Settings, Save, Load, Log, Traits
 	}
 
 	public enum SettingsSection
 	{
 		None, Display, Text, Audio
+	}
+
+	public enum MainMenuAction
+	{
+		Start, Continue, Load, Gallery, Settings, Quit
 	}
 }
 
@@ -129,5 +134,13 @@ namespace Gameplay
 	public enum CharacterRoute
 	{
 		Common, Void, Zero, Marsh
+	}
+}
+
+namespace Game
+{
+	public enum GameScene
+	{
+		None, MainMenu, VisualNovel
 	}
 }

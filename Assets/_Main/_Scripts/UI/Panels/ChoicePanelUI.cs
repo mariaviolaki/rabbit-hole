@@ -30,15 +30,13 @@ namespace UI
 			buttonPool = new ObjectPool<ChoiceButtonUI>(OnCreateButton, OnGetButton, OnReleaseButton, OnDestroyButton, maxSize: poolSize);
 		}
 
-		override protected void OnEnable()
+		void OnEnable()
 		{
-			base.OnEnable();
 			PrepareOpen();
 		}
 
-		override protected void OnDisable()
+		void OnDisable()
 		{
-			base.OnDisable();
 			CompleteClose();
 		}
 
@@ -62,7 +60,7 @@ namespace UI
 			if (isTransitioning) yield break;
 			isTransitioning = true;
 
-			fadeSpeed = fadeSpeed <= 0 ? gameOptions.General.SkipTransitionSpeed : fadeSpeed;
+			fadeSpeed = fadeSpeed <= 0 ? vnOptions.General.SkipTransitionSpeed : fadeSpeed;
 
 			foreach (ChoiceButtonUI choiceButton in activeButtons)
 			{
@@ -76,7 +74,7 @@ namespace UI
 				activeButtons[i].Release();
 
 			if (lastChoice != null)
-				inputManager.OnSelectChoice?.Invoke(lastChoice);
+				inputManager.TriggerSelectChoice(lastChoice);
 
 			isTransitioning = false;
 			OnClose?.Invoke();
@@ -86,7 +84,7 @@ namespace UI
 		{
 			lastChoice = null;
 			inputManager.IsChoicePanelOpen = true;
-			inputManager.OnClearChoice?.Invoke();
+			inputManager.TriggerClearChoice();
 		}
 
 		void CompleteClose()

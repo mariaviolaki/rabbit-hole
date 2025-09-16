@@ -1,3 +1,4 @@
+using Game;
 using IO;
 using System;
 using TMPro;
@@ -8,7 +9,7 @@ namespace UI
 {
 	public class SaveMenuSlotUI : MonoBehaviour
 	{
-		[SerializeField] GameOptionsSO gameOptions;
+		[SerializeField] VNOptionsSO vnOptions;
 		[SerializeField] RectTransform dataRoot;
 		[SerializeField] TextMeshProUGUI noDataText;
 		[SerializeField] TextMeshProUGUI titleText;
@@ -58,14 +59,14 @@ namespace UI
 
 			// Check if this slot needs to be populated with data
 			noDataText.text = $"Data {slotNumber}";
-			if (!saveMenu.SaveManager.HasSave(slotNumber))
+			if (!saveMenu.SaveFiles.HasSave(slotNumber))
 			{
 				ClearSlotData();
 				return false;
 			}
 
 			// Check if the saved data is valid
-			slotData = saveMenu.SaveManager.LoadSlot(slotNumber);
+			slotData = saveMenu.SaveFiles.LoadSlot(slotNumber);
 			if (slotData == null)
 			{
 				ClearSlotData();
@@ -85,6 +86,8 @@ namespace UI
 
 		void SaveOrLoad()
 		{
+			if (saveMenu.IsTransitioning) return;
+
 			int slotNumber = GetSlotNumber();
 
 			if (saveMode == SaveMenuMode.Save)
@@ -95,7 +98,9 @@ namespace UI
 
 		void SaveGame(int slotNumber)
 		{
-			saveMenu.StateManager.SaveSlot(slotNumber);
+			if (saveMenu.Game.Scenes.CurrentScene != GameScene.VisualNovel) return;
+
+			saveMenu.Game.VN.Saving.SaveSlot(slotNumber);
 			SetData();
 		}
 
@@ -103,18 +108,18 @@ namespace UI
 		{
 			if (slotData == null) return;
 
-			saveMenu.StateManager.LoadSlot(slotNumber);
+			saveMenu.Game.LoadGame(slotNumber);
 			saveMenu.Menus.CloseMenu();
 		}
 
 		void SetSlotImage()
 		{
-			if (gameOptions.IO.UseSlotScreenshots && slotData.screenshot != null)
+			if (vnOptions.IO.UseSlotScreenshots && slotData.screenshot != null)
 			{
 				Rect screenshotRect = new(0, 0, slotData.screenshot.width, slotData.screenshot.height);
 				slotImage.sprite = Sprite.Create(slotData.screenshot, screenshotRect, new Vector2(0.5f, 0.5f));
 			}
-			else if (!gameOptions.IO.UseSlotScreenshots)
+			else if (!vnOptions.IO.UseSlotScreenshots)
 			{
 				slotImage.sprite = saveMenu.GetSlotPortrait(slotData.route);
 			}

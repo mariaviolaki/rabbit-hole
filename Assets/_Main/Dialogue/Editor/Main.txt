@@ -1,9 +1,12 @@
-﻿label Main
+﻿label Init
 
-CreateBackground(2), CreateForeground(), CreateCinematic()
-CreateAmbient(2), CreateMusic(2), CreateSFX(2), CreateVoice(2)
-ShowVN(immediate=true)
 wait CreateCharacters(v, eg, v1:v, mc, m, all, z)
+
+end Init
+
+
+label Main
+
 all.SetName("Everyone")
 
 $playerName = Player
@@ -14,7 +17,6 @@ $curiosity = 0
 
 jump Prologue
 end Main
-
 
 
 label Prologue

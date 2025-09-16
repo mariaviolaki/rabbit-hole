@@ -11,7 +11,7 @@ namespace Audio
 
 		const float FadeSpeedMultiplier = 20f;
 
-		GameOptionsSO gameOptions;
+		VNOptionsSO vnOptions;
 		ObjectPool<AudioTrack> trackPool;
 		AudioGroup audioGroup;
 		AudioSource audioSource;
@@ -41,7 +41,7 @@ namespace Audio
 		public void Initialize(ObjectPool<AudioTrack> trackPool, AudioGroup audioGroup)
 		{
 			this.audioSource = GetComponent<AudioSource>();
-			this.gameOptions = audioGroup.Manager.Options;
+			this.vnOptions = audioGroup.Manager.Options;
 			this.trackPool = trackPool;
 			this.audioGroup = audioGroup;
 			status = TrackStatus.Stopped;
@@ -133,15 +133,15 @@ namespace Audio
 
 		IEnumerator LoadAudioTrack(string name)
 		{
-			yield return audioGroup.Manager.FileManager.LoadAudio(name, audioGroup.AssetLabel);
-			audioSource.clip = audioGroup.Manager.FileManager.GetAudio(name, audioGroup.AssetLabel);
+			yield return audioGroup.Manager.Assets.LoadAudio(name, audioGroup.AssetLabel);
+			audioSource.clip = audioGroup.Manager.Assets.GetAudio(name, audioGroup.AssetLabel);
 		}
 
 		void UnloadAudioTrack()
 		{
 			if (audioSource.clip == null) return;
 
-			audioGroup.Manager.FileManager.UnloadAudio(trackName, audioGroup.AssetLabel);
+			audioGroup.Manager.Assets.UnloadAudio(trackName, audioGroup.AssetLabel);
 			audioSource.clip = null;
 			status = TrackStatus.Stopped;
 			RemoveFromPool();
@@ -154,7 +154,7 @@ namespace Audio
 
 		void SetTransitionSpeed(float speed)
 		{
-			float baseSpeed = speed < Mathf.Epsilon ? gameOptions.Audio.TransitionSpeed : speed;
+			float baseSpeed = speed < Mathf.Epsilon ? vnOptions.Audio.TransitionSpeed : speed;
 			this.fadeSpeed = baseSpeed * FadeSpeedMultiplier;
 		}
 	}

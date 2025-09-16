@@ -51,6 +51,14 @@ namespace Audio
 			layers[layerNum].Stop(audioName, isImmediate, fadeSpeed);
 		}
 
+		public void StopAll(bool isImmediate = false, float fadeSpeed = 0f)
+		{
+			foreach (AudioLayer layer in layers.Values)
+			{
+				layer.Stop(null, isImmediate, fadeSpeed);
+			}
+		}
+
 		public AudioLayer GetLayer(int num)
 		{
 			if (!layers.ContainsKey(num))

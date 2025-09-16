@@ -44,8 +44,8 @@ namespace Characters
 			yield return base.Initialize(manager, data);
 
 			// Load this character's model into the scene
-			yield return manager.FileManager.LoadModel3DPrefab(data.CastName);
-			GameObject modelPrefab = manager.FileManager.GetModel3DPrefab(data.CastName);
+			yield return manager.Assets.LoadModel3DPrefab(data.CastName);
+			GameObject modelPrefab = manager.Assets.GetModel3DPrefab(data.CastName);
 			if (modelPrefab == null) yield break;
 
 			GameObject modelRootGameObject = Instantiate(modelPrefab, manager.Model3DContainer);
@@ -55,7 +55,7 @@ namespace Characters
 			modelRoot.name = data.Name;
 
 			// Create a primary image to swap with the secondary for smooth transitions
-			RenderTexture renderTexture = new RenderTexture(manager.GameOptions.Model3D.RenderTexture3D);
+			RenderTexture renderTexture = new RenderTexture(manager.Options.Model3D.RenderTexture3D);
 			primaryRawImage = animator.transform.GetChild(0).GetComponentInChildren<RawImage>();
 			primaryRawImage.texture = renderTexture;
 			secondaryRawImage = animator.transform.GetChild(1).GetComponentInChildren<RawImage>();
@@ -67,7 +67,7 @@ namespace Characters
 			skinnedMeshRenderer = modelAnimator.GetComponentInChildren<SkinnedMeshRenderer>();
 			expressionBank = skinnedMeshRenderer.GetComponent<Model3DExpressionBank>();
 			modelCamera.targetTexture = renderTexture;
-			modelContainer.localEulerAngles = new Vector3(0, manager.GameOptions.Model3D.DefaultAngle, 0);
+			modelContainer.localEulerAngles = new Vector3(0, manager.Options.Model3D.DefaultAngle, 0);
 
 			expression = string.Empty;
 			CacheMotionNames();
@@ -101,7 +101,7 @@ namespace Characters
 			}
 			else
 			{
-				float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+				float defaultSpeed = vnOptions.Characters.TransitionSpeed;
 				bool isSkipped = expressionStatus != TransitionStatus.Completed;
 				expressionSpeed = GetTransitionSpeed(speed, defaultSpeed, ExpressionSpeedMultiplier, isSkipped);
 				expressionStatus = expressionStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
@@ -112,7 +112,7 @@ namespace Characters
 		{
 			if (expressionStatus == TransitionStatus.Completed) return;
 
-			float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+			float defaultSpeed = vnOptions.Characters.TransitionSpeed;
 			expressionSpeed = GetTransitionSpeed(defaultSpeed, defaultSpeed, ExpressionSpeedMultiplier, true);
 			expressionStatus = TransitionStatus.Skipped;
 		}

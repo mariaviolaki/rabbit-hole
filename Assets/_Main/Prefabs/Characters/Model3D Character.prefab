@@ -366,7 +366,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 988924faf5bc06741afe508723fd94d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
+  vnOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
 --- !u!224 &6358144107147381687 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1777213724306915667, guid: e32372a873a8dca4db62931eef5eccb2, type: 3}

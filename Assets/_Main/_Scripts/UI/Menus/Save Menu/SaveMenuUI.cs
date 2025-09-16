@@ -1,7 +1,6 @@
+using Game;
 using Gameplay;
 using IO;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -11,17 +10,16 @@ using Variables;
 
 namespace UI
 {
-	public class SaveMenuUI : FadeableUI
+	public class SaveMenuUI : MenuBaseUI
 	{
 		[SerializeField] TextMeshProUGUI titleText;
-		[SerializeField] Button backButton;
 		[SerializeField] Transform pageContainer;
 		[SerializeField] Transform slotContainer;
 		[SerializeField] SaveMenuPageUI pageNumberPrefab;
 		[SerializeField] Button previousButton;
 		[SerializeField] Button nextButton;
 		[SerializeField] SpriteAtlas portraitAtlas;
-		[SerializeField] MenusUI menus;
+		[SerializeField] SaveFileManagerSO saveFileManager;
 		[SerializeField] GameManager gameManager;
 
 		readonly List<SaveMenuPageUI> pages = new();
@@ -29,15 +27,11 @@ namespace UI
 		int maxPages;
 		int currentPage;
 		SaveMenuMode saveMode;
-		bool isTransitioning = false;
 
-		public event Action OnClose;
-
-		public bool IsTransitioning => isTransitioning;
 		public int SlotsPerPage => slotContainer.childCount;
-		public GameStateManager StateManager => gameManager.StateManager;
-		public SaveFileManager SaveManager => gameManager.SaveManager;
+		public SaveFileManagerSO SaveFiles => saveFileManager;
 		public MenusUI Menus => menus;
+		public GameManager Game => gameManager;
 
 		override protected void Awake()
 		{
@@ -50,44 +44,6 @@ namespace UI
 		{
 			base.Start();
 			SetSelectedPage();
-		}
-
-		protected override void OnEnable()
-		{
-			base.OnEnable();
-			SubscribeListeners();
-		}
-
-		protected override void OnDisable()
-		{
-			base.OnDisable();
-			UnsubscribeListeners();
-		}
-
-		public IEnumerator Open(SaveMenuMode saveMode, bool isImmediate = false, float fadeSpeed = 0)
-		{
-			if (IsVisible || isTransitioning) yield break;
-			isTransitioning = true;
-
-			base.fadeSpeed = fadeSpeed;
-			base.isImmediateTransition = isImmediate;
-
-			PrepareOpen(saveMode);
-			yield return SetVisible(isImmediate, fadeSpeed);
-
-			isTransitioning = false;
-		}
-
-		public IEnumerator Close(bool isImmediate = false, float fadeSpeed = 0)
-		{
-			if (IsHidden || isTransitioning) yield break;
-			isTransitioning = true;
-
-			fadeSpeed = fadeSpeed <= 0 ? gameOptions.General.TransitionSpeed : fadeSpeed;
-			yield return SetHidden(isImmediate, fadeSpeed);
-
-			isTransitioning = false;
-			OnClose?.Invoke();
 		}
 
 		public Sprite GetSlotPortrait(CharacterRoute route)
@@ -128,16 +84,18 @@ namespace UI
 			SetSelectedPage();
 		}
 
-		void PrepareOpen(SaveMenuMode saveMode)
+		override protected bool PrepareOpen(MenuType menuType)
 		{
-			this.saveMode = saveMode;
+			saveMode = menuType == MenuType.Save ? SaveMenuMode.Save : SaveMenuMode.Load;
 			titleText.text = saveMode.ToString();
-			SetPage(gameManager.StateManager.State.SaveMenuPage);
+			SetPage(gameManager.Progress.SaveMenuPage);
 
 			foreach (SaveMenuSlotUI slot in slots)
 			{
 				slot.SetData(saveMode, currentPage);
 			}
+			
+			return base.PrepareOpen(menuType);
 		}
 
 		void SetSelectedPage()
@@ -153,7 +111,7 @@ namespace UI
 			previousButton.interactable = currentPage > 1;
 			nextButton.interactable = currentPage < maxPages;
 
-			gameManager.StateManager.State.SetSaveMenuPage(currentPage);
+			gameManager.Progress.SetSaveMenuPage(currentPage);
 
 			SetPageSlots();
 		}
@@ -168,7 +126,7 @@ namespace UI
 
 		void InitializePages()
 		{
-			maxPages = Mathf.Max(1, Mathf.FloorToInt(gameOptions.IO.SlotCount / SlotsPerPage));
+			maxPages = Mathf.Max(1, Mathf.FloorToInt(vnOptions.IO.SlotCount / SlotsPerPage));
 			currentPage = 1;
 
 			for (int i = 1; i <= maxPages; i++)
@@ -191,9 +149,9 @@ namespace UI
 			}
 		}
 
-		void SubscribeListeners()
+		override protected void SubscribeListeners()
 		{
-			backButton.onClick.AddListener(menus.CloseMenu);
+			base.SubscribeListeners();
 			previousButton.onClick.AddListener(DecrementPage);
 			nextButton.onClick.AddListener(IncrementPage);
 
@@ -203,9 +161,9 @@ namespace UI
 			}
 		}
 
-		void UnsubscribeListeners()
+		override protected void UnsubscribeListeners()
 		{
-			backButton.onClick.RemoveListener(menus.CloseMenu);
+			base.UnsubscribeListeners();
 			previousButton.onClick.RemoveListener(DecrementPage);
 			nextButton.onClick.RemoveListener(IncrementPage);
 

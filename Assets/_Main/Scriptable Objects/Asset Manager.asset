@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52be4273cf606704ab4ccb53160f5fee, type: 3}
+  m_Name: Asset Manager
+  m_EditorClassIdentifier: 
+  vnOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
+  videoLabel:
+    m_LabelString: StreamingAssets/Videos
+  ambientAudioLabel:
+    m_LabelString: Audio/Ambient
+  musicAudioLabel:
+    m_LabelString: Audio/Music
+  sfxAudioLabel:
+    m_LabelString: Audio/SFX
+  voiceAudioLabel:
+    m_LabelString: Audio/Voice
+  dialogueLabel:
+    m_LabelString: Dialogue
+  imageLabel:
+    m_LabelString: Graphics/Images
+  characterAtlasLabel:
+    m_LabelString: Sprite Atlas/Characters
+  model3DPrefabLabel:
+    m_LabelString: Prefabs/Character Models

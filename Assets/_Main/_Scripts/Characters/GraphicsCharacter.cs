@@ -135,7 +135,7 @@ namespace Characters
 			}
 			else
 			{
-				float defaultSpeed = gameOptions.Characters.MoveSpeed;
+				float defaultSpeed = vnOptions.Characters.MoveSpeed;
 				bool isSkipped = positionStatus != TransitionStatus.Completed;
 				positionSpeed = GetTransitionSpeed(speed, defaultSpeed, PositionSpeedMultiplier, isSkipped);
 				positionStatus = positionStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
@@ -156,7 +156,7 @@ namespace Characters
 			}
 			else
 			{
-				float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+				float defaultSpeed = vnOptions.Characters.TransitionSpeed;
 				bool isSkipped = visibilityStatus != TransitionStatus.Completed;
 				visibilitySpeed = GetTransitionSpeed(speed, defaultSpeed, VisibilitySpeedMultiplier, isSkipped);
 				visibilityStatus = visibilityStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
@@ -177,7 +177,7 @@ namespace Characters
 			}
 			else
 			{
-				float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+				float defaultSpeed = vnOptions.Characters.TransitionSpeed;
 				bool isSkipped = directionStatus != TransitionStatus.Completed;
 				directionSpeed = GetTransitionSpeed(speed, defaultSpeed, DirectionSpeedMultiplier, isSkipped);
 				directionStatus = directionStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
@@ -196,7 +196,7 @@ namespace Characters
 			}
 			else
 			{
-				float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+				float defaultSpeed = vnOptions.Characters.TransitionSpeed;
 				bool isSkipped = colorStatus != TransitionStatus.Completed;
 				colorSpeed = GetTransitionSpeed(speed, defaultSpeed, ColorSpeedMultiplier, isSkipped);
 				colorStatus = colorStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
@@ -217,7 +217,7 @@ namespace Characters
 			}
 			else
 			{
-				float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+				float defaultSpeed = vnOptions.Characters.TransitionSpeed;
 				bool isSkipped = colorStatus != TransitionStatus.Completed;
 				colorSpeed = GetTransitionSpeed(speed, defaultSpeed, ColorSpeedMultiplier, isSkipped);
 				colorStatus = colorStatus == TransitionStatus.Completed ? TransitionStatus.Started : TransitionStatus.Skipped;
@@ -228,7 +228,7 @@ namespace Characters
 		{
 			if (positionStatus == TransitionStatus.Completed) return;
 			
-			float defaultSpeed = gameOptions.Characters.MoveSpeed;
+			float defaultSpeed = vnOptions.Characters.MoveSpeed;
 			positionSpeed = GetTransitionSpeed(defaultSpeed, defaultSpeed, PositionSpeedMultiplier, true);
 			positionStatus = TransitionStatus.Skipped;
 		}
@@ -237,7 +237,7 @@ namespace Characters
 		{
 			if (visibilityStatus == TransitionStatus.Completed) return;
 
-			float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+			float defaultSpeed = vnOptions.Characters.TransitionSpeed;
 			visibilitySpeed = GetTransitionSpeed(defaultSpeed, defaultSpeed, VisibilitySpeedMultiplier, true);
 			visibilityStatus = TransitionStatus.Skipped;
 		}
@@ -246,7 +246,7 @@ namespace Characters
 		{
 			if (directionStatus == TransitionStatus.Completed) return;
 
-			float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+			float defaultSpeed = vnOptions.Characters.TransitionSpeed;
 			directionSpeed = GetTransitionSpeed(defaultSpeed, defaultSpeed, DirectionSpeedMultiplier, true);
 			directionStatus = TransitionStatus.Skipped;
 		}
@@ -255,7 +255,7 @@ namespace Characters
 		{
 			if (colorStatus == TransitionStatus.Completed) return;
 
-			float defaultSpeed = gameOptions.Characters.TransitionSpeed;
+			float defaultSpeed = vnOptions.Characters.TransitionSpeed;
 			colorSpeed = GetTransitionSpeed(defaultSpeed, defaultSpeed, ColorSpeedMultiplier, true);
 			colorStatus = TransitionStatus.Skipped;
 		}
@@ -372,9 +372,9 @@ namespace Characters
 			if (isHighlighted) return color;
 
 			return new Color(
-				color.r * manager.GameOptions.Characters.DarkenBrightness,
-				color.g * manager.GameOptions.Characters.DarkenBrightness,
-				color.b * manager.GameOptions.Characters.DarkenBrightness,
+				color.r * manager.Options.Characters.DarkenBrightness,
+				color.g * manager.Options.Characters.DarkenBrightness,
+				color.b * manager.Options.Characters.DarkenBrightness,
 				color.a
 			);
 		}
@@ -384,7 +384,7 @@ namespace Characters
 			float baseSpeed = speedInput;
 
 			if (isTransitionSkipped || manager.Dialogue.FlowController.IsSkipping)
-				baseSpeed = manager.GameOptions.General.SkipTransitionSpeed;
+				baseSpeed = manager.Options.General.SkipTransitionSpeed;
 			else if (speedInput < Mathf.Epsilon)
 				baseSpeed = defaultSpeed;
 
@@ -412,7 +412,7 @@ namespace Characters
 
 			// Initialize Direction
 			Vector2 currentDirection = primaryFlipContainer.transform.localScale;
-			float rightX = manager.GameOptions.Characters.AreSpritesFacingRight ? currentDirection.x : -currentDirection.x;
+			float rightX = manager.Options.Characters.AreSpritesFacingRight ? currentDirection.x : -currentDirection.x;
 			leftDirection = new(-rightX, currentDirection.y);
 			rightDirection = new(rightX, currentDirection.y);
 			direction = currentDirection;
@@ -420,7 +420,7 @@ namespace Characters
 
 			// Initialize Color
 			color = Color.white;
-			isHighlighted = !manager.GameOptions.Characters.HighlightOnSpeak;
+			isHighlighted = !manager.Options.Characters.HighlightOnSpeak;
 		}
 	}
 }

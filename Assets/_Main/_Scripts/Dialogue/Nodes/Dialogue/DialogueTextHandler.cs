@@ -1,3 +1,4 @@
+using Game;
 using History;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,12 +18,13 @@ namespace Dialogue
 		const float AutoTimePerCharacter = 1f;
 		const float SkipSpeedMultiplier = 1f;
 
+		readonly SettingsManager settingsManager;
+		readonly GameProgressManager gameProgressManager;
 		readonly DialogueManager dialogueManager;
 		readonly VariableManager variableManager;
 		readonly HistoryManager historyManager;
 		readonly DialogueFlowController flowController;
-		readonly GameState gameState;
-		readonly GameOptionsSO gameOptions;
+		readonly VNOptionsSO vnOptions;
 		readonly TextBuilder textBuilder;
 		readonly DialogueContinuePromptUI continuePrompt;
 
@@ -33,19 +35,20 @@ namespace Dialogue
 
 		public void ForceComplete() => isWaitingToAdvance = false;
 
-		public DialogueTextHandler(GameManager gameManager, DialogueManager dialogueManager, DialogueFlowController flowController)
+		public DialogueTextHandler(DialogueFlowController flowController)
 		{
-			this.dialogueManager = dialogueManager;
 			this.flowController = flowController;
-			continuePrompt = dialogueManager.UI.ContinuePrompt;
+			this.dialogueManager = flowController.Dialogue;
+			continuePrompt = dialogueManager.VN.UI.ContinuePrompt;
 
-			variableManager = gameManager.Variables;
-			historyManager = gameManager.History;
-			gameState = gameManager.StateManager.State;
-			gameOptions = gameManager.Options;
+			variableManager = flowController.VN.Game.Variables;
+			historyManager = flowController.VN.History;
+			settingsManager = flowController.VN.Game.Settings;
+			gameProgressManager = flowController.VN.Game.Progress;
+			vnOptions = flowController.VN.Options;
 
-			textBuilder = new(dialogueManager.UI.Dialogue.DialogueText, gameOptions);
-			typeMode = gameOptions.Dialogue.TextMode;
+			textBuilder = new(dialogueManager.VN.UI.Dialogue.DialogueText, vnOptions);
+			typeMode = vnOptions.Dialogue.TextMode;
 
 			dialogueManager.OnChangeReadMode += UpdateTextBuildMode;
 		}
@@ -58,9 +61,9 @@ namespace Dialogue
 		public void UpdateTextBuildMode(DialogueReadMode readMode)
 		{
 			if (readMode == DialogueReadMode.Skip)
-				readSpeed = gameOptions.Dialogue.MaxTextSpeed;
+				readSpeed = vnOptions.Dialogue.MaxTextSpeed;
 			else
-				readSpeed = gameState.TextSpeed;
+				readSpeed = settingsManager.TextSpeed;
 
 			textBuilder.Speed = readSpeed;
 		}
@@ -79,7 +82,6 @@ namespace Dialogue
 		IEnumerator DisplayDialogueSegment(DialogueTextSegment segment, DialogueTextSegment nextSegment)
 		{
 			string dialogueText = ScriptVariableUtilities.ParseText(segment.Text, variableManager);
-			bool hasNewHistory = nextSegment == null;
 			bool hasCapturedHistory = false;
 
 			while (flowController.IsRunning)
@@ -96,7 +98,7 @@ namespace Dialogue
 				textBuilder.TypeMode = typeMode;
 				if (IsSkippableDialogue())
 				{
-					textBuilder.Speed = gameOptions.Dialogue.MaxTextSpeed;
+					textBuilder.Speed = vnOptions.Dialogue.MaxTextSpeed;
 					textBuilder.TypeMode = skippedTypeMode;
 				}
 
@@ -108,25 +110,25 @@ namespace Dialogue
 				isWaitingToAdvance = true;
 				while (!CanContinueDialogue(nextSegment, dialogueText, startTime, textBuilder.IsBuilding, IsSkippableDialogue()))
 				{
-					ProcessCompletedText(hasNewHistory, ref hasCapturedHistory);
+					ProcessCompletedText(ref hasCapturedHistory);
 					yield return null;
 				}
 
-				ProcessCompletedText(hasNewHistory, ref hasCapturedHistory);
+				ProcessCompletedText(ref hasCapturedHistory);
 
 				isWaitingToAdvance = false;
 				if (!textBuilder.IsBuilding) break;
 			}
 		}
 
-		void ProcessCompletedText(bool hasNewHistory, ref bool hasCapturedHistory)
+		void ProcessCompletedText(ref bool hasCapturedHistory)
 		{
 			if (textBuilder.IsBuilding) return;
 
 			if (!continuePrompt.IsVisible)
 				continuePrompt.Show();
 
-			if (hasNewHistory && !hasCapturedHistory)
+			if (!hasCapturedHistory)
 			{
 				historyManager.Capture();
 				hasCapturedHistory = true;
@@ -154,23 +156,23 @@ namespace Dialogue
 
 		bool IsSkippableDialogue()
 		{
-			if (!flowController.IsSkipping || gameState.SkipMode != DialogueSkipMode.Read)
+			if (!flowController.IsSkipping || settingsManager.SkipMode != DialogueSkipMode.Read)
 				return flowController.IsSkipping;
 
 			string dialogueNodeId = TreeNodeUtilities.GetDialogueNodeId(flowController.CurrentSceneName, flowController.CurrentNodeId);
-			return gameState.HasReadLine(dialogueNodeId);
+			return gameProgressManager.HasReadLine(dialogueNodeId);
 		}
 
 		float GetAutoReadDelay(int textLength)
 		{
-			float speed = gameState.AutoSpeed;
+			float speed = settingsManager.AutoSpeed;
 			float delay = (BaseAutoTime + AutoTimePerCharacter * textLength) / speed;
 			return Mathf.Clamp(delay, MinAutoTime, MaxAutoTime);
 		}
 
 		float GetSkipReadDelay()
 		{
-			float speed = gameOptions.Dialogue.SkipSpeed;
+			float speed = vnOptions.Dialogue.SkipSpeed;
 			float delay = (1 / speed) * SkipSpeedMultiplier;
 			return Mathf.Clamp(delay, MinSkipTime, MaxSkipTime);
 		}

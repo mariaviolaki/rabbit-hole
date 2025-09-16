@@ -1,7 +1,7 @@
 label CommonEnding "The Fourth Wall"
 
 ClearBackground(speed=5)
-StopMusic()
+StopAudio()
 
 "You feel something erupt from inside."
 "And, next thing you know, {a 0.5}you're <i>dead</i>."
@@ -13,6 +13,6 @@ wait(0.1)
 eg.Hide(speed=20)
 
 "That was the end of your story."
-HideVN(speed=5)
+HideDialogue(speed=5)
 
 end CommonEnding

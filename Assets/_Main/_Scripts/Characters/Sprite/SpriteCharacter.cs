@@ -40,8 +40,8 @@ namespace Characters
 		{
 			yield return base.Initialize(manager, data);
 
-			yield return manager.FileManager.LoadCharacterAtlas(data.CastName);
-			spriteAtlas = manager.FileManager.GetCharacterAtlas(data.CastName);
+			yield return manager.Assets.LoadCharacterAtlas(data.CastName);
+			spriteAtlas = manager.Assets.GetCharacterAtlas(data.CastName);
 			if (spriteAtlas == null) yield break;
 
 			InitSpriteLayers();

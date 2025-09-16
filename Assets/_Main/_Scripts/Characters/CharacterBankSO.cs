@@ -16,17 +16,17 @@ namespace Characters
 			return characters.ContainsKey(shortName);
 		}
 
-		public CharacterData GetCharacterData(string shortName, string castShortName, GameOptionsSO gameOptions)
+		public CharacterData GetCharacterData(string shortName, string castShortName, VNOptionsSO vnOptions)
 		{
 			if (characters.ContainsKey(castShortName))
 				return CharacterData.Get(shortName, characters[castShortName], shortName == castShortName);
 
-			return GetDefaultData(shortName, gameOptions);
+			return GetDefaultData(shortName, vnOptions);
 		}
 
-		public CharacterData GetDefaultData(string shortName, GameOptionsSO gameOptions)
+		public CharacterData GetDefaultData(string shortName, VNOptionsSO vnOptions)
 		{
-			return CharacterData.GetDefault(shortName, gameOptions);
+			return CharacterData.GetDefault(shortName, vnOptions);
 		}
 
 		void OnEnable()

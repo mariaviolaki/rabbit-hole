@@ -13,7 +13,7 @@ namespace Dialogue
 		const float TypeSpeedMultiplier = 0.21f;
 		const float FadeSpeedMultiplier = 0.095f;
 
-		readonly GameOptionsSO gameOptions;
+		readonly VNOptionsSO vnOptions;
 		readonly TMP_Text tmpText;
 
 		Coroutine buildProcess;
@@ -24,17 +24,17 @@ namespace Dialogue
 		public float Speed
 		{
 			get { return speed; }
-			set { speed = Mathf.Clamp(value, gameOptions.Dialogue.MinTextSpeed, gameOptions.Dialogue.MaxTextSpeed); }
+			set { speed = Mathf.Clamp(value, vnOptions.Dialogue.MinTextSpeed, vnOptions.Dialogue.MaxTextSpeed); }
 		}
 		public TextTypeMode TypeMode { get { return typeMode; } set { typeMode = value; } }
 
-		public TextBuilder(TMP_Text tmpText, GameOptionsSO gameOptions)
+		public TextBuilder(TMP_Text tmpText, VNOptionsSO vnOptions)
 		{
 			this.tmpText = tmpText;
 			this.tmpText.text = "";
-			this.gameOptions = gameOptions;
+			this.vnOptions = vnOptions;
 
-			speed = gameOptions.Dialogue.MaxTextSpeed / 2;
+			speed = vnOptions.Dialogue.MaxTextSpeed / 2;
 		}
 
 		public bool Write(string newText)

@@ -13,29 +13,27 @@ namespace IO
 		const float InputDelay = 0.2f;
 
 		// Triggered by the InputActions asset
-		public Action OnSideMenuOpen;
-		public Action OnMenuClose;
-		public Action OnConfirm;
-		public Action OnForward;
-		public Action OnDialogueBack;
-		public Action OnAuto;
-		public Action OnSkip;
-		public Action OnSkipHold;
-		public Action OnSkipHoldEnd;
-		public Action OnOpenLog;
-		public Action<float> OnScroll;
+		public event Action OnSideMenuOpen;
+		public event Action OnMenuClose;
+		public event Action OnConfirm;
+		public event Action OnForward;
+		public event Action OnDialogueBack;
+		public event Action OnAuto;
+		public event Action OnSkip;
+		public event Action OnSkipHold;
+		public event Action OnSkipHoldEnd;
+		public event Action OnOpenLog;
+		public event Action<float> OnScroll;
 
 		// Triggered by UI components
-		public Action OnClearInput;
-		public Action<string> OnSubmitInput;
-		public Action OnClearChoice;
-		public Action<DialogueChoice> OnSelectChoice;
+		public event Action OnClearInput;
+		public event Action<string> OnSubmitInput;
+		public event Action OnClearChoice;
+		public event Action<DialogueChoice> OnSelectChoice;
 
 		InputActions inputActions;
 		float lastInputTime;
 		bool isHoldPerformed = false;
-
-		bool IsDialoguePanelOpen => CurrentMenu != MenuType.None || IsInputPanelOpen || IsChoicePanelOpen;
 
 		public MenuType CurrentMenu { get; set; } = MenuType.None;
 		public bool IsInputPanelOpen { get; set; } = false;
@@ -51,27 +49,56 @@ namespace IO
 			lastInputTime = Time.time;
 		}
 
+		public void TriggerClick()
+		{
+			if (CurrentMenu == MenuType.Dialogue && !IsChoicePanelOpen && !IsInputPanelOpen)
+				OnForward?.Invoke();
+		}
+
+		public void TriggerSubmitInput(string input)
+		{
+			if (CurrentMenu == MenuType.Dialogue && IsInputPanelOpen)
+				OnSubmitInput?.Invoke(input);
+		}
+
+		public void TriggerClearInput()
+		{
+			if (CurrentMenu == MenuType.Dialogue && IsInputPanelOpen)
+				OnClearInput?.Invoke();
+		}
+
+		public void TriggerSelectChoice(DialogueChoice choice)
+		{
+			if (CurrentMenu == MenuType.Dialogue && IsChoicePanelOpen)
+				OnSelectChoice?.Invoke(choice);
+		}
+
+		public void TriggerClearChoice()
+		{
+			if (CurrentMenu == MenuType.Dialogue && IsChoicePanelOpen)
+				OnClearChoice?.Invoke();
+		}
+
 		void InputActions.IVNActions.OnForwardAction(InputAction.CallbackContext context)
 		{
-			if (CurrentMenu != MenuType.None) return;
 			if (context.phase != InputActionPhase.Performed) return;
 
-			OnForward?.Invoke();
+			TriggerClick();
 		}
 
 		void InputActions.IVNActions.OnConfirmAction(InputAction.CallbackContext context)
 		{
 			if (context.phase != InputActionPhase.Performed) return;
 
-			if (!IsDialoguePanelOpen)
+			if (CurrentMenu == MenuType.Dialogue && !IsChoicePanelOpen && !IsInputPanelOpen)
 				OnForward?.Invoke();
-			else
+			else if (CurrentMenu == MenuType.Dialogue && IsInputPanelOpen)
 				OnConfirm?.Invoke();
 		}
 
 		void InputActions.IVNActions.OnDialogueBackAction(InputAction.CallbackContext context)
 		{
-			if (CurrentMenu != MenuType.None) return;
+			if (CurrentMenu != MenuType.Dialogue) return;
 			if (context.phase != InputActionPhase.Performed) return;
 			if (IsOnInputCooldown()) return;
 
@@ -80,7 +107,7 @@ namespace IO
 
 		void InputActions.IVNActions.OnAutoAction(InputAction.CallbackContext context)
 		{
-			if (CurrentMenu != MenuType.None) return;
+			if (CurrentMenu != MenuType.Dialogue) return;
 			if (context.phase != InputActionPhase.Performed) return;
 
 			OnAuto?.Invoke();
@@ -88,7 +115,7 @@ namespace IO
 
 		void InputActions.IVNActions.OnSkipAction(InputAction.CallbackContext context)
 		{
-			if (CurrentMenu != MenuType.None) return;
+			if (CurrentMenu != MenuType.Dialogue) return;
 
 			// Only trigger successful button presses
 			if (context.interaction is not PressInteraction || context.phase != InputActionPhase.Performed) return;
@@ -97,7 +124,7 @@ namespace IO
 
 		void InputActions.IVNActions.OnSkipHoldAction(InputAction.CallbackContext context)
 		{
-			if (CurrentMenu != MenuType.None) return;
+			if (CurrentMenu != MenuType.Dialogue) return;
 			// Only proceed if the player is holding down the button
 			if (context.interaction is not HoldInteraction) return;
 
@@ -115,7 +142,7 @@ namespace IO
 
 		void InputActions.IVNActions.OnLogAction(InputAction.CallbackContext context)
 		{
-			if (CurrentMenu != MenuType.None) return;
+			if (CurrentMenu != MenuType.Dialogue) return;
 			if (context.phase != InputActionPhase.Performed) return;
 
 			OnOpenLog?.Invoke();
@@ -138,7 +165,7 @@ namespace IO
 		{
 			if (context.phase != InputActionPhase.Performed) return;
 
-			if (CurrentMenu == MenuType.None)
+			if (CurrentMenu == MenuType.Dialogue)
 				OnSideMenuOpen?.Invoke();
 			else
 				OnMenuClose?.Invoke();

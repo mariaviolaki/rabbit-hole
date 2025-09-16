@@ -23,7 +23,7 @@ namespace UI
 			yield return SetHidden(isImmediate, fadeSpeed);
 		}
 
-		void UpdateNameText() => UpdateNameText("", gameOptions.Dialogue.DefaultTextColor);
+		void UpdateNameText() => UpdateNameText("", vnOptions.Dialogue.DefaultTextColor);
 		void UpdateNameText(CharacterData characterData) => UpdateNameText(characterData?.Name, characterData.NameColor);
 		void UpdateNameText(string speakerName, Color color)
 		{

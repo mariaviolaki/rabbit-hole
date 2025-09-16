@@ -1,6 +1,7 @@
 using Dialogue;
 using System.Collections;
 using UnityEngine;
+using VN;
 
 namespace History
 {
@@ -19,23 +20,25 @@ namespace History
 		public HistoryCharacterData Characters => characterData;
 		public HistoryVariableData Variables => variableData;
 
-		public HistoryState(GameManager gameManager, DialogueManager dialogueManager)
+		public HistoryState(VNManager vnManager, DialogueManager dialogueManager)
 		{
-			dialogueData = new(dialogueManager.FlowController);
-			audioData = new(dialogueManager.Audio);
+			audioData = new(vnManager.Game.Audio);
+			variableData = new(vnManager.Game.Variables);
+			dialogueData = new(dialogueManager.FlowController, vnManager.UI.Dialogue);
 			visualData = new(dialogueManager.Visuals);
 			characterData = new(dialogueManager.Characters);
-			variableData = new(gameManager.Variables);
 		}
 
 		// Resets progress to an older state
-		public IEnumerator Load(GameManager gameManager, DialogueManager dialogueManager, GameOptionsSO gameOptions)
+		public IEnumerator Load(VNManager vnManager, DialogueManager dialogueManager, VNOptionsSO vnOptions)
 		{
-			yield return audioData.Load(dialogueManager.Audio, gameOptions);
-			yield return visualData.Load(dialogueManager.Visuals, gameOptions);
-			characterData.Load(dialogueManager.Characters, gameOptions);
+			yield return visualData.Load(dialogueManager.Visuals, vnOptions);
+			yield return audioData.Load(vnManager.Game.Audio, vnOptions);
+
+			variableData.Load(vnManager.Game.Variables);
+			characterData.Load(dialogueManager.Characters, vnOptions);
+
 			yield return dialogueData.Load(dialogueManager, dialogueManager.FlowController);
-			variableData.Load(gameManager.Variables);
 		}
 	}
 }

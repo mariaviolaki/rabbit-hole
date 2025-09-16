@@ -42,7 +42,7 @@ namespace Characters
 			return copiedData;
 		}
 
-		public static CharacterData GetDefault(string shortName, GameOptionsSO gameOptions)
+		public static CharacterData GetDefault(string shortName, VNOptionsSO vnOptions)
 		{
 			CharacterData defaultData = new();
 			defaultData.CastName = shortName;
@@ -50,8 +50,8 @@ namespace Characters
 			defaultData.ShortName = shortName;
 			defaultData.Type = CharacterType.Text;
 			defaultData.SpriteLayers = new();
-			defaultData.NameColor = gameOptions.Dialogue.DefaultTextColor;
-			defaultData.DialogueColor = gameOptions.Dialogue.DefaultTextColor;
+			defaultData.NameColor = vnOptions.Dialogue.DefaultTextColor;
+			defaultData.DialogueColor = vnOptions.Dialogue.DefaultTextColor;
 
 			return defaultData;
 		}

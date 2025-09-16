@@ -1,3 +1,4 @@
+using Game;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,7 +7,7 @@ namespace UI
 	public abstract class SettingsSectionBaseUI : MonoBehaviour
 	{
 		[SerializeField] protected Button resetButton;
-		protected GameStateManager gameStateManager;
+		[SerializeField] protected SettingsManager settingsManager;
 
 		abstract public void Reset();
 		abstract protected void SubscribeListeners();
@@ -20,11 +21,6 @@ namespace UI
 		void OnDisable()
 		{
 			UnsubscribeListeners();
-		}
-
-		public void InitCommonSettings(GameStateManager gameStateManager)
-		{
-			this.gameStateManager = gameStateManager;
 		}
 	}
 }

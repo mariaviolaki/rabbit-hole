@@ -34,14 +34,14 @@ namespace Dialogue
 			variableString = treeNode.Data[0].Trim();
 			assignmentOperatorString = treeNode.Data[1].Trim();
 			string valueString = treeNode.Data[2].Trim();
-			evaluatedValueString = ScriptLogicUtilities.EvaluateExpression(valueString, flowController.Game.Variables);
+			evaluatedValueString = ScriptLogicUtilities.EvaluateExpression(valueString, flowController.VN.Game.Variables);
 		}
 
 		protected override IEnumerator ExecuteLogic()
 		{
 			yield return base.ExecuteLogic();
 
-			AssignValue(variableString, assignmentOperatorString, evaluatedValueString, flowController.Game.Variables);
+			AssignValue(variableString, assignmentOperatorString, evaluatedValueString, flowController.VN.Game.Variables);
 			flowController.ProceedToNode(treeNode.NextId);
 			executionCoroutine = null;
 			yield break;

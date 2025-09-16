@@ -7,6 +7,7 @@ using Characters;
 using Dialogue;
 using Visuals;
 using UnityEngine;
+using VN;
 
 namespace Commands
 {
@@ -41,7 +42,7 @@ namespace Commands
 		public static readonly string Model3DCharacterBankName = "Model3DCharacters";
 		const char CommandBankIdentifier = '.';
 
-		[SerializeField] GameManager gameManager;
+		[SerializeField] VNManager vnManager;
 		[SerializeField] DialogueManager dialogueManager;
 		CharacterManager characterManager;
 		VisualGroupManager visualGroupManager;
@@ -53,7 +54,7 @@ namespace Commands
 		// Keep track of all the processes that may run simultaneously
 		readonly Dictionary<Guid, CommandProcessBase> processes = new();
 
-		public GameManager Game => gameManager;
+		public VNManager VN => vnManager;
 		public DialogueManager Dialogue => dialogueManager;
 		public CharacterManager Characters => characterManager;
 		public VisualGroupManager Visuals => visualGroupManager;
@@ -63,7 +64,7 @@ namespace Commands
 		{
 			characterManager = dialogueManager.Characters;
 			visualGroupManager = dialogueManager.Visuals;
-			audioManager = dialogueManager.Audio;
+			audioManager = vnManager.Game.Audio;
 			InitBank();
 		}
 

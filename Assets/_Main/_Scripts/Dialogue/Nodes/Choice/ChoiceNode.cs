@@ -2,7 +2,6 @@ using IO;
 using System.Collections;
 using System.Collections.Generic;
 using UI;
-using UnityEngine;
 
 namespace Dialogue
 {
@@ -16,8 +15,8 @@ namespace Dialogue
 
 		public ChoiceNode(DialogueTreeNode treeNode, DialogueFlowController flowController) : base(treeNode, flowController)
 		{
-			inputManager = flowController.Dialogue.InputManager;
-			visualNovelUI = flowController.Dialogue.UI;
+			inputManager = flowController.VN.Input;
+			visualNovelUI = flowController.VN.UI;
 		}
 
 		public override void StartExecution()

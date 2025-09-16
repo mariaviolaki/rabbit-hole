@@ -18,9 +18,9 @@ namespace Dialogue
 
 		public InputNode(DialogueTreeNode treeNode, DialogueFlowController flowController) : base(treeNode, flowController)
 		{
-			inputManager = flowController.Dialogue.InputManager;
-			variableManager = flowController.Game.Variables;
-			visualNovelUI = flowController.Dialogue.UI;
+			inputManager = flowController.VN.Input;
+			variableManager = flowController.VN.Game.Variables;
+			visualNovelUI = flowController.VN.UI;
 		}
 
 		public override void StartExecution()

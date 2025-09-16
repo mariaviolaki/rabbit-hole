@@ -1,7 +1,6 @@
-using Dialogue;
+using Game;
 using History;
 using IO;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -9,28 +8,20 @@ using UnityEngine.UI;
 
 namespace UI
 {
-	public class LogMenuUI : MonoBehaviour
+	public class LogMenuUI : SlidingMenuBaseUI
 	{
-		const float MoveAnimationSpeedMultiplier = 0.00002f;
 		const float ScrollTransitionMultiplier = 0.008f;
 		const float MinScrollbarSize = 0.05f;
 
-		[SerializeField] GameOptionsSO gameOptions;
 		[SerializeField] InputManagerSO inputManager;
-		[SerializeField] CanvasGroup canvasGroup;
-		[SerializeField] Button backButton;
 		[SerializeField] HistoryLogEntryUI logEntryPrefab;
 		[SerializeField] VerticalLayoutGroup contentLayoutGroup;
 		[SerializeField] RectTransform viewportRectTransform;
 		[SerializeField] Scrollbar scrollbar;
-		[SerializeField] float closedPositionOffset;
-		[SerializeField] MenusUI menus;
-		[SerializeField] HistoryManager historyManager;
-		[SerializeField] DialogueManager dialogueManager;
+		[SerializeField] GameSceneManager sceneManager;
 
+		HistoryManager historyManager;
 		RectTransform contentRectTransform;
-		UITransitionHandler transitionHandler;
-
 		LinkedListNode<HistoryState> currentNode;
 		HistoryLogEntryUI[] logEntries;
 		float[] logEntryPositions;
@@ -40,139 +31,18 @@ namespace UI
 		float logEntryHeight;
 		int currentIndex;
 		int visibleLogsCount;
-		Vector2 openPosition;
-
-		bool isTransitioning = false;
-
-		public event Action OnClose;
-
-		public bool IsTransitioning => isTransitioning;
-		public bool IsVisible => canvasGroup.alpha == 1f;
-		public bool IsHidden => canvasGroup.alpha == 0f;
 
 		int GetCenterIndex() => Mathf.RoundToInt(logEntryCount / 2);
 
-		void Awake()
-		{
-			transitionHandler = new UITransitionHandler(gameOptions);
-			InitializeLogs();
-
-			SetHiddenImmediate();
-		}
-
-		public void SetVisibleImmediate() => canvasGroup.alpha = 1f;
-		public void SetHiddenImmediate() => canvasGroup.alpha = 0f;
-
-		public IEnumerator Open(bool isImmediate = false, float transitionSpeed = 0)
-		{
-			if (IsVisible || isTransitioning) yield break;
-			isTransitioning = true;
-
-			if (!PrepareOpen())
-			{
-				isTransitioning = false;
-				OnClose?.Invoke();
-				yield break;
-			}
-
-			transitionSpeed = (transitionSpeed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : transitionSpeed;
-			yield return OpenProcess(isImmediate, transitionSpeed);
-
-			isTransitioning = false;
-		}
-
-		public IEnumerator Close(bool isImmediate = false, float transitionSpeed = 0)
-		{
-			if (IsHidden || isTransitioning) yield break;
-			isTransitioning = true;
-
-			transitionSpeed = (transitionSpeed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : transitionSpeed;
-			yield return CloseProcess(isImmediate, transitionSpeed);
-
-			isTransitioning = false;
-			OnClose?.Invoke();
-		}
-
-		IEnumerator OpenProcess(bool isImmediate = false, float speed = 0)
-		{
-			if (isImmediate)
-			{
-				SetVisibleImmediate();
-			}
-			else
-			{
-				speed = (speed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : speed;
-				Vector2 closedPosition = new(openPosition.x, openPosition.y + closedPositionOffset);
-
-				List<IEnumerator> transitionProcesses = new()
-				{
-					transitionHandler.SetVisibility(canvasGroup, true, speed),
-					MoveToPosition(closedPosition, openPosition, speed)
-				};
-
-				yield return Utilities.RunConcurrentProcesses(this, transitionProcesses);
-			}
-		}
-
-		IEnumerator CloseProcess(bool isImmediate = false, float speed = 0)
-		{
-			if (isImmediate)
-			{
-				SetHiddenImmediate();
-			}
-			else
-			{
-				speed = (speed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : speed;
-				Vector2 closedPosition = new (openPosition.x, openPosition.y + closedPositionOffset);
-
-				List<IEnumerator> transitionProcesses = new()
-				{
-					transitionHandler.SetVisibility(canvasGroup, false, speed),
-					MoveToPosition(openPosition, closedPosition, speed)
-				};
-
-				yield return Utilities.RunConcurrentProcesses(this, transitionProcesses);
-			}
-
-			CompleteClose();			
-		}
-
-		IEnumerator MoveToPosition(Vector2 startPos, Vector2 endPos, float speed)
-		{
-			float distance = (endPos - startPos).sqrMagnitude;
-			float duration = (1 / speed) * MoveAnimationSpeedMultiplier * distance;
-
-			if (duration <= 0) yield break;
-
-			float progress = 0f;
-			while (progress < duration)
-			{
-				progress += Time.deltaTime;
-
-				float smoothProgress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(progress / duration));
-				viewportRectTransform.anchoredPosition = Vector2.Lerp(startPos, endPos, smoothProgress);
-
-				yield return null;
-			}
-
-			viewportRectTransform.anchoredPosition = endPos;
-		}
-
-		bool PrepareOpen()
+		override protected bool PrepareOpen(MenuType menuType)
 		{
 			if (!GetHistoryData()) return false;
 
 			ClearHistoryLogs();
 			PrepareHistoryLogs();
 			PrepareScrollbar();
-			SubscribeListeners();
 
-			return true;
-		}
-
-		void CompleteClose()
-		{
-			UnsubscribeListeners();
+			return base.PrepareOpen(menuType);
 		}
 
 		void Scroll(float offset)
@@ -227,7 +97,7 @@ namespace UI
 			if (historyNode == null || isTransitioning) return;
 			isTransitioning = true;
 
-			StartCoroutine(RewindHistoryProcess(historyNode, false, gameOptions.General.SkipTransitionSpeed));
+			StartCoroutine(RewindHistoryProcess(historyNode, false, vnOptions.General.SkipTransitionSpeed));
 		}
 
 		IEnumerator RewindHistoryProcess(LinkedListNode<HistoryState> historyNode, bool isImmediate = false, float speed = 0f)
@@ -235,7 +105,7 @@ namespace UI
 			while (historyManager.IsUpdatingHistory) yield return null;
 			historyManager.Load(historyNode);
 
-			yield return CloseProcess(isImmediate, speed);
+			yield return SetHidden(isImmediate, speed);
 
 			isTransitioning = false;
 			OnClose?.Invoke();
@@ -249,7 +119,7 @@ namespace UI
 
 			float distance = Mathf.Abs(startPosY - endPosY);
 			float progress = 0f;
-			float duration = (1f / gameOptions.General.TransitionSpeed) * ScrollTransitionMultiplier * distance;
+			float duration = (1f / vnOptions.General.TransitionSpeed) * ScrollTransitionMultiplier * distance;
 
 			SetNewHistoryNode(entryIndex);
 
@@ -347,7 +217,7 @@ namespace UI
 			if (historyManager.IsUpdatingHistory) return false;
 
 			// Cache the state of history to limit scrolling and available entries
-			historyStateCount = historyManager.GetHistoryStateCount();
+			historyStateCount = historyManager.HistoryStateCount;
 			if (historyStateCount == 0) return false;
 
 			// Don't show any logs if there is no history
@@ -397,17 +267,19 @@ namespace UI
 				scrollbar.size = 1f;
 			else
 				scrollbar.size = Mathf.Max(1.0f / historyStateCount, MinScrollbarSize);
-
+			
 			scrollbar.SetValueWithoutNotify(0f);
 		}
 
-		void InitializeLogs()
+		override protected IEnumerator Initialize()
 		{
 			// Viewport needs to be initialized by Unity to get its actual height
-			Canvas.ForceUpdateCanvases();
+			yield return null;
 
 			// Initialize the start position of the log panel
-			openPosition = viewportRectTransform.anchoredPosition;
+			moveAnimationSpeedMultiplier = 0.00002f;
+			openPosition = slideRoot.anchoredPosition;
+			closedPosition = new(openPosition.x, openPosition.y + closedPositionOffset);
 
 			// Initialize the containers that will be used to show history
 			logEntryCount = contentLayoutGroup.transform.childCount;
@@ -416,8 +288,8 @@ namespace UI
 
 			contentRectTransform = contentLayoutGroup.GetComponent<RectTransform>();
 
-			LayoutElement entryLayoutElement = contentLayoutGroup.transform.GetChild(0).GetComponent<LayoutElement>();
-			logEntryHeight = entryLayoutElement.preferredHeight;
+			RectTransform entryLayoutElement = contentLayoutGroup.transform.GetChild(0).GetComponent<RectTransform>();
+			logEntryHeight = entryLayoutElement.rect.height;
 			visibleLogsCount = Mathf.CeilToInt(viewportRectTransform.rect.height / (logEntryHeight + contentLayoutGroup.spacing));
 
 			// Initialize the fixed count of children that will be used for scrolling
@@ -433,6 +305,8 @@ namespace UI
 			{
 				InitializeLogEntry(i, offset);
 			}
+
+			yield return base.Initialize();
 		}
 
 		void InitializeLogEntry(int childIndex, float offsetFromCenter)
@@ -446,10 +320,17 @@ namespace UI
 			logEntryPositions[logEntryIndex] = offsetFromCenter * (logEntryHeight + contentLayoutGroup.spacing);
 		}
 
-		void SubscribeListeners()
+		void InitializeVN()
 		{
+			if (sceneManager.CurrentScene == GameScene.VisualNovel)
+				historyManager = FindObjectOfType<HistoryManager>();
+		}
+
+		override protected void SubscribeListeners()
+		{
+			base.SubscribeListeners();
 			inputManager.OnScroll += Scroll;
-			backButton.onClick.AddListener(menus.CloseMenu);
+			sceneManager.OnLoadScene += InitializeVN;
 
 			foreach (HistoryLogEntryUI logEntry in logEntries)
 			{
@@ -458,10 +339,11 @@ namespace UI
 			}
 		}
 
-		void UnsubscribeListeners()
+		override protected void UnsubscribeListeners()
 		{
+			base.UnsubscribeListeners();
 			inputManager.OnScroll -= Scroll;
-			backButton.onClick.RemoveListener(menus.CloseMenu);
+			sceneManager.OnLoadScene -= InitializeVN;
 
 			foreach (HistoryLogEntryUI logEntry in logEntries)
 			{

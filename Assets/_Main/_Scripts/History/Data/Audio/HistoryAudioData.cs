@@ -33,9 +33,9 @@ namespace History
 			}
 		}
 
-		public IEnumerator Load(AudioManager audioManager, GameOptionsSO gameOptions)
+		public IEnumerator Load(AudioManager audioManager, VNOptionsSO vnOptions)
 		{
-			float fadeSpeed = gameOptions.General.SkipTransitionSpeed;
+			float fadeSpeed = vnOptions.General.SkipTransitionSpeed;
 
 			// Mirror the stucture of audio tracks used in the manager for efficient lookups
 			Dictionary<Audio.AudioType, Dictionary<int, List<HistoryAudioTrack>>> mappedAudio = GetMappedAudio();
@@ -94,7 +94,7 @@ namespace History
 			bool isInHistory = false;
 			foreach (HistoryAudioTrack historyAudioTrack in historyAudioTracks)
 			{
-				if (historyAudioTrack.name == audioTrack.Name)
+				if (string.Equals(historyAudioTrack.name, audioTrack.Name, System.StringComparison.OrdinalIgnoreCase))
 				{
 					isInHistory = true;
 					break;

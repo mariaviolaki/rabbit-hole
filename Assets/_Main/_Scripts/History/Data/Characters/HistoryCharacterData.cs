@@ -48,7 +48,7 @@ namespace History
 			}
 		}
 
-		public void Load(CharacterManager characterManager, GameOptionsSO gameOptions)
+		public void Load(CharacterManager characterManager, VNOptionsSO vnOptions)
 		{
 			List<KeyValuePair<int, string>> characterPriorities = new();
 			bool areSorted = true;
@@ -70,7 +70,7 @@ namespace History
 				if (character is not GraphicsCharacter graphicsCharacter) continue;
 
 				// Update all graphics characters parameters
-				LoadGraphicsCharacterHistory(graphicsCharacter, historyCharacter, gameOptions, ref characterPriorities, ref areSorted);
+				LoadGraphicsCharacterHistory(graphicsCharacter, historyCharacter, vnOptions, ref characterPriorities, ref areSorted);
 			}
 
 			// Hide any new characters which were not present in history
@@ -90,9 +90,9 @@ namespace History
 		}
 
 		void LoadGraphicsCharacterHistory(GraphicsCharacter graphicsCharacter, HistoryCharacter historyCharacter,
-			GameOptionsSO gameOptions, ref List<KeyValuePair<int, string>> characterPriorities, ref bool areSorted)
+			VNOptionsSO vnOptions, ref List<KeyValuePair<int, string>> characterPriorities, ref bool areSorted)
 		{
-			float fadeSpeed = gameOptions.General.SkipTransitionSpeed;
+			float fadeSpeed = vnOptions.General.SkipTransitionSpeed;
 
 			characterPriorities.Add(new(historyCharacter.priority, historyCharacter.shortName));
 
@@ -101,7 +101,7 @@ namespace History
 			if (historyCharacter.isVisible != graphicsCharacter.IsVisible)
 				graphicsCharacter.SetVisibility(historyCharacter.isVisible, false, fadeSpeed);
 			if (historyCharacter.position != graphicsCharacter.Position)
-				graphicsCharacter.SetPosition(historyCharacter.position.x, historyCharacter.position.y, false, fadeSpeed);
+				graphicsCharacter.SetPosition(historyCharacter.position.x, historyCharacter.position.y, true);
 			if (historyCharacter.color != graphicsCharacter.LightColor)
 				graphicsCharacter.SetColor(historyCharacter.color, false, fadeSpeed);
 			if (historyCharacter.isHighlighted != graphicsCharacter.IsHighlighted)

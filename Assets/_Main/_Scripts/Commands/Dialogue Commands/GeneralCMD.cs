@@ -1,6 +1,7 @@
 using Dialogue;
 using System;
 using System.Collections;
+using VN;
 
 namespace Commands
 {
@@ -8,12 +9,12 @@ namespace Commands
 	{
 		static CommandManager commandManager;
 		static DialogueManager dialogueManager;
-		static GameManager gameManager;
+		static VNManager vnManager;
 
 		public new static void Register(CommandManager manager)
 		{
 			commandManager = manager;
-			gameManager = manager.Game;
+			vnManager = manager.VN;
 			dialogueManager = manager.Dialogue;
 
 			CommandBank bank = manager.GetBank(CommandManager.MainBankName);
@@ -32,7 +33,7 @@ namespace Commands
 
 		static CommandProcessBase Autosave(DialogueCommandArguments args)
 		{
-			void action() => gameManager.StateManager.Autosave();
+			void action() => vnManager.Saving.Autosave();
 			return new ActionCommandProcess(action);
 		}
 	}

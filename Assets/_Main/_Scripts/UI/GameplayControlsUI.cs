@@ -22,10 +22,8 @@ namespace UI
 			choicePanel.OnClose += CloseChoicesRoot;
 		}
 
-		protected override void Start()
+		void Start()
 		{
-			base.Start();
-
 			CloseInputRoot();
 			CloseChoicesRoot();
 
@@ -33,10 +31,8 @@ namespace UI
 			inputManager.IsInputPanelOpen = false;
 		}
 
-		protected override void OnDestroy()
+		void OnDestroy()
 		{
-			base.OnDestroy();
-
 			inputPanel.OnClose -= CloseInputRoot;
 			choicePanel.OnClose -= CloseChoicesRoot;
 		}

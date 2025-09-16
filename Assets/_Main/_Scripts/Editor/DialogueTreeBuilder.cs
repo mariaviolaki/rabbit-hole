@@ -1,5 +1,7 @@
 using Dialogue;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Preprocessing
@@ -16,6 +18,9 @@ namespace Preprocessing
 		// Keep track of the start and end of each scene in a dialogue file (cannot be nested)
 		static readonly Regex SceneStartRegex = new(@"^\s*label\s+([A-Za-z0-9_]+)(?:\s+""([^""]+)"")?\s*$", RegexOptions.IgnoreCase);
 		static readonly Regex SceneEndRegex = new(@"^\s*end\s+([A-Za-z0-9_]+)\s*$", RegexOptions.IgnoreCase);
+
+		// Only allow certain node types in the initialization scene
+		static readonly DialogueNodeType[] InitializationNodes = { DialogueNodeType.Command, DialogueNodeType.Assignment };
 
 		// Keep track of the regexes that will be used to match each dialogue line inside a scene
 		// Condition nodes are empty containers and cannot be tracked, unlike their branching children
@@ -52,6 +57,9 @@ namespace Preprocessing
 				if (sceneMatch.Success)
 				{
 					string sceneName = sceneMatch.Groups[1].Value.Trim();
+					if (string.Equals(sceneName, DialogueFlowController.InitSceneName, StringComparison.OrdinalIgnoreCase))
+						sceneName = DialogueFlowController.InitSceneName;
+
 					string sceneTitle = sceneMatch.Groups.Count > 2 ? sceneMatch.Groups[2].Value.Trim() : null;
 
 					DialogueTreeScene newScene = new(sceneName, sceneTitle);
@@ -72,7 +80,9 @@ namespace Preprocessing
 				if (currentScene == null) continue;
 
 				i--;
-				currentScene.Nodes = GetChildNodes(rawLines, null, ref i);
+				currentScene.Nodes = currentScene.Name == DialogueFlowController.InitSceneName
+					? GetInitializationNodes(rawLines, ref i)
+					: GetChildNodes(rawLines, null, ref i);
 
 				// Don't use valid ids if no nodes were found
 				if (currentScene.Nodes.Count == 0)
@@ -85,6 +95,34 @@ namespace Preprocessing
 			InitializeNextIds(dialogueTree);
 
 			return dialogueTree;
+		}
+
+		List<DialogueTreeNode> GetInitializationNodes(string[] rawLines, ref int lineIndex)
+		{
+			List<DialogueTreeNode> nodes = new();
+			int depth = 0;
+
+			while (++lineIndex < rawLines.Length)
+			{
+				string line = rawLines[lineIndex].Trim();
+				if (line == string.Empty || line.StartsWith(CommentDelimiter)) continue;
+
+				// End initialization scene
+				if (SceneEndRegex.Match(line).Success) break;
+
+				// Skip any nested nodes
+				if (line.StartsWith(BlockStartDelimiter)) depth++;
+				else if (line.StartsWith(BlockEndDelimiter)) depth--;
+				if (depth != 0) continue;
+
+				DialogueTreeNode node = GetNodeFromLine(line, null);
+				if (node == null || !InitializationNodes.Contains(node.Type)) continue;
+
+				node.SetId(++nodeId);
+				nodes.Add(node);
+			}
+
+			return nodes;
 		}
 
 		List<DialogueTreeNode> GetChildNodes(string[] rawLines, DialogueTreeNode parentNode, ref int lineIndex)
@@ -172,11 +210,7 @@ namespace Preprocessing
 				else if (parentNode != null && parentNode.Type == DialogueNodeType.ChoiceBranch)
 				{
 					// This choice option ended at the previous line, this new line needs to be evaluated again
-					if (isBlockEndLine)// || node.Type == DialogueNodeType.ChoiceBranch)
-					{
-						//lineIndex--;
-						break;
-					}
+					if (isBlockEndLine) break;
 				}
 
 				// List this node as a child (default for all single-line nodes)

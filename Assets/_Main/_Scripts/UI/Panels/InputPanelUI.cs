@@ -11,10 +11,10 @@ namespace UI
 	public class InputPanelUI : FadeableUI
 	{
 		[SerializeField] InputManagerSO inputManager;
-		[SerializeField] DialogueManager dialogueManager;
 		[SerializeField] TextMeshProUGUI titleText;
 		[SerializeField] TMP_InputField inputField;
 		[SerializeField] Button submitButton;
+		[SerializeField] DialogueManager dialogueManager;
 
 		string lastInput = "";
 		bool isTransitioning = false;
@@ -26,15 +26,13 @@ namespace UI
 			base.Awake();
 		}
 
-		override protected void OnEnable()
+		void OnEnable()
 		{
-			base.OnEnable();
 			StartCoroutine(PrepareOpen());
 		}
 
-		override protected void OnDisable()
+		void OnDisable()
 		{
-			base.OnDisable();
 			CompleteClose();
 		}
 
@@ -57,7 +55,7 @@ namespace UI
 			if (isTransitioning) yield break;
 			isTransitioning = true;
 
-			fadeSpeed = fadeSpeed <= 0 ? gameOptions.General.SkipTransitionSpeed : fadeSpeed;
+			fadeSpeed = fadeSpeed <= 0 ? vnOptions.General.SkipTransitionSpeed : fadeSpeed;
 			yield return SetHidden(isImmediate, fadeSpeed);
 
 			isTransitioning = false;
@@ -69,7 +67,7 @@ namespace UI
 			if (isTransitioning || string.IsNullOrWhiteSpace(inputField.text)) return;
 
 			lastInput = inputField.text.Trim();
-			inputManager.OnSubmitInput?.Invoke(lastInput);
+			inputManager.TriggerSubmitInput(lastInput);
 
 			StartCoroutine(Close(isImmediateTransition));
 		}
@@ -99,7 +97,7 @@ namespace UI
 			SubscribeListeners();
 
 			inputManager.IsInputPanelOpen = true;
-			inputManager.OnClearInput?.Invoke();
+			inputManager.TriggerClearInput();
 		}
 
 		void CompleteClose()

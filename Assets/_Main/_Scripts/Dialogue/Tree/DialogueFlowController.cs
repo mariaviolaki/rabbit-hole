@@ -1,18 +1,21 @@
+using Game;
 using IO;
 using System.Collections;
 using UnityEngine;
+using VN;
 
 namespace Dialogue
 {
 	public class DialogueFlowController
 	{
+		public const string InitSceneName = "Init";
 		public const string StartSceneName = "Main";
 
+		readonly SettingsManager settingsManager;
 		readonly DialogueManager dialogueManager;
-		readonly FileManagerSO fileManager;
-		readonly SaveFileManager saveFileManager;
-		readonly GameStateManager gameStateManager;
-		readonly GameManager gameManager;
+		readonly AssetManagerSO assetManager;
+		readonly SaveFileManagerSO saveFileManager;
+		readonly VNManager vnManager;
 		readonly DialogueSpeakerHandler dialogueSpeakerHandler;
 		readonly DialogueTextHandler dialogueTextHandler;
 
@@ -23,8 +26,9 @@ namespace Dialogue
 		bool isRunning;
 		bool isSkipping;
 		bool isJumpingToScene;
+		bool isInitialized;
 
-		public GameManager Game => gameManager;
+		public VNManager VN => vnManager;
 		public DialogueManager Dialogue => dialogueManager;
 		public DialogueSpeakerHandler DialogueSpeaker => dialogueSpeakerHandler;
 		public DialogueTextHandler DialogueText => dialogueTextHandler;
@@ -34,17 +38,19 @@ namespace Dialogue
 		public int CurrentNodeId => currentNode == null ? -1 : currentNode.TreeNode.Id;
 		public bool IsRunning => isRunning;
 		public bool IsSkipping => isSkipping;
+		public bool IsInitialized => isInitialized;
 
-		public DialogueFlowController(GameManager gameManager, DialogueManager dialogueManager)
+		public DialogueFlowController(VNManager vnManager)
 		{
-			this.gameManager = gameManager;
-			this.dialogueManager = dialogueManager;
-			saveFileManager = gameManager.SaveManager;
-			fileManager = dialogueManager.FileManager;
-			gameStateManager = gameManager.StateManager;
-			dialogueSpeakerHandler = new(dialogueManager, gameManager.Options);
-			dialogueTextHandler = new(gameManager, dialogueManager, this);
+			this.vnManager = vnManager;
+			this.dialogueManager = vnManager.Dialogue;
+			settingsManager = vnManager.Game.Settings;
+			saveFileManager = vnManager.Game.SaveFiles;
+			assetManager = dialogueManager.VN.Assets;
+			dialogueSpeakerHandler = new(dialogueManager, vnManager.Options);
+			dialogueTextHandler = new(this);
 
+			isInitialized = false;
 			isRunning = false;
 			isSkipping = false;
 			isJumpingToScene = false;
@@ -65,17 +71,30 @@ namespace Dialogue
 			dialogueManager.OnChangeReadMode -= UpdateReadMode;
 		}
 
-		public void StartDialogue()
+		public void StartDialogue(string sceneName, int nodeNum)
 		{
 			isRunning = true;
-
 			dialogueTextHandler.UpdateTextBuildMode(DialogueReadMode.Forward);
+
+			sceneName ??= StartSceneName;
+			dialogueManager.StartCoroutine(JumpToScene(sceneName, nodeNum));
+		}
+
+		public void ContinueDialogue()
+		{
+			if (!isInitialized) return;
+
+			isRunning = true;
+			dialogueTextHandler.UpdateTextBuildMode(DialogueReadMode.Forward);
+
 			if (currentNode != null && !currentNode.IsExecuting)
 				currentNode.StartExecution();
 		}
 
 		public void StopDialogue()
 		{
+			if (!isInitialized) return;
+
 			if (currentNode != null)
 			{
 				currentNode.SpeedUpExecution();
@@ -88,23 +107,42 @@ namespace Dialogue
 		// Called by the tree nodes when they finish execution
 		public void ProceedToNode(int nodeId)
 		{
-			if (isJumpingToScene || gameManager.History.IsUpdatingHistory)
+			if (isJumpingToScene || vnManager.History.IsUpdatingHistory)
 			{
 				currentNode = null;
 				return;
 			}
 
 			DialogueTreeNode treeNode = currentTree.GetNode(nodeId);
-
-			if (treeNode == null)
-				currentNode = null;
-			else
+			if (treeNode != null)
+			{
 				SetCurrentNode(treeNode);
+			}
+			else if (currentSceneName == InitSceneName)
+			{
+				currentNode = null;
+				isRunning = false;
+				isInitialized = true;
+			}
+			else
+			{
+				currentNode = null;
+				isRunning = false;
+				vnManager.CompleteDialogue();
+			}			
+		}
+
+		public IEnumerator JumpToInitialization()
+		{
+			if (dialogueMap == null) yield break;
+
+			yield return JumpToScene(InitSceneName);
 		}
 		
 		public IEnumerator JumpToScene(string sceneName, int nodeId = -1)
 		{
-			if (dialogueMap == null) yield break;
+			while (!isInitialized && sceneName != InitSceneName) yield return null;
+
 			isJumpingToScene = true;
 
 			// Don't proceed to the next scene while the current node is still executing
@@ -153,7 +191,7 @@ namespace Dialogue
 
 		public void InterruptSkipDueToBlockingNode()
 		{
-			if (gameStateManager.State.SkipMode == DialogueSkipMode.AfterChoices) return;
+			if (settingsManager.SkipMode == DialogueSkipMode.AfterChoices) return;
 			isSkipping = false;
 		}
 
@@ -184,7 +222,7 @@ namespace Dialogue
 					break;
 			}
 
-			if (currentNode != null && isRunning)
+			if ((currentNode != null && isRunning) || !isInitialized)
 				currentNode.StartExecution();
 		}
 
@@ -192,8 +230,8 @@ namespace Dialogue
 		{
 			// Attempt to load the tree found in the map from the dialogue addressables
 			string dialogueFilePath = $"{FilePaths.DialogueAddressablesRoot}{fileName}";
-			yield return fileManager.LoadDialogue(dialogueFilePath);
-			TextAsset dialogueFile = fileManager.GetDialogueFile(dialogueFilePath);
+			yield return assetManager.LoadDialogue(dialogueFilePath);
+			TextAsset dialogueFile = assetManager.GetDialogueFile(dialogueFilePath);
 			if (dialogueFile == null)
 			{
 				Debug.LogWarning($"Unable to find dialogue file: '{dialogueFilePath}'");
@@ -204,35 +242,36 @@ namespace Dialogue
 			currentTree = saveFileManager.ParseJson<DialogueTree>(dialogueFile.text);
 			if (currentTree == null)
 			{
-				fileManager.UnloadDialogue(dialogueFilePath);
+				assetManager.UnloadDialogue(dialogueFilePath);
 				Debug.LogWarning($"Unable to parse dialogue tree from the file: '{dialogueFilePath}'");
 				yield break;
 			}
 
 			currentTree.Initialize();
-			fileManager.UnloadDialogue(dialogueFilePath);
+			assetManager.UnloadDialogue(dialogueFilePath);
 		}
 
 		IEnumerator InitializeDialogue()
 		{
-			while (!fileManager.InitializedKeys.TryGetValue(AssetType.Dialogue, out bool value) || !value) yield return null;
+			while (!assetManager.InitializedKeys.TryGetValue(AssetType.Dialogue, out bool value) || !value) yield return null;
 
+			isRunning = true;
 			// Load the dialogue map first to be able to find trees from scene names
 			yield return InitializeDialogueMap();
-			if (dialogueMap == null) yield break;
+			// Run the initialization scene as defined in the dialogue scripts before moving to any other scene
+			yield return JumpToScene(InitSceneName);
 
-			// Jump to the beginning of the default first scene
-			yield return JumpToScene(StartSceneName);
+
 		}
 
 		IEnumerator InitializeDialogueMap()
 		{
 			// Wait until the file manager has loaded all the dialogue paths
 			string mapFilePath = $"{FilePaths.DialogueAddressablesRoot}{FilePaths.DialogueMapFileName}";
-			yield return fileManager.LoadDialogue(mapFilePath);
+			yield return assetManager.LoadDialogue(mapFilePath);
 
 			// Load the dialogue map from the dialogue addressables
-			TextAsset dialogueMapFile = fileManager.GetDialogueFile(mapFilePath);
+			TextAsset dialogueMapFile = assetManager.GetDialogueFile(mapFilePath);
 			if (dialogueMapFile == null)
 			{
 				Debug.LogWarning($"Unable to find dialogue map file: '{mapFilePath}'");
@@ -244,12 +283,12 @@ namespace Dialogue
 			if (dialogueMap == null)
 			{
 				Debug.LogWarning($"Unable to parse dialogue map from the file: '{mapFilePath}'");
-				fileManager.UnloadDialogue(mapFilePath);
+				assetManager.UnloadDialogue(mapFilePath);
 				yield break;
 			}
 
 			dialogueMap.Initialize();
-			fileManager.UnloadDialogue(mapFilePath);
+			assetManager.UnloadDialogue(mapFilePath);
 		}
 	}
 }

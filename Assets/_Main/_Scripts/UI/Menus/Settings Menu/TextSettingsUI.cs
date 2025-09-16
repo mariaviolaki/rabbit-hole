@@ -6,7 +6,7 @@ namespace UI
 {
 	public class TextSettingsUI : SettingsSectionBaseUI
 	{
-		[SerializeField] GameOptionsSO gameOptions;
+		[SerializeField] VNOptionsSO vnOptions;
 		[SerializeField] Button skipReadButton;
 		[SerializeField] Button skipUnreadButton;
 		[SerializeField] Button skipAfterChoicesButton;
@@ -18,28 +18,28 @@ namespace UI
 
 		void Awake()
 		{
-			textSpeedSlider.minValue = gameOptions.Dialogue.MinTextSpeed;
-			textSpeedSlider.maxValue = gameOptions.Dialogue.MaxTextSpeed;
-			autoSpeedSlider.minValue = gameOptions.Dialogue.MinAutoSpeed;
-			autoSpeedSlider.maxValue = gameOptions.Dialogue.MaxAutoSpeed;
+			textSpeedSlider.minValue = vnOptions.Dialogue.MinTextSpeed;
+			textSpeedSlider.maxValue = vnOptions.Dialogue.MaxTextSpeed;
+			autoSpeedSlider.minValue = vnOptions.Dialogue.MinAutoSpeed;
+			autoSpeedSlider.maxValue = vnOptions.Dialogue.MaxAutoSpeed;
 		}
 
 		void Start()
 		{
-			SetSkipModeCheckbox(gameStateManager.State.SkipMode);
-			textSpeedSlider.SetValueWithoutNotify(gameStateManager.State.TextSpeed);
-			autoSpeedSlider.SetValueWithoutNotify(gameStateManager.State.AutoSpeed);
+			SetSkipModeCheckbox(settingsManager.SkipMode);
+			textSpeedSlider.SetValueWithoutNotify(settingsManager.TextSpeed);
+			autoSpeedSlider.SetValueWithoutNotify(settingsManager.AutoSpeed);
 		}
 
 		public override void Reset()
 		{
-			gameStateManager.State.ResetSkipMode();
-			gameStateManager.State.ResetTextSpeed();
-			gameStateManager.State.ResetAutoSpeed();
+			settingsManager.ResetSkipMode();
+			settingsManager.ResetTextSpeed();
+			settingsManager.ResetAutoSpeed();
 
-			SetSkipModeCheckbox(gameStateManager.State.SkipMode);
-			textSpeedSlider.SetValueWithoutNotify(gameStateManager.State.TextSpeed);
-			autoSpeedSlider.SetValueWithoutNotify(gameStateManager.State.AutoSpeed);
+			SetSkipModeCheckbox(settingsManager.SkipMode);
+			textSpeedSlider.SetValueWithoutNotify(settingsManager.TextSpeed);
+			autoSpeedSlider.SetValueWithoutNotify(settingsManager.AutoSpeed);
 		}
 
 		void SetReadSkipMode() => SetSkipMode(DialogueSkipMode.Read);
@@ -47,9 +47,9 @@ namespace UI
 		void SetAfterChoicesSkipMode() => SetSkipMode(DialogueSkipMode.AfterChoices);
 		void SetSkipMode(DialogueSkipMode skipMode)
 		{
-			if (skipMode == gameStateManager.State.SkipMode) return;
+			if (skipMode == settingsManager.SkipMode) return;
 
-			gameStateManager.State.SetSkipMode(skipMode);
+			settingsManager.SetSkipMode(skipMode);
 			SetSkipModeCheckbox(skipMode);
 		}
 
@@ -77,12 +77,12 @@ namespace UI
 
 		void SetTextSpeed(float speed)
 		{
-			gameStateManager.State.SetTextSpeed(speed);
+			settingsManager.SetTextSpeed(speed);
 		}
 
 		void SetAutoSpeed(float speed)
 		{
-			gameStateManager.State.SetAutoSpeed(speed);
+			settingsManager.SetAutoSpeed(speed);
 		}
 
 		override protected void SubscribeListeners()

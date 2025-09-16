@@ -32,9 +32,9 @@ namespace History
 			}
 		}
 
-		public IEnumerator Load(VisualGroupManager visualManager, GameOptionsSO gameOptions)
+		public IEnumerator Load(VisualGroupManager visualManager, VNOptionsSO vnOptions)
 		{
-			float fadeSpeed = gameOptions.General.SkipTransitionSpeed;
+			float fadeSpeed = vnOptions.General.SkipTransitionSpeed;
 
 			// Mirror the stucture of visuals used in the manager for efficient lookups
 			Dictionary<VisualType, Dictionary<int, HistoryVisual>> mappedVisuals = GetMappedVisuals();

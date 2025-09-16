@@ -11,8 +11,8 @@ namespace Characters
 	{
 		const char CharacterCastDelimiter = ':';
 
-		[SerializeField] GameOptionsSO gameOptions;
-		[SerializeField] FileManagerSO fileManager;
+		[SerializeField] VNOptionsSO vnOptions;
+		[SerializeField] AssetManagerSO assetManager;
 		[SerializeField] CharacterBankSO characterBank;
 		[SerializeField] GameObject textCharacterPrefab;
 		[SerializeField] GameObject spriteCharacterPrefab;
@@ -23,12 +23,12 @@ namespace Characters
 
 		readonly Dictionary<string, Character> characters = new();
 
-		public GameOptionsSO GameOptions { get { return gameOptions; } }
-		public CharacterBankSO Bank { get { return characterBank; } }
-		public FileManagerSO FileManager { get { return fileManager; } }
-		public DialogueManager Dialogue { get { return dialogueManager; } }
-		public RectTransform Container { get { return characterContainer; } }
-		public Transform Model3DContainer { get { return model3DContainer; } }
+		public VNOptionsSO Options => vnOptions;
+		public CharacterBankSO Bank => characterBank;
+		public AssetManagerSO Assets => assetManager;
+		public DialogueManager Dialogue => dialogueManager;
+		public RectTransform Container => characterContainer;
+		public Transform Model3DContainer => model3DContainer;
 
 		public Dictionary<string, Character> GetCharacters() => characters;
 		public bool HasCharacter(string shortName) => characters.ContainsKey(shortName);
@@ -142,7 +142,7 @@ namespace Characters
 				yield break;
 			}
 
-			CharacterData data = characterBank.GetCharacterData(shortName, castShortName, gameOptions);
+			CharacterData data = characterBank.GetCharacterData(shortName, castShortName, vnOptions);
 
 			switch (data.Type)
 			{
@@ -191,7 +191,7 @@ namespace Characters
 
 		void CreateDefaultCharacter(string shortName)
 		{
-			CharacterData data = characterBank.GetDefaultData(shortName, gameOptions);
+			CharacterData data = characterBank.GetDefaultData(shortName, vnOptions);
 
 			GameObject textCharacterGameObject = Instantiate(textCharacterPrefab, characterContainer, false);
 			TextCharacter textCharacter = textCharacterGameObject.GetComponent<TextCharacter>();

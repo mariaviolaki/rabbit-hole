@@ -23,29 +23,29 @@ namespace UI
 
 		void Start()
 		{
-			SetScreenModeCheckbox(gameStateManager.State.GameScreenMode);
-			SetDropdownResolution(gameStateManager.State.ResolutionWidth, gameStateManager.State.ResolutionHeight);
-			SetDropdownQuality(gameStateManager.State.GraphicsQuality);
+			SetScreenModeCheckbox(settingsManager.GameScreenMode);
+			SetDropdownResolution(settingsManager.ResolutionWidth, settingsManager.ResolutionHeight);
+			SetDropdownQuality(settingsManager.GraphicsQuality);
 		}
 
 		public override void Reset()
 		{
-			gameStateManager.State.ResetScreenMode();
-			gameStateManager.State.ResetResolution();
-			gameStateManager.State.ResetGraphicsQuality();
+			settingsManager.ResetScreenMode();
+			settingsManager.ResetResolution();
+			settingsManager.ResetGraphicsQuality();
 
-			SetScreenModeCheckbox(gameStateManager.State.GameScreenMode);
-			SetDropdownQuality(gameStateManager.State.GraphicsQuality);
-			SetDropdownResolution(gameStateManager.State.ResolutionWidth, gameStateManager.State.ResolutionHeight);
+			SetScreenModeCheckbox(settingsManager.GameScreenMode);
+			SetDropdownQuality(settingsManager.GraphicsQuality);
+			SetDropdownResolution(settingsManager.ResolutionWidth, settingsManager.ResolutionHeight);
 		}
 
 		void SetFullscreen() => SetScreenMode(ScreenMode.Fullscreen);
 		void SetWindowed() => SetScreenMode(ScreenMode.Windowed);
 		void SetScreenMode(ScreenMode screenMode)
 		{
-			if (screenMode == gameStateManager.State.GameScreenMode) return;
+			if (screenMode == settingsManager.GameScreenMode) return;
 
-			gameStateManager.State.SetScreenMode(screenMode);
+			settingsManager.SetScreenMode(screenMode);
 			SetScreenModeCheckbox(screenMode);
 		}
 
@@ -66,9 +66,9 @@ namespace UI
 		void SetResolutionSetting(int index)
 		{
 			Resolution resolution = Screen.resolutions[index];
-			if (gameStateManager.State.ResolutionWidth == resolution.width && gameStateManager.State.ResolutionHeight == resolution.height) return;
+			if (settingsManager.ResolutionWidth == resolution.width && settingsManager.ResolutionHeight == resolution.height) return;
 
-			gameStateManager.State.SetResolution(resolution.width, resolution.height);
+			settingsManager.SetResolution(resolution.width, resolution.height);
 		}
 
 		void SetDropdownResolution(int width, int height)
@@ -82,8 +82,8 @@ namespace UI
 
 		void SetQualitySetting(int index)
 		{
-			if (gameStateManager.State.GraphicsQuality == index) return;
-			gameStateManager.State.SetGraphicsQuality(index);
+			if (settingsManager.GraphicsQuality == index) return;
+			settingsManager.SetGraphicsQuality(index);
 		}
 
 		void SetDropdownQuality(int index)

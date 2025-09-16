@@ -10,9 +10,9 @@ public class UITransitionHandler
 	const float ColorSpeedMultiplier = 5f;
 	readonly float DefaultTransitionSpeed;
 
-	public UITransitionHandler(GameOptionsSO gameOptions)
+	public UITransitionHandler(VNOptionsSO vnOptions)
 	{
-		DefaultTransitionSpeed = gameOptions.General.TransitionSpeed;
+		DefaultTransitionSpeed = vnOptions.General.TransitionSpeed;
 	}
 
 	public IEnumerator Replace(CanvasGroup oldCanvasGroup, CanvasGroup newCanvasGroup, float speed = 0)

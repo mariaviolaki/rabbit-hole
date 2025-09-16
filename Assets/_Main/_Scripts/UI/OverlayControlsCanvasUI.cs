@@ -21,7 +21,7 @@ namespace UI
 	
 		void RegisterClick()
 		{
-			inputManager.OnForward?.Invoke();
+			inputManager.TriggerClick();
 		}
 	}
 }

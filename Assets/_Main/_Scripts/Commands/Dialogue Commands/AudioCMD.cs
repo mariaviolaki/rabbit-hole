@@ -17,12 +17,6 @@ namespace Commands
 
 			CommandBank bank = manager.GetBank(CommandManager.MainBankName);
 
-			// Initialize Layers
-			bank.AddCommand("CreateAmbient", new Func<DialogueCommandArguments, CommandProcessBase>(CreateAmbient));
-			bank.AddCommand("CreateMusic", new Func<DialogueCommandArguments, CommandProcessBase>(CreateMusic));
-			bank.AddCommand("CreateSFX", new Func<DialogueCommandArguments, CommandProcessBase>(CreateSFX));
-			bank.AddCommand("CreateVoice", new Func<DialogueCommandArguments, CommandProcessBase>(CreateVoice));
-
 			// Play Audio
 			bank.AddCommand("PlayAmbient", new Func<DialogueCommandArguments, CommandProcessBase>(PlayAmbient));
 			bank.AddCommand("PlayMusic", new Func<DialogueCommandArguments, CommandProcessBase>(PlayMusic));
@@ -30,43 +24,11 @@ namespace Commands
 			bank.AddCommand("PlayVoice", new Func<DialogueCommandArguments, CommandProcessBase>(PlayVoice));
 
 			// Stop Audio
+			bank.AddCommand("StopAudio", new Func<DialogueCommandArguments, CommandProcessBase>(StopAudio));
 			bank.AddCommand("StopAmbient", new Func<DialogueCommandArguments, CommandProcessBase>(StopAmbient));
 			bank.AddCommand("StopMusic", new Func<DialogueCommandArguments, CommandProcessBase>(StopMusic));
 			bank.AddCommand("StopSFX", new Func<DialogueCommandArguments, CommandProcessBase>(StopSFX));
 			bank.AddCommand("StopVoice", new Func<DialogueCommandArguments, CommandProcessBase>(StopVoice));
-		}
-
-
-		/***** Initialize Layers *****/
-
-		static CommandProcessBase CreateAmbient(DialogueCommandArguments args)
-		{
-			int layerCount = args.Get(0, "layers", 1);
-
-			void action() => audioManager.Create(AudioType.Ambient, layerCount);
-			return new ActionCommandProcess(action);
-		}
-
-		static CommandProcessBase CreateMusic(DialogueCommandArguments args)
-		{
-			int layerCount = args.Get(0, "layers", 1);
-
-			void action() => audioManager.Create(AudioType.Music, layerCount);
-			return new ActionCommandProcess(action);
-		}
-
-		static CommandProcessBase CreateSFX(DialogueCommandArguments args)
-		{
-			void action() => audioManager.Create(AudioType.SFX, 1);
-			return new ActionCommandProcess(action);
-		}
-
-		static CommandProcessBase CreateVoice(DialogueCommandArguments args)
-		{
-			int layerCount = args.Get(0, "layers", 1);
-
-			void action() => audioManager.Create(AudioType.Voice, layerCount);
-			return new ActionCommandProcess(action);
 		}
 
 
@@ -141,6 +103,15 @@ namespace Commands
 
 
 		/***** Stop Audio *****/
+
+		static CommandProcessBase StopAudio(DialogueCommandArguments args)
+		{
+			bool isImmediate = args.Get(0, "immediate", false);
+			float fadeSpeed = args.Get(1, "speed", 0f);
+
+			void action() => audioManager.StopAll(isImmediate, fadeSpeed);
+			return new ActionCommandProcess(action);
+		}
 
 		static CommandProcessBase StopAmbient(DialogueCommandArguments args)
 		{

@@ -1,44 +1,107 @@
-using Dialogue;
-using History;
+using Audio;
 using IO;
+using UI;
 using UnityEngine;
 using Variables;
+using VN;
 
-public class GameManager : MonoBehaviour
+namespace Game
 {
-	[SerializeField] GameOptionsSO gameOptions;
-	[SerializeField] FileManagerSO fileManager;
-	[SerializeField] HistoryManager historyManager;
-	[SerializeField] DialogueManager dialogueManager;
-	[SerializeField] GameStateManager gameStateManager;
-
-	SaveFileManager saveFileManager;
-	VariableManager variableManager;
-
-	public GameStateManager StateManager => gameStateManager;
-	public SaveFileManager SaveManager => saveFileManager;
-	public VariableManager Variables => variableManager;
-	public HistoryManager History => historyManager;
-	public GameOptionsSO Options => gameOptions;
-
-	void Awake()
+	public class GameManager : MonoBehaviour
 	{
-		saveFileManager = new(gameOptions);
-		variableManager = new();
-	}
+		[SerializeField] VNOptionsSO vnOptions;
+		[SerializeField] SaveFileManagerSO saveFileManager;
+		[SerializeField] GameSceneManager sceneManager;
+		[SerializeField] SettingsManager settingsManager;
+		[SerializeField] GameProgressManager gameProgressManager;
+		[SerializeField] AudioManager audioManager;
+		[SerializeField] LoadManager loadManager;
+		[SerializeField] VariableManager variableManager;
+		[SerializeField] MenusUI menus;
 
-	void Update()
-	{
-		// TODO start dialogue using other triggers
-		if (Input.GetKeyDown(KeyCode.KeypadEnter))
+		VNManager vnManager;
+		MainMenuManager mainMenuManager;
+		int pendingLoadSlot;
+
+		public GameSceneManager Scenes => sceneManager;
+		public SettingsManager Settings => settingsManager;
+		public GameProgressManager Progress => gameProgressManager;
+		public AudioManager Audio => audioManager;
+		public SaveFileManagerSO SaveFiles => saveFileManager;
+		public MenusUI Menus => menus;
+		public VariableManager Variables => variableManager;
+		public VNManager VN => vnManager;
+
+		void Awake()
 		{
-			Debug.Log("Starting Dialogue");
-			dialogueManager.StartDialogue();
+			pendingLoadSlot = -1;
 		}
-		else if (Input.GetKeyDown(KeyCode.Q))
+
+		void Start()
 		{
-			Debug.Log("Quitting Game");
+			if (sceneManager.CurrentScene == GameScene.VisualNovel)
+				vnManager = FindObjectOfType<VNManager>();
+			else if (sceneManager.CurrentScene == GameScene.MainMenu)
+				mainMenuManager = FindObjectOfType<MainMenuManager>();
+
+			sceneManager.OnLoadScene += ProcessSceneChange;
+
+			sceneManager.StartLoading(GameScene.VisualNovel);
+		}
+
+		void OnDestroy()
+		{
+			sceneManager.OnLoadScene -= ProcessSceneChange;
+		}
+
+		public void StartGame()
+		{
+			pendingLoadSlot = -1;
+			sceneManager.CompleteLoading();
+		}
+
+		public void ContinueGame()
+		{
+			pendingLoadSlot = FilePaths.AutosaveSlot;
+			sceneManager.CompleteLoading();
+		}
+
+		public void LoadGame(int slot)
+		{
+			if (sceneManager.CurrentScene == GameScene.MainMenu)
+			{
+				pendingLoadSlot = slot;
+				sceneManager.CompleteLoading();
+			}
+			else
+			{
+				loadManager.Load(slot);
+			}
+		}
+
+		public void ReturnToTitle()
+		{
+			StartCoroutine(sceneManager.Load(GameScene.MainMenu));
+		}
+
+		public void QuitGame()
+		{
 			Application.Quit();
+		}
+
+		void ProcessSceneChange()
+		{
+			if (sceneManager.CurrentScene == GameScene.VisualNovel)
+			{
+				vnManager = FindObjectOfType<VNManager>();
+				loadManager.Load(pendingLoadSlot);
+				pendingLoadSlot = -1;
+			}
+			else if (sceneManager.CurrentScene == GameScene.MainMenu)
+			{
+				mainMenuManager = FindObjectOfType<MainMenuManager>();
+				sceneManager.StartLoading(GameScene.VisualNovel);
+			}
 		}
 	}
 }

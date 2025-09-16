@@ -13,51 +13,51 @@ namespace UI
 
 		void Start()
 		{
-			masterVolumeSlider.SetValueWithoutNotify(gameStateManager.State.AudioVolume);
-			ambientVolumeSlider.SetValueWithoutNotify(gameStateManager.State.AmbientAudioVolume);
-			musicVolumeSlider.SetValueWithoutNotify(gameStateManager.State.MusicAudioVolume);
-			sfxVolumeSlider.SetValueWithoutNotify(gameStateManager.State.SFXAudioVolume);
-			voiceVolumeSlider.SetValueWithoutNotify(gameStateManager.State.VoiceAudioVolume);
+			masterVolumeSlider.SetValueWithoutNotify(settingsManager.AudioVolume);
+			ambientVolumeSlider.SetValueWithoutNotify(settingsManager.AmbientAudioVolume);
+			musicVolumeSlider.SetValueWithoutNotify(settingsManager.MusicAudioVolume);
+			sfxVolumeSlider.SetValueWithoutNotify(settingsManager.SFXAudioVolume);
+			voiceVolumeSlider.SetValueWithoutNotify(settingsManager.VoiceAudioVolume);
 		}
 
 		public override void Reset()
 		{
-			gameStateManager.State.ResetVolume();
-			gameStateManager.State.ResetAmbientVolume();
-			gameStateManager.State.ResetMusicVolume();
-			gameStateManager.State.ResetSFXVolume();
-			gameStateManager.State.ResetVoiceVolume();
+			settingsManager.ResetVolume();
+			settingsManager.ResetAmbientVolume();
+			settingsManager.ResetMusicVolume();
+			settingsManager.ResetSFXVolume();
+			settingsManager.ResetVoiceVolume();
 
-			masterVolumeSlider.SetValueWithoutNotify(gameStateManager.State.AudioVolume);
-			ambientVolumeSlider.SetValueWithoutNotify(gameStateManager.State.AmbientAudioVolume);
-			musicVolumeSlider.SetValueWithoutNotify(gameStateManager.State.MusicAudioVolume);
-			sfxVolumeSlider.SetValueWithoutNotify(gameStateManager.State.SFXAudioVolume);
-			voiceVolumeSlider.SetValueWithoutNotify(gameStateManager.State.VoiceAudioVolume);
+			masterVolumeSlider.SetValueWithoutNotify(settingsManager.AudioVolume);
+			ambientVolumeSlider.SetValueWithoutNotify(settingsManager.AmbientAudioVolume);
+			musicVolumeSlider.SetValueWithoutNotify(settingsManager.MusicAudioVolume);
+			sfxVolumeSlider.SetValueWithoutNotify(settingsManager.SFXAudioVolume);
+			voiceVolumeSlider.SetValueWithoutNotify(settingsManager.VoiceAudioVolume);
 		}
 
 		void SetMasterVolume(float volume)
 		{
-			gameStateManager.State.SetVolume(volume);
+			settingsManager.SetVolume(volume);
 		}
 
 		void SetAmbientVolume(float volume)
 		{
-			gameStateManager.State.SetAmbientVolume(volume);
+			settingsManager.SetAmbientVolume(volume);
 		}
 
 		void SetMusicVolume(float volume)
 		{
-			gameStateManager.State.SetMusicVolume(volume);
+			settingsManager.SetMusicVolume(volume);
 		}
 
 		void SetSFXVolume(float volume)
 		{
-			gameStateManager.State.SetSFXVolume(volume);
+			settingsManager.SetSFXVolume(volume);
 		}
 
 		void SetVoiceVolume(float volume)
 		{
-			gameStateManager.State.SetVoiceVolume(volume);
+			settingsManager.SetVoiceVolume(volume);
 		}
 
 		override protected void SubscribeListeners()

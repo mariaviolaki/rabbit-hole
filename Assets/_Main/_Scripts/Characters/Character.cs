@@ -5,7 +5,7 @@ namespace Characters
 {
 	public abstract class Character : MonoBehaviour
 	{
-		[SerializeField] protected GameOptionsSO gameOptions;
+		[SerializeField] protected VNOptionsSO vnOptions;
 		protected CharacterData data;
 		protected RectTransform root;
 		protected CharacterManager manager;
@@ -13,7 +13,7 @@ namespace Characters
 		public CharacterManager Manager => manager;
 		public RectTransform Root => root;
 		public CharacterData Data => data;
-		public GameOptionsSO GameOptions => gameOptions;
+		public VNOptionsSO GameOptions => vnOptions;
 
 		virtual protected void Update()
 		{
@@ -34,7 +34,7 @@ namespace Characters
 
 		public void ResetData()
 		{
-			data = manager.Bank.GetCharacterData(Data.Name, Data.CastName, manager.GameOptions);
+			data = manager.Bank.GetCharacterData(Data.Name, Data.CastName, manager.Options);
 		}
 
 		public void SetName(string name)

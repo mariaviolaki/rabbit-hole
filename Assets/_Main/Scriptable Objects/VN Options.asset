@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52bfc5d8fdc122a48b6fff8746bd12fa, type: 3}
+  m_Name: VN Options
+  m_EditorClassIdentifier: 
+  general:
+    transitionSpeed: 10
+    skipTransitionSpeed: 100
+    sceneFadeTransitionSpeed: 10
+    screenMode: 1
+    graphicsQuality: 3
+    resolutionWidth: 1920
+    resolutionHeight: 1080
+  dialogue:
+    textSpeed: 10
+    minTextSpeed: 1
+    maxTextSpeed: 20
+    autoSpeed: 10
+    minAutoSpeed: 1
+    maxAutoSpeed: 20
+    skipSpeed: 10
+    defaultTextColor: {r: 1, g: 1, b: 1, a: 1}
+    defaultFont: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
+    dialogueFontSize: 38
+    textMode: 3
+    skipMode: 0
+    promptPos: 0
+    stopAutoOnClick: 0
+  characters:
+    transitionSpeed: 10
+    moveSpeed: 10
+    darkenBrightness: 0.5
+    spritesFacingRight: 1
+    highlightOnSpeak: 1
+  model3D:
+    renderTexture3D: {fileID: 8400000, guid: 96a4deac77fa91d4bbfb95a714050f1c, type: 2}
+    expressionTransitionSpeed: 10
+    defaultAngle: -30
+  images:
+    layers: 10
+    transitionSpeed: 10
+  audio:
+    layers: 10
+    transitionSpeed: 10
+    masterVolume: 0.5
+    ambientVolume: 0.5
+    musicVolume: 0.5
+    sfxVolume: 0.5
+    voiceVolume: 0.5
+  inputOutput:
+    useSlotScreenshots: 1
+    autosaveTimer: 1
+    autosaveTimerInterval: 60
+    slotCount: 60
+    audioExtension: 2
+    videoExtension: 1

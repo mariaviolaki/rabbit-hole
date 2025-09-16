@@ -9,7 +9,7 @@ namespace UI
 		[SerializeField] Canvas dialogueCanvas;
 		[SerializeField] TextMeshProUGUI dialogueText;
 		[SerializeField] Animator animator;
-		[SerializeField] GameOptionsSO gameOptions;
+		[SerializeField] VNOptionsSO vnOptions;
 
 		RectTransform rectTransform;
 
@@ -23,7 +23,7 @@ namespace UI
 
 		public void Show()
 		{
-			if (gameOptions.Dialogue.PromptPos == PromptPosition.TextboxBottomRight)
+			if (vnOptions.Dialogue.PromptPos == PromptPosition.TextboxBottomRight)
 				rectTransform.localPosition = GetContainerPosition();
 			else
 				rectTransform.localPosition = GetTextPosition();

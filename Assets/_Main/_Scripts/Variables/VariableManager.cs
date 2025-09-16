@@ -1,11 +1,15 @@
+using Game;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using UnityEngine;
 
 namespace Variables
 {
-	public class VariableManager
+	public class VariableManager : MonoBehaviour
 	{
+		[SerializeField] GameProgressManager gameProgressManager;
+
 		public const char VariablePrefix = '$';
 		const string identifierPattern = @"[a-zA-Z][a-zA-Z0-9]*";
 		public static readonly string VariablePattern = $@"\{VariablePrefix}{identifierPattern}(?:\s*\.\s*{identifierPattern})*";
@@ -14,9 +18,17 @@ namespace Variables
 		const char BankSeparator = '.';
 
 		readonly Dictionary<string, ScriptVariableBank> variableBanks = new(StringComparer.OrdinalIgnoreCase);
-		GameStateManager gameStateManager;
 
 		public Dictionary<string, ScriptVariableBank> VariableBanks => variableBanks;
+
+		void Start()
+		{
+			// Initialize default variables
+			foreach (var (variableName, variableValue) in DefaultVariables.Variables)
+			{
+				Set(variableName, variableValue);
+			}
+		}
 
 		public object Get(string name)
 		{
@@ -89,22 +101,11 @@ namespace Variables
 			variableBanks.Clear();
 		}
 
-		public void Initialize(GameStateManager gameStateManager)
-		{
-			this.gameStateManager = gameStateManager;
-
-			// Initialize default variables
-			foreach (var (variableName, variableValue) in DefaultVariables.Variables)
-			{
-				Set(variableName, variableValue);
-			}
-		}
-
 		void UpdatePlayerProgress(string variableName, object variableValue)
 		{
 			if (variableName.ToLower() != DefaultVariables.PlayerNameVariable.ToLower()) return;
 
-			gameStateManager.State.SetPlayerName(variableValue.ToString());
+			gameProgressManager.SetPlayerName(variableValue.ToString());
 		}
 
 		(string bankName, string variableName) ParseVariableName(string name)

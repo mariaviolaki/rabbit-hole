@@ -9,14 +9,14 @@ namespace Visuals
 	public class VisualGroupManager : MonoBehaviour
 	{
 		[SerializeField] VisualLayerGroup[] layerGroups;
-		[SerializeField] FileManagerSO fileManager;
-		[SerializeField] GameOptionsSO gameOptions;
+		[SerializeField] AssetManagerSO assetManager;
+		[SerializeField] VNOptionsSO vnOptions;
 		[SerializeField] DialogueManager dialogueManager;
 
 		Dictionary<VisualType, VisualLayerGroup> layerGroupBank = new();
 
-		public FileManagerSO FileManager => fileManager;
-		public GameOptionsSO GameOptions => gameOptions;
+		public AssetManagerSO Assets => assetManager;
+		public VNOptionsSO GameOptions => vnOptions;
 		public DialogueManager Dialogue => dialogueManager;
 
 		public Dictionary<VisualType, VisualLayerGroup> VisualGroups => layerGroupBank;
@@ -26,6 +26,7 @@ namespace Visuals
 			foreach (VisualLayerGroup group in layerGroups)
 			{
 				group.Initialize(this);
+				group.CreateLayers(vnOptions.Images.Layers);
 				layerGroupBank.Add(group.Type, group);
 			}
 		}
@@ -39,18 +40,11 @@ namespace Visuals
 		public float GetTransitionSpeed(float speedInput, bool isTransitionSkipped)
 		{
 			if (isTransitionSkipped || dialogueManager.ReadMode == DialogueReadMode.Skip)
-				return gameOptions.General.SkipTransitionSpeed;
+				return vnOptions.General.SkipTransitionSpeed;
 			else if (speedInput <= 0)
-				return gameOptions.BackgroundLayers.TransitionSpeed;
+				return vnOptions.Images.TransitionSpeed;
 			else
 				return speedInput;
-		}
-
-		public void Create(VisualType visualType, int count = 0)
-		{
-			if (!layerGroupBank.TryGetValue(visualType, out VisualLayerGroup visualLayerGroup)) return;
-
-			visualLayerGroup.CreateLayers(count);
 		}
 
 		public void Clear(VisualType visualType, int depth = -1, bool isImmediate = false, float speed = 0)
@@ -67,8 +61,8 @@ namespace Visuals
 			VisualLayer visualLayer = visualLayerGroup.GetLayer(layerDepth);
 			if (visualLayer == null) yield break;
 
-			yield return fileManager.LoadImage(name);
-			Sprite sprite = fileManager.GetImage(name);
+			yield return assetManager.LoadImage(name);
+			Sprite sprite = assetManager.GetImage(name);
 			if (sprite == null) yield break;
 
 			visualLayer.SetImage(sprite, name, isImmediate, speed);
@@ -81,7 +75,7 @@ namespace Visuals
 			VisualLayer visualLayer = visualLayerGroup.GetLayer(layerDepth);
 			if (visualLayer == null) yield break;
 
-			string path = fileManager.GetVideoUrl(name);
+			string path = assetManager.GetVideoUrl(name);
 			if (path == null) yield break;
 
 			yield return visualLayer.SetVideo(path, name, volume, isMuted, isImmediate, speed);

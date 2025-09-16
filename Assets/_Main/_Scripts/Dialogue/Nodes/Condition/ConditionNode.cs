@@ -32,7 +32,7 @@ namespace Dialogue
 
 					// Check if the condition is successful in an if block
 					string condition = branchNode.Data[1].Trim();
-					string resultString = ScriptLogicUtilities.EvaluateExpression(condition, flowController.Game.Variables);
+					string resultString = ScriptLogicUtilities.EvaluateExpression(condition, flowController.VN.Game.Variables);
 					if (!bool.TryParse(resultString, out bool resultBool) || !resultBool) continue;
 				}
 				else if (conditionType != "else") continue;

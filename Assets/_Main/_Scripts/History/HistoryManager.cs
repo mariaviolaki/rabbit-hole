@@ -4,15 +4,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using VN;
 
 namespace History
 {
 	public class HistoryManager : MonoBehaviour
 	{
-		[SerializeField] GameOptionsSO gameOptions;
+		[SerializeField] VNOptionsSO vnOptions;
 		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] FontBankSO fontBank;
-		[SerializeField] GameManager gameManager;
+		[SerializeField] VNManager vnManager;
 		[SerializeField] DialogueManager dialogueManager;
 
 		const int MaxHistoryStates = 100;
@@ -27,6 +28,7 @@ namespace History
 		public List<HistoryState> HistoryStates => historyStates.ToList();
 		public LinkedListNode<HistoryState> HistoryNode => historyStates.Last;
 		public HistoryState HistoryState => historyStates.Last?.Value;
+		public int HistoryStateCount => historyStates.Count - 1;
 		public bool IsUpdatingHistory => isLoadingHistory || isCapturePending || pendingLoadNode != null;
 
 		void Awake()
@@ -47,11 +49,6 @@ namespace History
 		void Update()
 		{
 			ProcessHistoryRequests();
-		}
-
-		public int GetHistoryStateCount()
-		{
-			return historyStates.Count - 1;
 		}
 
 		// Called when reading new dialogue
@@ -89,10 +86,10 @@ namespace History
 				yield return null;
 			}
 
-			yield return historyNode.Value.Load(gameManager, dialogueManager, gameOptions);
+			yield return historyNode.Value.Load(vnManager, dialogueManager, vnOptions);
 			DeleteHistoryAfterCurrentNode(historyNode);
 
-			flowController.StartDialogue();
+			flowController.ContinueDialogue();
 			flowController.DialogueText.UpdateTextBuildMode(DialogueReadMode.Skip);
 
 			while (!isCapturePending) yield return null;
@@ -110,10 +107,10 @@ namespace History
 			isLoadingHistory = true;
 
 			Repopulate(historyStatesArray);
-			yield return historyStates.Last.Value.Load(gameManager, dialogueManager, gameOptions);
+			yield return historyStates.Last.Value.Load(vnManager, dialogueManager, vnOptions);
 			DeleteHistoryAfterCurrentNode(historyStates.Last);
 
-			flowController.StartDialogue();
+			flowController.ContinueDialogue();
 			isLoadingHistory = false;
 		}
 
@@ -127,12 +124,16 @@ namespace History
 
 		void ProcessCapture()
 		{
-			// Capture the current state of the visual novel
-			historyStates.AddLast(new HistoryState(gameManager, dialogueManager));
+			// Capture the current state of the visual novel (for appended text, don't capture the node multiple times)
+			HistoryState newState = new HistoryState(vnManager, dialogueManager);
+			if (historyStates.Count == 0 || newState.Dialogue.DialogueNodeId != historyStates.Last.Value.Dialogue.DialogueNodeId)
+			{
+				historyStates.AddLast(newState);
 
-			// Don't allow the history to grow indefinitely
-			if (historyStates.Count > MaxHistoryStates)
-				historyStates.RemoveFirst();
+				// Don't allow the history to grow indefinitely
+				if (historyStates.Count > MaxHistoryStates)
+					historyStates.RemoveFirst();
+			}
 
 			isCapturePending = false;
 		}

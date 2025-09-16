@@ -11,22 +11,14 @@ namespace Dialogue
 		readonly CharacterManager characterManager;
 		readonly CommandManager commandManager;
 		readonly VisualNovelUI visualNovelUI;
-		readonly GameOptionsSO gameOptions;
+		readonly VNOptionsSO vnOptions;
 
-		public DialogueSpeakerHandler(DialogueManager dialogueManager, GameOptionsSO gameOptions)
+		public DialogueSpeakerHandler(DialogueManager dialogueManager, VNOptionsSO vnOptions)
 		{
 			this.characterManager = dialogueManager.Characters;
 			this.commandManager = dialogueManager.Commands;
-			this.visualNovelUI = dialogueManager.UI;
-			this.gameOptions = gameOptions;
-		}
-
-		public CharacterData GetCharacterDataFromShortName(string shortName)
-		{
-			Character character = characterManager.GetCharacter(shortName);
-			if (character == null) return null;
-
-			return character.Data;
+			this.visualNovelUI = dialogueManager.VN.UI;
+			this.vnOptions = vnOptions;
 		}
 
 		public IEnumerator SetSpeaker(string shortName, SpriteLayerType layerType, string visualName, float xPos, float yPos)
@@ -89,7 +81,7 @@ namespace Dialogue
 
 		void HighlightSpeaker(string shortName)
 		{
-			if (!gameOptions.Characters.HighlightOnSpeak) return;
+			if (!vnOptions.Characters.HighlightOnSpeak) return;
 
 			foreach (Character character in characterManager.GetCharacters().Values)
 			{

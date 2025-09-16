@@ -1,12 +1,11 @@
-using System;
-using System.Collections;
+using Game;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UI
 {
-	public class SettingsMenuUI : FadeableUI
+	public class SettingsMenuUI : MenuBaseUI
 	{
 		[SerializeField] Button displaySettingsButton;
 		[SerializeField] Button textSettingsButton;
@@ -15,68 +14,23 @@ namespace UI
 		[SerializeField] Color unselectedImageColor;
 		[SerializeField] Color selectedTextColor;
 		[SerializeField] Color unselectedTextColor;
-		[SerializeField] Button backButton;
 		[SerializeField] DisplaySettingsUI displaySettings;
 		[SerializeField] TextSettingsUI textSettings;
 		[SerializeField] AudioSettingsUI audioSettings;
-		[SerializeField] MenusUI menus;
-		[SerializeField] GameStateManager gameStateManager;
+		[SerializeField] SettingsManager settingsManager;
 
 		SettingsSection settingsSection = SettingsSection.None;
-		bool isTransitioning = false;
-
-		public event Action OnClose;
-
-		public bool IsTransitioning => isTransitioning;
 
 		override protected void Start()
 		{
 			base.Start();
-
-			displaySettings.InitCommonSettings(gameStateManager);
-			textSettings.InitCommonSettings(gameStateManager);
-			audioSettings.InitCommonSettings(gameStateManager);
-
 			SelectDisplaySetting();
 		}
 
-		override protected void OnEnable()
+		protected override void CompleteClose()
 		{
-			base.OnEnable();
-			SubscribeListeners();
-		}
-
-		override protected void OnDisable()
-		{
-			base.OnDisable();
-			UnsubscribeListeners();
-		}
-
-		public IEnumerator Open(bool isImmediate = false, float fadeSpeed = 0)
-		{
-			if (IsVisible || isTransitioning) yield break;
-			isTransitioning = true;
-
-			base.fadeSpeed = fadeSpeed;
-			isImmediateTransition = isImmediate;
-
-			yield return SetVisible(isImmediate, fadeSpeed);
-
-			isTransitioning = false;
-		}
-
-		public IEnumerator Close(bool isImmediate = false, float fadeSpeed = 0)
-		{
-			if (IsHidden || isTransitioning) yield break;
-			isTransitioning = true;
-
-			gameStateManager.SavePlayerSettings();
-
-			fadeSpeed = fadeSpeed <= 0 ? gameOptions.General.TransitionSpeed : fadeSpeed;
-			yield return SetHidden(isImmediate, fadeSpeed);
-
-			isTransitioning = false;
-			OnClose?.Invoke();
+			base.CompleteClose();
+			settingsManager.SavePlayerSettings();
 		}
 
 		void SelectDisplaySetting() => SelectSetting(SettingsSection.Display);
@@ -125,17 +79,17 @@ namespace UI
 			selectedSection.gameObject.SetActive(true);
 		}
 
-		void SubscribeListeners()
+		override protected void SubscribeListeners()
 		{
-			backButton.onClick.AddListener(menus.CloseMenu);
+			base.SubscribeListeners();
 			displaySettingsButton.onClick.AddListener(SelectDisplaySetting);
 			textSettingsButton.onClick.AddListener(SelectTextSetting);
 			audioSettingsButton.onClick.AddListener(SelectAudioSetting);
 		}
 
-		void UnsubscribeListeners()
+		override protected void UnsubscribeListeners()
 		{
-			backButton.onClick.RemoveListener(menus.CloseMenu);
+			base.UnsubscribeListeners();
 			displaySettingsButton.onClick.RemoveListener(SelectDisplaySetting);
 			textSettingsButton.onClick.RemoveListener(SelectTextSetting);
 			audioSettingsButton.onClick.RemoveListener(SelectAudioSetting);

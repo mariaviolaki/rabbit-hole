@@ -249,7 +249,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81a5b83d1117d5e4dad3a597873b9a54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
+  vnOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
   spriteLayerPrefab: {fileID: 7476231993441924595, guid: 80d2d6cda70ea0444bc79a73068cb36d, type: 3}
 --- !u!1 &7992784137326638312
 GameObject:

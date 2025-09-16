@@ -6,27 +6,20 @@ namespace UI
 	[RequireComponent(typeof(CanvasGroup))]
 	public class FadeableUI : MonoBehaviour
 	{
-		[SerializeField] protected GameOptionsSO gameOptions;
+		[SerializeField] Canvas canvas;
+		[SerializeField] protected VNOptionsSO vnOptions;
+		[SerializeField] protected CanvasGroup canvasGroup;
 
-		UITransitionHandler transitionHandler;
-		CanvasGroup canvasGroup;
-
+		protected UITransitionHandler transitionHandler;
 		protected float fadeSpeed;
 		protected bool isImmediateTransition;
-
+		public Canvas UICanvas => canvas;
 		public bool IsVisible => canvasGroup.alpha == 1f;
 		public bool IsHidden => canvasGroup.alpha == 0f;
 
-		protected virtual void OnEnable() { }
-		protected virtual void Start() { }
-		protected virtual void OnDisable() { }
-		protected virtual void OnDestroy() { }
-
 		virtual protected void Awake()
 		{
-			canvasGroup = GetComponent<CanvasGroup>();
-			transitionHandler = new UITransitionHandler(gameOptions);
-
+			transitionHandler = new UITransitionHandler(vnOptions);
 			SetHiddenImmediate();
 		}
 
@@ -44,7 +37,7 @@ namespace UI
 			}
 			else
 			{
-				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : speed;
+				fadeSpeed = (speed < Mathf.Epsilon) ? vnOptions.General.TransitionSpeed : speed;
 				yield return transitionHandler.SetVisibility(canvasGroup, true, fadeSpeed);
 			}
 		}
@@ -60,7 +53,7 @@ namespace UI
 			}
 			else
 			{
-				fadeSpeed = (speed < Mathf.Epsilon) ? gameOptions.General.TransitionSpeed : speed;
+				fadeSpeed = (speed < Mathf.Epsilon) ? vnOptions.General.TransitionSpeed : speed;
 				yield return transitionHandler.SetVisibility(canvasGroup, false, fadeSpeed);
 			}
 		}

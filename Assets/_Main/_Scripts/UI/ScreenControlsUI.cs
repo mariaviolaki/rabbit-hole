@@ -9,15 +9,21 @@ namespace UI
 		[SerializeField] InputManagerSO inputManager;
 		[SerializeField] Button interactionArea;
 		[SerializeField] Button sideMenuButton;
-		[SerializeField] MenusUI menus;
 
-		void Awake()
+		MenusUI menus;
+
+		void Start()
+		{
+			menus = FindObjectOfType<MenusUI>();
+		}
+
+		void OnEnable()
 		{
 			sideMenuButton.onClick.AddListener(OpenSideMenu);
 			interactionArea.onClick.AddListener(AdvanceDialogue);
 		}
 
-		void OnDestroy()
+		void OnDisable()
 		{
 			sideMenuButton.onClick.RemoveListener(OpenSideMenu);
 			interactionArea.onClick.RemoveListener(AdvanceDialogue);
@@ -25,12 +31,12 @@ namespace UI
 
 		void OpenSideMenu()
 		{
-			menus.OpenSideMenu();
+			menus.OpenMenu(MenuType.SideMenu);
 		}
 
 		void AdvanceDialogue()
 		{
-			inputManager.OnForward?.Invoke();
+			inputManager.TriggerClick();
 		}
 	}
 }

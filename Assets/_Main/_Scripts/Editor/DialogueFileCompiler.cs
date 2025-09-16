@@ -13,11 +13,12 @@ namespace Preprocessing
 		{
 			const char DialogueDirectoryDelimiter = '.';
 
-			SaveFileManager saveFileManager = new(null);
+			SaveFileManagerSO saveFileManager = AssetDatabase.LoadAssetAtPath<SaveFileManagerSO>(FilePaths.SaveFileManagerPath);
 			DialogueTreeBuilder treeBuilder = new();
 			DialogueTreeMap treeLookup = new();
 
 			Directory.CreateDirectory(FilePaths.DialogueFileDirectory);
+			DeleteOldFiles();
 
 			string[] filePaths = Directory.GetFiles(FilePaths.DialogueSourcePath, $"*{FilePaths.DialogueSourceExtension}", SearchOption.AllDirectories);
 			foreach (string filePath in filePaths)
@@ -40,6 +41,18 @@ namespace Preprocessing
 			saveFileManager.SaveDialogueLookup(treeLookup);
 
 			Debug.Log("<color=#32CD32>Successfully compiled dialogue files!</color>");
+		}
+
+		public static void DeleteOldFiles()
+		{
+			// Don't delete any directories - the only directory should be the Editor folder which should be preserved
+			foreach (string file in Directory.GetFiles(FilePaths.DialogueFileDirectory))
+			{
+				// Preserve only the Editor meta file
+				if (file == FilePaths.DialogueSourceMetaPath) continue;
+
+				File.Delete(file);
+			}
 		}
 	}
 }

@@ -10,38 +10,38 @@ namespace History
 	public class HistoryDialogueData
 	{
 		[SerializeField] string sceneName;
-		[SerializeField] int nodeId;
+		[SerializeField] int nodeNum;
 		[SerializeField] string speakerText;
 		[SerializeField] string dialogueText;
 		[SerializeField] Color speakerColor;
 		[SerializeField] Color dialogueColor;
 
 		public string SceneName => sceneName;
-		public int NodeId => nodeId;
-		public string DialogueNodeId => TreeNodeUtilities.GetDialogueNodeId(sceneName, nodeId);
+		public int NodeNum => nodeNum;
+		public string DialogueNodeId => TreeNodeUtilities.GetDialogueNodeId(sceneName, nodeNum);
 		public string SpeakerText => speakerText;
 		public string DialogueText => dialogueText;
 		public Color SpeakerColor => speakerColor;
 		public Color DialogueColor => dialogueColor;
 
-		public HistoryDialogueData(DialogueFlowController flowController)
+		public HistoryDialogueData(DialogueFlowController flowController, DialogueUI dialogueUI)
 		{
-			sceneName = flowController.CurrentSceneName;
-			nodeId = flowController.CurrentNodeId;
+			TextMeshProUGUI speakerTextData = dialogueUI.SpeakerText;
+			TextMeshProUGUI dialogueTextData = dialogueUI.DialogueText;
 
-			if (flowController.CurrentNode is DialogueNode dialogueNode)
-			{
-				speakerText = dialogueNode.SpeakerData.Name;
-				dialogueText = dialogueNode.FinalDialogueText;
-				speakerColor = dialogueNode.SpeakerData.NameColor;
-				dialogueColor = dialogueNode.SpeakerData.DialogueColor;
-			}
+			sceneName = flowController.CurrentSceneName;
+			nodeNum = flowController.CurrentNodeId;
+			speakerText = speakerTextData.text;
+			dialogueText = dialogueTextData.text;
+			speakerColor = speakerTextData.color;
+			dialogueColor = dialogueTextData.color;
 		}
 
 		public IEnumerator Load(DialogueManager dialogueManager, DialogueFlowController flowController)
 		{
 			dialogueManager.SetReadMode(DialogueReadMode.Forward);
-			yield return flowController.JumpToScene(sceneName, nodeId);
+
+			yield return flowController.JumpToScene(sceneName, nodeNum);
 		}
 	}
 }
