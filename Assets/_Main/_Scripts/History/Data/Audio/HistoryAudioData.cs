@@ -2,6 +2,7 @@ using Audio;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VN;
 
 namespace History
 {

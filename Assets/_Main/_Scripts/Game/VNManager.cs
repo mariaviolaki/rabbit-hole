@@ -29,7 +29,7 @@ namespace VN
 		public SaveManager Saving => saveManager;
 		public VisualNovelUI UI => visualNovelUI;
 
-		void OnEnable()
+		void Awake()
 		{
 			gameManager = FindObjectOfType<GameManager>();
 		}

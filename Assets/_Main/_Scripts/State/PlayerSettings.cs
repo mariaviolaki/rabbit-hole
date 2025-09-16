@@ -1,5 +1,6 @@
 using Dialogue;
 using IO;
+using VN;
 
 namespace History
 {

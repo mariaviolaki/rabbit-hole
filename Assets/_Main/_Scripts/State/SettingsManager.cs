@@ -3,6 +3,7 @@ using Dialogue;
 using History;
 using IO;
 using UnityEngine;
+using VN;
 
 namespace Game
 {

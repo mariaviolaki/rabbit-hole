@@ -1,6 +1,7 @@
 using Dialogue;
 using UnityEngine;
 using UnityEngine.UI;
+using VN;
 
 namespace UI
 {

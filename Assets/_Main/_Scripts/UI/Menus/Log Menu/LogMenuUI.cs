@@ -214,7 +214,7 @@ namespace UI
 
 		bool GetHistoryData()
 		{
-			if (historyManager.IsUpdatingHistory) return false;
+			if (historyManager == null || historyManager.IsUpdatingHistory) return false;
 
 			// Cache the state of history to limit scrolling and available entries
 			historyStateCount = historyManager.HistoryStateCount;

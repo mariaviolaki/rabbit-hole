@@ -1,21 +1,24 @@
 using UnityEngine;
 
-public class PersistentContainerSpawner : MonoBehaviour
+namespace Game
 {
-	[Tooltip("The root container of any object which should persist across scenes")]
-	[SerializeField] GameObject persistentContainerPrefab;
-
-	static bool hasSpawned;
-
-	void Awake()
+	public class PersistentContainerSpawner : MonoBehaviour
 	{
-		if (!hasSpawned)
-		{
-			GameObject persistentContainer = Instantiate(persistentContainerPrefab);
-			DontDestroyOnLoad(persistentContainer);
-			hasSpawned = true;
-		}
+		[Tooltip("The root container of any object which should persist across scenes")]
+		[SerializeField] GameObject persistentContainerPrefab;
 
-		Destroy(gameObject);
+		static bool hasSpawned;
+
+		void Awake()
+		{
+			if (!hasSpawned)
+			{
+				GameObject persistentContainer = Instantiate(persistentContainerPrefab);
+				DontDestroyOnLoad(persistentContainer);
+				hasSpawned = true;
+			}
+
+			Destroy(gameObject);
+		}
 	}
 }

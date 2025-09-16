@@ -1,6 +1,7 @@
 using Dialogue;
 using TMPro;
 using UnityEngine;
+using VN;
 
 namespace UI
 {
