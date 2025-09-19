@@ -25,6 +25,7 @@ namespace UI
 
 		void OpenSettingsMenu() => menus.OpenMenu(MenuType.Settings);
 		void OpenLoadMenu() => menus.OpenMenu(MenuType.Load);
+		void OpenGalleryMenu() => menus.OpenMenu(MenuType.Gallery);
 
 		void Awake()
 		{
@@ -42,7 +43,7 @@ namespace UI
 
 			loadButton.OnMainMenuAction += OpenLoadMenu;
 			settingsButton.OnMainMenuAction += OpenSettingsMenu;
-			// TODO GALLERY MENU
+			galleryButton.OnMainMenuAction += OpenGalleryMenu;
 		}
 
 		void OnDestroy()
@@ -53,7 +54,7 @@ namespace UI
 
 			loadButton.OnMainMenuAction -= OpenLoadMenu;
 			settingsButton.OnMainMenuAction -= OpenSettingsMenu;
-			// TODO GALLERY MENU
+			galleryButton.OnMainMenuAction -= OpenGalleryMenu;
 		}
 
 		public IEnumerator Hide()

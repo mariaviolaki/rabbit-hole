@@ -11,8 +11,6 @@ namespace Preprocessing
 		[MenuItem("Tools/Compile Dialogue Files")]
 		public static void CompileDialogueFiles()
 		{
-			const char DialogueDirectoryDelimiter = '.';
-
 			SaveFileManagerSO saveFileManager = AssetDatabase.LoadAssetAtPath<SaveFileManagerSO>(FilePaths.SaveFileManagerPath);
 			DialogueTreeBuilder treeBuilder = new();
 			DialogueTreeMap treeLookup = new();
@@ -24,7 +22,7 @@ namespace Preprocessing
 			foreach (string filePath in filePaths)
 			{
 				string fileName = Path.ChangeExtension(filePath, null).Replace(FilePaths.DialogueSourcePath, "")
-					.Replace('\\', DialogueDirectoryDelimiter).Replace('/', DialogueDirectoryDelimiter);
+					.Replace('\\', FilePaths.DialogueDirectoryDelimiter).Replace('/', FilePaths.DialogueDirectoryDelimiter);
 				string[] rawLines = File.ReadAllLines(filePath);
 
 				DialogueTree dialogueTree = treeBuilder.GetDialogueTree(fileName, rawLines);

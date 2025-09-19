@@ -1,7 +1,7 @@
 label ZeroRoute "Fooled!"
 
 $route = "Zero"
-SetBackgroundImage(Snow-Back, layer=1), SetBackgroundImage(Snow-Front)
+SetBackground(Snow-Back, layer=1), SetBackground(Snow-Front)
 
 z.SetName("???")
 

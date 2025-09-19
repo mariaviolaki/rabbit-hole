@@ -1,7 +1,8 @@
 using Dialogue;
-using Visuals;
+using Gameplay;
 using System;
 using System.Collections;
+using Visuals;
 
 namespace Commands
 {
@@ -17,83 +18,118 @@ namespace Commands
 
 			CommandBank bank = manager.GetBank(CommandManager.MainBankName);
 
+			// CGs
+			bank.AddCommand("ShowCG", new Func<DialogueCommandArguments, CommandProcessBase>(ShowCG));
+			bank.AddCommand("HideCG", new Func<DialogueCommandArguments, CommandProcessBase>(HideCG));
+
 			// Background
+			bank.AddCommand("SetBackground", new Func<DialogueCommandArguments, CommandProcessBase>(SetBackground));
 			bank.AddCommand("ClearBackground", new Func<DialogueCommandArguments, CommandProcessBase>(ClearBackground));
-			bank.AddCommand("SetBackgroundImage", new Func<DialogueCommandArguments, CommandProcessBase>(SetBackgroundImage));
-			bank.AddCommand("SetBackgroundVideo", new Func<DialogueCommandArguments, CommandProcessBase>(SetBackgroundVideo));
 
 			// Foreground
+			bank.AddCommand("SetForeground", new Func<DialogueCommandArguments, CommandProcessBase>(SetForeground));
 			bank.AddCommand("ClearForeground", new Func<DialogueCommandArguments, CommandProcessBase>(ClearForeground));
-			bank.AddCommand("SetForegroundImage", new Func<DialogueCommandArguments, CommandProcessBase>(SetForegroundImage));
-			bank.AddCommand("SetForegroundVideo", new Func<DialogueCommandArguments, CommandProcessBase>(SetForegroundVideo));
 
 			// Cinematic
-			bank.AddCommand("ClearCinematic", new Func<DialogueCommandArguments, CommandProcessBase>(ClearCinematic));
-			bank.AddCommand("SetCinematicImage", new Func<DialogueCommandArguments, CommandProcessBase>(SetCinematicImage));
-			bank.AddCommand("SetCinematicVideo", new Func<DialogueCommandArguments, CommandProcessBase>(SetCinematicVideo));
+			bank.AddCommand("SetCinematic", new Func<DialogueCommandArguments, CommandProcessBase>(SetCinematic));
+			bank.AddCommand("ClearCinematic", new Func<DialogueCommandArguments, CommandProcessBase>(ClearCinematic));			
+		}
+
+
+		/***** CGs *****/
+
+		static CommandProcessBase ShowCG(DialogueCommandArguments args)
+		{
+			CharacterRoute route = args.Get(0, "route", CharacterRoute.Common);
+			int num = args.Get(1, "num", 1);
+			int stage = args.Get(2, "stage", 0);
+			bool isImmediate = args.Get(3, "immediate", false);
+			float speed = args.Get(4, "speed", 0f);
+
+			IEnumerator processFunc() => visualGroupManager.ShowCG(route, num, stage, isImmediate, speed);
+			void skipFunc() => visualGroupManager.SkipCGTransition();
+			bool isCompletedFunc() => !visualGroupManager.IsCGTransitioning();
+
+			return new TransitionCommandProcess(commandManager, processFunc, skipFunc, isCompletedFunc);
+		}
+
+		static CommandProcessBase HideCG(DialogueCommandArguments args)
+		{
+			bool isImmediate = args.Get(0, "immediate", false);
+			float speed = args.Get(1, "speed", 0f);
+
+			void runFunc() => visualGroupManager.HideCG(isImmediate, speed);
+			void skipFunc() => visualGroupManager.SkipCGTransition();
+			bool isCompletedFunc() => !visualGroupManager.IsCGTransitioning();
+
+			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
 		}
 
 
 		/***** Background *****/
 
+		static CommandProcessBase SetBackground(DialogueCommandArguments args)
+		{
+			return SetVisual(VisualType.Background, args);
+		}
+
 		static CommandProcessBase ClearBackground(DialogueCommandArguments args)
 		{
-			return ClearVisualGroup(VisualType.Background, args);
-		}
-
-		static CommandProcessBase SetBackgroundImage(DialogueCommandArguments args)
-		{
-			return SetVisualGroupImage(VisualType.Background, args);
-		}
-
-		static CommandProcessBase SetBackgroundVideo(DialogueCommandArguments args)
-		{
-			return SetVisualGroupVideo(VisualType.Background, args);
+			return ClearVisual(VisualType.Background, args);
 		}
 
 
 		/***** Foreground *****/
 
+		static CommandProcessBase SetForeground(DialogueCommandArguments args)
+		{
+			return SetVisual(VisualType.Foreground, args);
+		}
 
 		static CommandProcessBase ClearForeground(DialogueCommandArguments args)
 		{
-			return ClearVisualGroup(VisualType.Foreground, args);
-		}
-
-		static CommandProcessBase SetForegroundImage(DialogueCommandArguments args)
-		{
-			return SetVisualGroupImage(VisualType.Foreground, args);
-		}
-
-		static CommandProcessBase SetForegroundVideo(DialogueCommandArguments args)
-		{
-			return SetVisualGroupVideo(VisualType.Foreground, args);
+			return ClearVisual(VisualType.Foreground, args);
 		}
 
 
 		/***** Cinematic *****/
 
+		static CommandProcessBase SetCinematic(DialogueCommandArguments args)
+		{
+			return SetVisual(VisualType.Cinematic, args);
+		}
 
 		static CommandProcessBase ClearCinematic(DialogueCommandArguments args)
 		{
-			return ClearVisualGroup(VisualType.Cinematic, args);
-		}
-
-		static CommandProcessBase SetCinematicImage(DialogueCommandArguments args)
-		{
-			return SetVisualGroupImage(VisualType.Cinematic, args);
-		}
-
-		static CommandProcessBase SetCinematicVideo(DialogueCommandArguments args)
-		{
-			return SetVisualGroupVideo(VisualType.Cinematic, args);
+			return ClearVisual(VisualType.Cinematic, args);
 		}
 
 
 		/***** All Visual Groups *****/
 
+		static CommandProcessBase SetVisual(VisualType visualType, DialogueCommandArguments args)
+		{
+			string name = args.Get(0, "name", "");
+			int layerDepth = args.Get(1, "layer", 0);
+			bool isImmediate = args.Get(2, "immediate", false);
+			float speed = args.Get(3, "speed", 0f);
 
-		static CommandProcessBase ClearVisualGroup(VisualType visualType, DialogueCommandArguments args)
+			// Video-only params
+			bool isVideo = args.Get(4, "video", false);
+			float volume = args.Get(5, "volume", 0.5f);
+			bool isMuted = args.Get(6, "mute", false);
+
+			IEnumerator processFunc() => isVideo
+				? visualGroupManager.SetVideo(visualType, layerDepth, name, volume, isMuted, isImmediate, speed)
+				: visualGroupManager.SetImage(visualType, layerDepth, name, isImmediate, speed);
+
+			void skipFunc() => visualGroupManager.SkipTransition(visualType, layerDepth);
+			bool isCompletedFunc() => !visualGroupManager.IsTransitioning(visualType, layerDepth);
+
+			return new TransitionCommandProcess(commandManager, processFunc, skipFunc, isCompletedFunc);
+		}
+
+		static CommandProcessBase ClearVisual(VisualType visualType, DialogueCommandArguments args)
 		{
 			int layerDepth = args.Get(0, "layer", -1);
 			bool isImmediate = args.Get(1, "immediate", false);
@@ -104,36 +140,6 @@ namespace Commands
 			bool isCompletedFunc() => !visualGroupManager.IsTransitioning(visualType, layerDepth);
 
 			return new TransitionCommandProcess(runFunc, skipFunc, isCompletedFunc);
-		}
-
-		static CommandProcessBase SetVisualGroupImage(VisualType visualType, DialogueCommandArguments args)
-		{
-			string imageName = args.Get(0, "name", "");
-			int layerDepth = args.Get(1, "layer", 0);
-			bool isImmediate = args.Get(2, "immediate", false);
-			float speed = args.Get(3, "speed", 0f);
-
-			IEnumerator processFunc() => visualGroupManager.SetImage(visualType, layerDepth, imageName, isImmediate, speed);
-			void skipFunc() => visualGroupManager.SkipTransition(visualType, layerDepth);
-			bool isCompletedFunc() => !visualGroupManager.IsTransitioning(visualType, layerDepth);
-
-			return new TransitionCommandProcess(commandManager, processFunc, skipFunc, isCompletedFunc);
-		}
-
-		static CommandProcessBase SetVisualGroupVideo(VisualType visualType, DialogueCommandArguments args)
-		{
-			string videoName = args.Get(0, "name", "");
-			int layerDepth = args.Get(1, "layer", 0);
-			float volume = args.Get(2, "volume", 0.5f);
-			bool isMuted = args.Get(3, "mute", false);
-			bool isImmediate = args.Get(4, "immediate", false);
-			float speed = args.Get(5, "speed", 0f);
-
-			IEnumerator processFunc() => visualGroupManager.SetVideo(visualType, layerDepth, videoName, volume, isMuted, isImmediate, speed);
-			void skipFunc() => visualGroupManager.SkipTransition(visualType, layerDepth);
-			bool isCompletedFunc() => !visualGroupManager.IsTransitioning(visualType, layerDepth);
-
-			return new TransitionCommandProcess(commandManager, processFunc, skipFunc, isCompletedFunc);
 		}
 	}
 }

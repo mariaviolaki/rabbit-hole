@@ -21,7 +21,7 @@ end Main
 
 label Prologue
 
-SetBackgroundImage(Green-Forest-Back, layer=1, immediate=true), SetBackgroundImage(Green-Forest-Front, immediate=true)
+SetBackground(Green-Forest-Back, layer=1, immediate=true), SetBackground(Green-Forest-Front, immediate=true)
 PlayMusic(day)
 
 v.SetPosition(0.5, 0.5, immediate=true), v.SetSprite(smug, layer=face, immediate=true), v.SetSprite(casual-body, layer=body, immediate=true)
@@ -29,8 +29,13 @@ v.SetName("???")
 v.Show()
 
 v "Curiouser and curiouser..."
+ShowCG(common, 1)
 v "Didn't expect to find a human...{a 0.5} here."
+ShowCG(common, 1, 1)
 v (neutral) "Got lost again, did you?"
+ShowCG(common, 1, 2)
+v "Fell into a hole that popped out of nowhere?"
+HideCG()
 choice
 {
 	- "I never lose my way"
@@ -39,7 +44,9 @@ choice
 		$kindness -= 1
 		$mc.isLost = false
 		v "Oh, really?{a} Then why are you here?"
+		ShowCG(void, 2)
 		v "I know this place like the back of my hand."
+		HideCG()
 		v (evil) "No human who ends up here ever knew where they were heading."
 		choice
 		{
@@ -47,7 +54,9 @@ choice
 			{
 				$honesty += 1
 				v (neutral) "Oh, so you were looking for me?"
+				ShowCG(void, 3)
 				v (smug) "How flattering."
+				HideCG()
 				v "I guess I can forgive you for getting lost then."
 				choice
 				{
@@ -69,7 +78,9 @@ choice
 			{
 				$curiosity += 1
 				$honesty -= 1
+				ShowCG(void, 4)
 				v "I might."
+				HideCG()
 				v "But I wouln't tell <i>you</i> any time soon."
 			}
 		}
@@ -79,8 +90,11 @@ choice
 		$honesty += 2
 		$kindness += 2
 		$mc.isLost = true
+
 		v "I thought so.{c 0.5}You're an honest one, aren't you?"
+		ShowCG(void, 1)
 		v (smug) "Well, let me be your guide then.{c}You can call me Void."
+		HideCG()
 		v.SetName("Void")
 	}
 }
@@ -94,11 +108,15 @@ eg.Show(immediate=true), v.SetSprite("neutral", layer="face")
 eg.SetPosition(0.8, immediate=false)
 if ($mc.isLost)
 {
+	ShowCG(zero, 1)
 	eg "I wanted to guide this human first!"
+	HideCG()
 }
 else
 {
+	ShowCG(zero, 2)
 	eg "Are you really bothering this poor human?"
+	HideCG()
 	eg "Since when do you care about humans???"
 }
 
@@ -111,17 +129,23 @@ m.Show(immediate=true)
 m "Oh, no...{a 0.5} God help us."
 m at [0.2] (sad) "Eccentric Guy is speaking Japanese again."
 eg.SetName("Eccentric Guy")
+ShowCG(marsh, 1)
 m "Prepare yourselves for the worst, guys."
+HideCG()
 
 v.FaceLeft()
 v (smug) "Oh, come on~"
+ShowCG(void, 5)
 v "No one has stayed here as long as he has."
 v (crazy) "In a few months, your brain will be as fried as his."
+HideCG()
 
 eg (whiny) "I can hear you, you know!"
+ShowCG(zero, 2)
 eg (sick) "You and Marsh are always so mean to me..."
 m.SetName("Marsh")
 eg "I just wanted to help the human, but nooo~{c}You two have to mock me!"
+HideCG()
 
 m (angry) "Oh, <i>human this</i>, <i>human that</i>. I'm sure this human has a name."
 v.FaceRight()
@@ -136,13 +160,17 @@ choice
 		$playerName = $input
 		"My name is {$playerName}."
 		v (neutral) "Well, then."
+		ShowCG(COMMON, 2)
 		v "Nice to meet you, {$playerName}."
+		HideCG()
 	}
 	- "Pick a name for me?"
 	{
 		v (smug) "Huh. How interesting~"
 		$playerName = "Rabbit"
+		ShowCG(Common, 3)
 		v "In that case, I shall name you... <b>{$playerName}</b>."
+		HideCG()
 		choice
 		{
 			- "Thank you! That's a nice name"

@@ -27,6 +27,10 @@ MonoBehaviour:
     m_LabelString: Dialogue
   imageLabel:
     m_LabelString: Graphics/Images
+  cgLabel:
+    m_LabelString: Graphics/CGs
+  cgThumbnailLabel:
+    m_LabelString: Graphics/CG Thumbnails
   characterAtlasLabel:
     m_LabelString: Sprite Atlas/Characters
   model3DPrefabLabel:

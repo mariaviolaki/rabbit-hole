@@ -1,7 +1,7 @@
 label VoidRoute "Into the Rabbit Hole"
 
 $route = "Void"
-SetBackgroundImage(Field-Back, 1), SetBackgroundImage(Field-Front)
+SetBackground(Field-Back, 1), SetBackground(Field-Front)
 PlayMusic(night)
 
 m.SetPosition(x=-0.5), eg.SetPosition(x=1.5)

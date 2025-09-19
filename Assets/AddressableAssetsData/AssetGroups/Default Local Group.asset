@@ -71,6 +71,18 @@ MonoBehaviour:
     m_SerializedLabels:
     - StreamingAssets/Videos
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1597a623ed826b043afb7ab07f6dc03c
+    m_Address: Assets/_Main/Graphics/CG Thumbnails
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Graphics/CG Thumbnails
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 44e791d9aa3c8df41892f36ecf1b49ab
+    m_Address: Assets/_Main/Graphics/CGs
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Graphics/CGs
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 9a96d69e6c0910047aed3e71b766540f, type: 2}
   m_SchemaSet:

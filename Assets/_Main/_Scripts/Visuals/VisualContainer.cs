@@ -3,6 +3,7 @@ using Dialogue;
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
 using UnityEngine.Video;
 using VN;
@@ -21,7 +22,7 @@ namespace Visuals
 
 		RenderTexture renderTexture;
 
-		const float TransitionSpeedMultiplier = 1f;
+		const float TransitionSpeedMultiplier = 0.2f;
 		float targetFade;
 		float transitionSpeed;
 		bool isPreparingVideo;
@@ -42,7 +43,7 @@ namespace Visuals
 		{
 			this.visualLayer = visualLayer;
 			this.flowController = visualLayer.LayerGroup.Manager.Dialogue.FlowController;
-			this.vnOptions = visualLayer.LayerGroup.Manager.GameOptions;
+			this.vnOptions = visualLayer.LayerGroup.Manager.Options;
 
 			RectTransform rectTransform = layerObject.GetComponent<RectTransform>();
 			canvasGroup = layerObject.AddComponent<CanvasGroup>();
@@ -234,7 +235,11 @@ namespace Visuals
 
 			if (isImage)
 			{
-				visualLayer.LayerGroup.Manager.Assets.UnloadImage(visualName);
+				AssetLabelReference assetLabel = visualLayer.LayerGroup.Type == VisualType.CG
+					? visualLayer.LayerGroup.Manager.ImageLabel
+					: visualLayer.LayerGroup.Manager.CGLabel;
+
+				visualLayer.LayerGroup.Manager.Assets.UnloadImage(visualName, assetLabel);
 			}
 			else
 			{

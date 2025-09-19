@@ -50,6 +50,9 @@ TagManager:
   - name: Foreground
     uniqueID: 777600811
     locked: 0
+  - name: CGs
+    uniqueID: 813353039
+    locked: 0
   - name: Dialogue
     uniqueID: 260540859
     locked: 0

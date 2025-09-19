@@ -87,11 +87,15 @@ namespace Visuals
 			}
 			else
 			{
-				secondaryGameObject.SetActive(true);
-				secondaryContainer.SetImage(sprite, name, false, speed);
-
-				if (!primaryContainer.IsHidden)
-					primaryContainer.Clear(false, speed);
+				if (primaryContainer.IsHidden)
+				{
+					primaryContainer.SetImage(sprite, name, false, speed);
+				}
+				else
+				{
+					secondaryGameObject.SetActive(true);
+					secondaryContainer.SetImage(sprite, name, false, speed);
+				}
 			}
 
 			this.isImage = true;
@@ -109,11 +113,15 @@ namespace Visuals
 			}
 			else
 			{
-				secondaryGameObject.SetActive(true);
-				yield return secondaryContainer.SetVideo(path, name, volume, isMuted, false, speed);
-
-				if (!primaryContainer.IsHidden)
-					primaryContainer.Clear(false, speed);
+				if (primaryContainer.IsHidden)
+				{
+					yield return primaryContainer.SetVideo(path, name, volume, isMuted, false, speed);
+				}
+				else
+				{
+					secondaryGameObject.SetActive(true);
+					yield return secondaryContainer.SetVideo(path, name, volume, isMuted, false, speed);
+				}
 			}
 
 			this.isImage = false;
@@ -133,6 +141,8 @@ namespace Visuals
 		{
 			if (container == primaryContainer) return;
 
+			primaryContainer.Clear(true);
+
 			GameObject tempGameObject = primaryGameObject;
 			VisualContainer tempContainer = primaryContainer;
 
@@ -142,6 +152,7 @@ namespace Visuals
 			secondaryGameObject = tempGameObject;
 			secondaryContainer = tempContainer;
 
+			secondaryGameObject.transform.SetAsLastSibling();
 			secondaryGameObject.SetActive(false);
 		}
 	}

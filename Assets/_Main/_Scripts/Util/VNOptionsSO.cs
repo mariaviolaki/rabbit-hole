@@ -127,10 +127,14 @@ namespace VN
 		[System.Serializable]
 		public class ImageOptions
 		{
-			[SerializeField] int layers;
+			[SerializeField][Range(1, 5)] int backgroundLayers;
+			[SerializeField][Range(1, 5)] int foregroundLayers;
+			[SerializeField][Range(1, 5)] int cinematicLayers;
 			[SerializeField] float transitionSpeed;
 
-			public int Layers => layers;
+			public int BackgroundLayers => backgroundLayers;
+			public int ForegroundLayers => foregroundLayers;
+			public int CinematicLayers => cinematicLayers;
 			public float TransitionSpeed => transitionSpeed;
 		}
 

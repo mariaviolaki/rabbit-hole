@@ -46,7 +46,9 @@ MonoBehaviour:
     expressionTransitionSpeed: 10
     defaultAngle: -30
   images:
-    layers: 10
+    backgroundLayers: 2
+    foregroundLayers: 2
+    cinematicLayers: 0
     transitionSpeed: 10
   audio:
     layers: 10

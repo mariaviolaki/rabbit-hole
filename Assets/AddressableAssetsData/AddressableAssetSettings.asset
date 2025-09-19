@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: d3c9d180fd290d04a98c72f655148502
   m_currentHash:
     serializedVersion: 2
-    Hash: 4cab0258b9520e6d4b2536d4b545bc3f
+    Hash: 69f79999ed9f4f57b74fc2e09429686b
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_BundleLocalCatalog: 0
@@ -89,6 +89,8 @@ MonoBehaviour:
     - Sprite Atlas/Characters
     - Prefabs/Character Models
     - Graphics/Images
+    - Graphics/CGs
+    - Graphics/CG Thumbnails
     - Audio/Ambient
     - Audio/Music
     - Audio/SFX

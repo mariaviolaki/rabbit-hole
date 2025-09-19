@@ -21,6 +21,8 @@ namespace IO
 		[SerializeField] AssetLabelReference voiceAudioLabel;
 		[SerializeField] AssetLabelReference dialogueLabel;
 		[SerializeField] AssetLabelReference imageLabel;
+		[SerializeField] AssetLabelReference cgLabel;
+		[SerializeField] AssetLabelReference cgThumbnailLabel;
 		[SerializeField] AssetLabelReference characterAtlasLabel;
 		[SerializeField] AssetLabelReference model3DPrefabLabel;
 
@@ -49,7 +51,7 @@ namespace IO
 			CacheLabeledAssetsIntoDictionary(AssetType.Video, videoPaths, videoLabel);
 			CacheLabeledAssetsIntoDictionary(AssetType.Audio, audioKeys, ambientAudioLabel, musicAudioLabel, sfxAudioLabel, voiceAudioLabel);
 			CacheLabeledAssetsIntoDictionary(AssetType.Dialogue, dialogueKeys, dialogueLabel);
-			CacheLabeledAssetsIntoDictionary(AssetType.Image, imageKeys, imageLabel);
+			CacheLabeledAssetsIntoDictionary(AssetType.Image, imageKeys, imageLabel, cgLabel, cgThumbnailLabel);
 			CacheLabeledAssetsIntoDictionary(AssetType.CharacterAtlas, characterAtlasKeys, characterAtlasLabel);
 			CacheLabeledAssetsIntoDictionary(AssetType.Model3DPrefab, model3DPrefabKeys, model3DPrefabLabel);
 		}
@@ -68,19 +70,19 @@ namespace IO
 
 		public IEnumerator LoadAudio(string audioName, AssetLabelReference audioLabel) => LoadAsset(GetAddressablePath(audioName, audioLabel), audioKeys, audioHandles);
 		public IEnumerator LoadDialogue(string addressablePath) => LoadAsset(addressablePath, dialogueKeys, dialogueHandles);
-		public IEnumerator LoadImage(string imageName) => LoadAsset(GetAddressablePath(imageName, imageLabel), imageKeys, imageHandles);
+		public IEnumerator LoadImage(string imageName, AssetLabelReference imageLabel) => LoadAsset(GetAddressablePath(imageName, imageLabel), imageKeys, imageHandles);
 		public IEnumerator LoadCharacterAtlas(string characterName) => LoadAsset(GetAddressablePath(characterName, characterAtlasLabel), characterAtlasKeys, characterAtlasHandles);
 		public IEnumerator LoadModel3DPrefab(string characterName) => LoadAsset(GetAddressablePath(characterName, model3DPrefabLabel), model3DPrefabKeys, model3DPrefabHandles);
 
 		public AudioClip GetAudio(string audioName, AssetLabelReference audioLabel) => GetAsset(GetAddressablePath(audioName, audioLabel), audioHandles);
 		public TextAsset GetDialogueFile(string addressablePath) => GetAsset(addressablePath, dialogueHandles);
-		public Sprite GetImage(string imageName) => GetAsset(GetAddressablePath(imageName, imageLabel), imageHandles);
+		public Sprite GetImage(string imageName, AssetLabelReference imageLabel) => GetAsset(GetAddressablePath(imageName, imageLabel), imageHandles);
 		public SpriteAtlas GetCharacterAtlas(string characterName) => GetAsset(GetAddressablePath(characterName, characterAtlasLabel), characterAtlasHandles);
 		public GameObject GetModel3DPrefab(string characterName) => GetAsset(GetAddressablePath(characterName, model3DPrefabLabel), model3DPrefabHandles);
 
 		public void UnloadAudio(string audioName, AssetLabelReference audioLabel) => UnloadAsset(GetAddressablePath(audioName, audioLabel), audioHandles);
 		public void UnloadDialogue(string addressablePath) => UnloadAsset(addressablePath, dialogueHandles);
-		public void UnloadImage(string imageName) => UnloadAsset(GetAddressablePath(imageName, imageLabel), imageHandles);
+		public void UnloadImage(string imageName, AssetLabelReference imageLabel) => UnloadAsset(GetAddressablePath(imageName, imageLabel), imageHandles);
 		public void UnloadCharacterAtlas(string characterName) => UnloadAsset(GetAddressablePath(characterName, characterAtlasLabel), characterAtlasHandles);
 		public void UnloadModel3DPrefab(string characterName) => UnloadAsset(GetAddressablePath(characterName, model3DPrefabLabel), model3DPrefabHandles);
 

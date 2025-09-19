@@ -16,6 +16,7 @@ namespace UI
 		[SerializeField] SaveMenuUI saveMenu;
 		[SerializeField] LogMenuUI logMenu;
 		[SerializeField] TraitsMenuUI traitsMenu;
+		[SerializeField] GalleryMenuUI galleryMenu;
 		[SerializeField] GameManager gameManager;
 
 		bool isEnabled = true;
@@ -36,6 +37,7 @@ namespace UI
 			saveMenu.OnClose += CloseSaveMenuRoot;
 			logMenu.OnClose += CloseLogMenuRoot;
 			traitsMenu.OnClose += CloseTraitsMenuRoot;
+			galleryMenu.OnClose += CloseGalleryMenuRoot;
 
 			inputManager.IsChoicePanelOpen = false;
 			inputManager.IsInputPanelOpen = false;
@@ -59,6 +61,7 @@ namespace UI
 			saveMenu.OnClose -= CloseSaveMenuRoot;
 			logMenu.OnClose -= CloseLogMenuRoot;
 			traitsMenu.OnClose -= CloseTraitsMenuRoot;
+			galleryMenu.OnClose -= CloseGalleryMenuRoot;
 		}
 
 		public void OpenMenu(MenuType menuType)
@@ -132,6 +135,7 @@ namespace UI
 		void OpenSaveMenu() => OpenMenu(MenuType.Save);
 		void OpenLogMenu() => OpenMenu(MenuType.Log);
 		void OpenTraitsMenu() => OpenMenu(MenuType.Traits);
+		void OpenGalleryMenu() => OpenMenu(MenuType.Gallery);
 
 		void CloseSideMenuRoot()
 		{
@@ -168,6 +172,13 @@ namespace UI
 			isTransitioning = false;
 		}
 
+		void CloseGalleryMenuRoot()
+		{
+			galleryMenu.gameObject.SetActive(false);
+			inputManager.CurrentMenu = DefaultMenu;
+			isTransitioning = false;
+		}
+
 		MenuBaseUI GetMenuFromType(MenuType menuType)
 		{
 			switch (menuType)
@@ -178,6 +189,7 @@ namespace UI
 				case MenuType.Load: return saveMenu;
 				case MenuType.Log: return logMenu;
 				case MenuType.Traits: return traitsMenu;
+				case MenuType.Gallery: return galleryMenu;
 				default: return null;
 			}
 		}

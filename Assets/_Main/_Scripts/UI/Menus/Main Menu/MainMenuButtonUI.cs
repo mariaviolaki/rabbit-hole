@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 namespace UI
 {
-	public class MainMenuButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+	public class MainMenuButtonUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 	{
 		[SerializeField] TextMeshProUGUI buttonText;
 		[SerializeField] CanvasGroup imageCanvasGroup;
@@ -29,7 +29,7 @@ namespace UI
 				buttonText.color = disabledTextColor;
 		}
 
-		public void OnPointerClick(PointerEventData eventData)
+		void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
 		{
 			if (!mainMenu.IsActionAvailable(action)) return;
 

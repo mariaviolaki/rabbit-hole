@@ -123,6 +123,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!224 &485020842 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 4377280370392687605, guid: 7c9475cc1dba3104cbae19f45d8bebbf, type: 3}
+  m_PrefabInstance: {fileID: 710996943643858431}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &602331818
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -391,6 +396,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2195010641839076663}
     - target: {fileID: 6107741115090548092, guid: 7c9475cc1dba3104cbae19f45d8bebbf, type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 2195010641839076663}
+    - target: {fileID: 7543024873285631194, guid: 7c9475cc1dba3104cbae19f45d8bebbf, type: 3}
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 2195010641839076663}
@@ -1329,6 +1338,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 480008916241184934, guid: 4710b88c4bbaf8a47a8c6e6ffd17225d, type: 3}
       propertyPath: layerGroups.Array.data[2].root
+      value: 
+      objectReference: {fileID: 485020842}
+    - target: {fileID: 480008916241184934, guid: 4710b88c4bbaf8a47a8c6e6ffd17225d, type: 3}
+      propertyPath: layerGroups.Array.data[3].root
       value: 
       objectReference: {fileID: 1528231621}
     - target: {fileID: 2706987952118333274, guid: 4710b88c4bbaf8a47a8c6e6ffd17225d, type: 3}

@@ -1,7 +1,7 @@
 ﻿label MarshRoute "Marsh is a Yandere?!"
 
 $route = "Marsh"
-SetBackgroundImage(Red-Forest-Back, layer=1), SetBackgroundImage(Red-Forest-Front)
+SetBackground(Red-Forest-Back, layer=1), SetBackground(Red-Forest-Front)
 eg.SetPosition(x=1.5), v.SetPosition(x=0.7, speed=5)
 v.FaceLeft()
 

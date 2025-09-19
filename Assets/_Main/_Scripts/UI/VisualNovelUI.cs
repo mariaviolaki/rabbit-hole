@@ -14,6 +14,7 @@ namespace UI
 		[SerializeField] FadeableUI background;
 		[SerializeField] FadeableUI characters;
 		[SerializeField] FadeableUI foreground;
+		[SerializeField] FadeableUI cgs;
 		[SerializeField] GameplayControlsUI gameplayControls;
 		[SerializeField] FadeableUI cinematics;
 		[SerializeField] DialogueContinuePromptUI continuePrompt;
@@ -36,6 +37,7 @@ namespace UI
 			background.UICanvas.worldCamera = screenshotCamera.VNCamera;
 			characters.UICanvas.worldCamera = screenshotCamera.VNCamera;
 			foreground.UICanvas.worldCamera = screenshotCamera.VNCamera;
+			cgs.UICanvas.worldCamera = screenshotCamera.VNCamera;
 			cinematics.UICanvas.worldCamera = screenshotCamera.VNCamera;
 			gameplayControls.UICanvas.worldCamera = screenshotCamera.VNCamera;
 			overlayControlsCanvas.worldCamera = screenshotCamera.VNCamera;
@@ -57,7 +59,7 @@ namespace UI
 
 		void ToggleVisualNovelUI(bool isShowing)
 		{
-			FadeableUI[] canvases = new FadeableUI[] { dialogue, background, characters, foreground, gameplayControls, cinematics };
+			FadeableUI[] canvases = new FadeableUI[] { dialogue, background, characters, foreground, cgs, gameplayControls, cinematics };
 
 			for (int i = 0; i < canvases.Length; i++)
 			{
@@ -74,8 +76,8 @@ namespace UI
 		{
 			// When showing all visual novel canvases, don't include the dialogue box
 			FadeableUI[] canvases = isFadeIn
-				? new FadeableUI[] { background, characters, foreground, gameplayControls, cinematics }
-				: new FadeableUI[] { dialogue, background, characters, foreground, gameplayControls, cinematics };
+				? new FadeableUI[] { background, characters, foreground, cgs, gameplayControls, cinematics }
+				: new FadeableUI[] { dialogue, background, characters, foreground, cgs, gameplayControls, cinematics };
 
 			float speed = fadeSpeed < Mathf.Epsilon ? vnOptions.General.SceneFadeTransitionSpeed : fadeSpeed;
 			speed *= fadeMultiplier;

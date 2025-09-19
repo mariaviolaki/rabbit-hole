@@ -3,18 +3,23 @@ using UnityEngine.EventSystems;
 
 namespace UI
 {
-	public class SideMenuItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+	public class SideMenuItemUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 	{
 		[SerializeField] MenuType menuType;
 		[SerializeField] CanvasGroup imageContainerCanvasGroup;
 		[SerializeField] MenusUI menus;
 
-		public void OnPointerClick(PointerEventData eventData)
+		void SetBackgroundImageVisibility(bool isVisible)
+		{
+			imageContainerCanvasGroup.alpha = isVisible ? 1f : 0f;
+		}
+
+		void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
 		{
 			menus.OpenMenu(menuType);
 		}
 
-		public void OnPointerEnter(PointerEventData eventData)
+		void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
 		{
 			SetBackgroundImageVisibility(true);
 		}
@@ -22,11 +27,6 @@ namespace UI
 		void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
 		{
 			SetBackgroundImageVisibility(false);
-		}
-
-		void SetBackgroundImageVisibility(bool isVisible)
-		{
-			imageContainerCanvasGroup.alpha = isVisible ? 1f : 0f;
 		}
 	}
 }

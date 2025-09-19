@@ -61,7 +61,7 @@ namespace Visuals
 {
 	public enum VisualType
 	{
-		None, Background, Foreground, Cinematic
+		None, Background, Foreground, CG, Cinematic
 	}
 
 	public enum GraphicsQuality
@@ -115,7 +115,7 @@ namespace UI
 {
 	public enum MenuType
 	{
-		None, Title, Dialogue, SideMenu, Settings, Save, Load, Log, Traits
+		None, Title, Dialogue, SideMenu, Settings, Save, Load, Log, Traits, Gallery
 	}
 
 	public enum SettingsSection
@@ -133,7 +133,7 @@ namespace Gameplay
 {
 	public enum CharacterRoute
 	{
-		Common, Void, Zero, Marsh
+		None, Common, Void, Zero, Marsh
 	}
 }
 

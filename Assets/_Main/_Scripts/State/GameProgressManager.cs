@@ -1,7 +1,9 @@
+using Gameplay;
 using History;
 using IO;
 using System.Collections.Generic;
 using UnityEngine;
+using Visuals;
 
 namespace Game
 {
@@ -12,6 +14,7 @@ namespace Game
 
 		PlayerProgress progress;
 		HashSet<string> readLines;
+		HashSet<UnlockedCG> unlockedCGs;
 
 		bool hasPendingProgress = false;
 
@@ -19,15 +22,14 @@ namespace Game
 		public int SaveMenuPage => progress.saveMenuPage;
 
 		public bool HasReadLine(string lineId) => readLines.Contains(lineId);
+		public bool HasCG(CharacterRoute route, int num) => unlockedCGs.Contains(new UnlockedCG(route, num));
 
 		void Awake()
 		{
 			LoadPlayerProgress();
 
-			if (progress.readLines == null)
-				readLines = new HashSet<string>();
-			else
-				readLines = new HashSet<string>(progress.readLines);
+			readLines = progress.readLines == null ? new HashSet<string>() : new HashSet<string>(progress.readLines);
+			unlockedCGs = progress.unlockedCGs == null ? new HashSet<UnlockedCG>() : new HashSet<UnlockedCG>(progress.unlockedCGs);
 		}
 
 		void OnApplicationQuit()
@@ -60,6 +62,15 @@ namespace Game
 
 			readLines.Add(lineId);
 			progress.readLines.Add(lineId);
+			hasPendingProgress = true;
+		}
+
+		public void UnlockCG(UnlockedCG cg)
+		{
+			if (cg == null || unlockedCGs.Contains(cg)) return;
+
+			unlockedCGs.Add(cg);
+			progress.unlockedCGs.Add(cg);
 			hasPendingProgress = true;
 		}
 

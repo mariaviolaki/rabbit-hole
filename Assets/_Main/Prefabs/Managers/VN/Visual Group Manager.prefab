@@ -51,6 +51,13 @@ MonoBehaviour:
     root: {fileID: 0}
   - visualType: 3
     root: {fileID: 0}
+  - visualType: 4
+    root: {fileID: 0}
+  cgBank: {fileID: 11400000, guid: cf7823f67c9438b4d8e0399124fec82c, type: 2}
   assetManager: {fileID: 11400000, guid: 527643bfa3cac48449467bd17611abdd, type: 2}
   vnOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
+  imageLabel:
+    m_LabelString: Graphics/Images
+  cgLabel:
+    m_LabelString: Graphics/CGs
   dialogueManager: {fileID: 0}

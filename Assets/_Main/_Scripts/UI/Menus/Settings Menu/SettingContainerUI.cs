@@ -18,7 +18,7 @@ namespace UI
 			backgroundImage.color = Color.clear;
 		}
 
-		public void OnPointerEnter(PointerEventData eventData)
+		void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
 		{
 			backgroundImage.color = backgroundColor;
 			descriptionText.text = description;

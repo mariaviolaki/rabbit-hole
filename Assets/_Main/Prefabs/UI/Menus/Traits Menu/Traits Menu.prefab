@@ -359,6 +359,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1e73e55232502e4d82ae67c7d62608e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canvas: {fileID: 0}
   vnOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
   canvasGroup: {fileID: 6535652248512170310}
   backButton: {fileID: 1483604854087466683}
@@ -367,6 +368,7 @@ MonoBehaviour:
   kindnessSlider: {fileID: 6485764870813656672}
   curiositySlider: {fileID: 7401336194944474225}
   sceneManager: {fileID: 0}
+  variableManager: {fileID: 0}
 --- !u!1 &2098785877911514413
 GameObject:
   m_ObjectHideFlags: 0

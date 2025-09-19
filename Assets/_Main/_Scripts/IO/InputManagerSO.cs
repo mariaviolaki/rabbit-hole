@@ -23,6 +23,7 @@ namespace IO
 		public event Action OnSkipHold;
 		public event Action OnSkipHoldEnd;
 		public event Action OnOpenLog;
+		public event Action OnCloseCG;
 		public event Action<float> OnScroll;
 
 		// Triggered by UI components
@@ -38,6 +39,7 @@ namespace IO
 		public MenuType CurrentMenu { get; set; } = MenuType.None;
 		public bool IsInputPanelOpen { get; set; } = false;
 		public bool IsChoicePanelOpen { get; set; } = false;
+		public bool IsGalleryCGOpen { get; set; } = false;
 
 		void OnEnable()
 		{
@@ -167,6 +169,8 @@ namespace IO
 
 			if (CurrentMenu == MenuType.Dialogue)
 				OnSideMenuOpen?.Invoke();
+			else if (IsGalleryCGOpen)
+				OnCloseCG?.Invoke();
 			else
 				OnMenuClose?.Invoke();
 		}
