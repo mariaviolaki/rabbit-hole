@@ -33,7 +33,7 @@ namespace UI
 			isTransitioning = true;
 
 			base.fadeSpeed = fadeSpeed;
-			isImmediateTransition = isImmediate;
+			base.isImmediate = isImmediate;
 
 			if (!PrepareOpen(menuType))
 			{

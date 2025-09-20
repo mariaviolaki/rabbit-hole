@@ -18,6 +18,7 @@ namespace Game
 		[SerializeField] LoadManager loadManager;
 		[SerializeField] VariableManager variableManager;
 		[SerializeField] MenusUI menus;
+		[SerializeField] ConfirmationMenuUI confirmationMenu;
 
 		VNManager vnManager;
 		MainMenuManager mainMenuManager;
@@ -86,7 +87,7 @@ namespace Game
 
 		public void QuitGame()
 		{
-			Application.Quit();
+			confirmationMenu.Open("Quit Game?", () => Application.Quit());
 		}
 
 		void ProcessSceneChange()

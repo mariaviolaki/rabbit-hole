@@ -46,7 +46,7 @@ namespace UI
 			isTransitioning = true;
 
 			base.fadeSpeed = fadeSpeed;
-			base.isImmediateTransition = isImmediate;
+			base.isImmediate = isImmediate;
 
 			CreateButtons(choices);
 			yield return SetVisible(isImmediate, fadeSpeed);
@@ -115,7 +115,7 @@ namespace UI
 			if (isTransitioning) return;
 
 			lastChoice = choice;
-			StartCoroutine(Close(isImmediateTransition));
+			StartCoroutine(Close(isImmediate));
 		}
 
 		ChoiceButtonUI OnCreateButton()

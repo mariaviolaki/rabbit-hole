@@ -1,9 +1,15 @@
 using System.Collections;
+using UnityEngine;
 
 namespace UI
 {
 	public class SideMenuUI : SlidingMenuBaseUI
 	{
+		[SerializeField] ConfirmationMenuUI confirmationMenu;
+
+		public MenusUI Menus => menus;
+		public ConfirmationMenuUI ConfirmationMenu => confirmationMenu;
+
 		override protected IEnumerator Initialize()
 		{
 			// Initialize the start position of the side menu

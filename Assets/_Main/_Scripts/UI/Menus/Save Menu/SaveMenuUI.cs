@@ -21,6 +21,7 @@ namespace UI
 		[SerializeField] SpriteAtlas portraitAtlas;
 		[SerializeField] SaveFileManagerSO saveFileManager;
 		[SerializeField] GameManager gameManager;
+		[SerializeField] ConfirmationMenuUI confirmationMenu;
 
 		readonly List<SaveMenuPageUI> pages = new();
 		readonly List<SaveMenuSlotUI> slots = new();
@@ -32,6 +33,7 @@ namespace UI
 		public SaveFileManagerSO SaveFiles => saveFileManager;
 		public MenusUI Menus => menus;
 		public GameManager Game => gameManager;
+		public ConfirmationMenuUI ConfirmationMenu => confirmationMenu;
 
 		override protected void Awake()
 		{

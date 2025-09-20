@@ -230,6 +230,7 @@ MonoBehaviour:
   menus: {fileID: 0}
   slideRoot: {fileID: 5988416979720038595}
   closedPositionOffset: 500
+  confirmationMenu: {fileID: 0}
 --- !u!1 &2555601809312171430
 GameObject:
   m_ObjectHideFlags: 0
@@ -438,6 +439,10 @@ PrefabInstance:
       propertyPath: menuType
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 7997917092647519602, guid: d1ac8741a6fa4c1498604e815655274a, type: 3}
+      propertyPath: sideMenu
+      value: 
+      objectReference: {fileID: 5306005911053373463}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -548,6 +553,10 @@ PrefabInstance:
       propertyPath: menuType
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 7997917092647519602, guid: d1ac8741a6fa4c1498604e815655274a, type: 3}
+      propertyPath: sideMenu
+      value: 
+      objectReference: {fileID: 5306005911053373463}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -658,6 +667,10 @@ PrefabInstance:
       propertyPath: menuType
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 7997917092647519602, guid: d1ac8741a6fa4c1498604e815655274a, type: 3}
+      propertyPath: sideMenu
+      value: 
+      objectReference: {fileID: 5306005911053373463}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -768,6 +781,10 @@ PrefabInstance:
       propertyPath: menuType
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 7997917092647519602, guid: d1ac8741a6fa4c1498604e815655274a, type: 3}
+      propertyPath: sideMenu
+      value: 
+      objectReference: {fileID: 5306005911053373463}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -878,6 +895,10 @@ PrefabInstance:
       propertyPath: menuType
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7997917092647519602, guid: d1ac8741a6fa4c1498604e815655274a, type: 3}
+      propertyPath: sideMenu
+      value: 
+      objectReference: {fileID: 5306005911053373463}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -988,6 +1009,10 @@ PrefabInstance:
       propertyPath: menuType
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 7997917092647519602, guid: d1ac8741a6fa4c1498604e815655274a, type: 3}
+      propertyPath: sideMenu
+      value: 
+      objectReference: {fileID: 5306005911053373463}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

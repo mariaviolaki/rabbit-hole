@@ -42,7 +42,7 @@ namespace UI
 			isTransitioning = true;
 
 			base.fadeSpeed = fadeSpeed;
-			base.isImmediateTransition = isImmediate;
+			base.isImmediate = isImmediate;
 
 			titleText.text = title;
 			yield return SetVisible(isImmediate, fadeSpeed);
@@ -69,18 +69,17 @@ namespace UI
 			lastInput = inputField.text.Trim();
 			inputManager.TriggerSubmitInput(lastInput);
 
-			StartCoroutine(Close(isImmediateTransition));
+			StartCoroutine(Close(isImmediate));
 		}
 
 		void SetButtonVisibility(string input)
 		{
 			bool isValidInput = !string.IsNullOrWhiteSpace(input);
-			bool isActive = submitButton.gameObject.activeSelf;
 
-			if (isValidInput && !isActive)
-				submitButton.gameObject.SetActive(true);
-			else if (!isValidInput && isActive)
-				submitButton.gameObject.SetActive(false);
+			if (isValidInput && !submitButton.interactable)
+				submitButton.interactable = true;
+			else if (!isValidInput && submitButton.interactable)
+				submitButton.interactable = false;
 		}
 
 		IEnumerator PrepareOpen()
@@ -91,9 +90,9 @@ namespace UI
 			inputField.Select();
 			inputField.ActivateInputField();
 
-			if (submitButton.gameObject.activeSelf)
-				submitButton.gameObject.SetActive(false);
-			
+			if (submitButton.interactable)
+				submitButton.interactable = false;
+
 			SubscribeListeners();
 
 			inputManager.IsInputPanelOpen = true;
@@ -110,14 +109,14 @@ namespace UI
 		{
 			inputField.onValueChanged.AddListener(SetButtonVisibility);
 			submitButton.onClick.AddListener(SubmitInput);
-			inputManager.OnConfirm += SubmitInput;
+			inputManager.OnConfirmInput += SubmitInput;
 		}
 
 		void UnsubscribeListeners()
 		{
 			inputField.onValueChanged.RemoveListener(SetButtonVisibility);
 			submitButton.onClick.RemoveListener(SubmitInput);
-			inputManager.OnConfirm -= SubmitInput;
+			inputManager.OnConfirmInput -= SubmitInput;
 		}
 	}
 }

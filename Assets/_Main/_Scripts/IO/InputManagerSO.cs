@@ -15,7 +15,7 @@ namespace IO
 		// Triggered by the InputActions asset
 		public event Action OnSideMenuOpen;
 		public event Action OnMenuClose;
-		public event Action OnConfirm;
+		public event Action OnConfirmInput;
 		public event Action OnForward;
 		public event Action OnDialogueBack;
 		public event Action OnAuto;
@@ -24,6 +24,8 @@ namespace IO
 		public event Action OnSkipHoldEnd;
 		public event Action OnOpenLog;
 		public event Action OnCloseCG;
+		public event Action OnConfirmationAccept;
+		public event Action OnConfirmationReject;
 		public event Action<float> OnScroll;
 
 		// Triggered by UI components
@@ -40,6 +42,7 @@ namespace IO
 		public bool IsInputPanelOpen { get; set; } = false;
 		public bool IsChoicePanelOpen { get; set; } = false;
 		public bool IsGalleryCGOpen { get; set; } = false;
+		public bool IsConfirmationOpen { get; set; } = false;
 
 		void OnEnable()
 		{
@@ -92,10 +95,12 @@ namespace IO
 		{
 			if (context.phase != InputActionPhase.Performed) return;
 
-			if (CurrentMenu == MenuType.Dialogue && !IsChoicePanelOpen && !IsInputPanelOpen)
+			if (IsConfirmationOpen)
+				OnConfirmationAccept?.Invoke();
+			else if (CurrentMenu == MenuType.Dialogue && !IsChoicePanelOpen && !IsInputPanelOpen)
 				OnForward?.Invoke();
 			else if (CurrentMenu == MenuType.Dialogue && IsInputPanelOpen)
-				OnConfirm?.Invoke();
+				OnConfirmInput?.Invoke();
 		}
 
 		void InputActions.IVNActions.OnDialogueBackAction(InputAction.CallbackContext context)
@@ -167,7 +172,9 @@ namespace IO
 		{
 			if (context.phase != InputActionPhase.Performed) return;
 
-			if (CurrentMenu == MenuType.Dialogue)
+			if (IsConfirmationOpen)
+				OnConfirmationReject?.Invoke();
+			else if (CurrentMenu == MenuType.Dialogue)
 				OnSideMenuOpen?.Invoke();
 			else if (IsGalleryCGOpen)
 				OnCloseCG?.Invoke();

@@ -82,7 +82,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 220, y: 90}
+  m_SizeDelta: {x: 200, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1528134753681202888
 CanvasRenderer:
@@ -612,9 +612,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40f65fbae9196cf4eae5d275fb590823, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  canvas: {fileID: 0}
   vnOptions: {fileID: 11400000, guid: a1f9ade1d4a18af49b4451617f8823ba, type: 2}
   canvasGroup: {fileID: 1890545060091303631}
   backButton: {fileID: 4378639810970626543}
+  menus: {fileID: 0}
   slideRoot: {fileID: 6397094490647030987}
   closedPositionOffset: 500
   inputManager: {fileID: 11400000, guid: 9b3fa728f456aeb4bb05c35c62b6cfc2, type: 2}
@@ -622,8 +624,7 @@ MonoBehaviour:
   contentLayoutGroup: {fileID: 2915784238163627706}
   viewportRectTransform: {fileID: 6397094490647030987}
   scrollbar: {fileID: 8007742944781926987}
-  historyManager: {fileID: 0}
-  dialogueManager: {fileID: 0}
+  sceneManager: {fileID: 0}
 --- !u!1 &7147732660194003401
 GameObject:
   m_ObjectHideFlags: 0
@@ -737,8 +738,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Back
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: c85ed5e6ef07ade4eba8182e447d5a87, type: 2}
-  m_sharedMaterial: {fileID: 5933915762405785449, guid: c85ed5e6ef07ade4eba8182e447d5a87, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
+  m_sharedMaterial: {fileID: 1490203475413054363, guid: 0f0b6df1b0d742b49be84eb21ae219cf, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -762,8 +763,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
-  m_fontSizeBase: 32
+  m_fontSize: 46
+  m_fontSizeBase: 46
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

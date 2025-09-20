@@ -13,7 +13,7 @@ namespace UI
 
 		protected UITransitionHandler transitionHandler;
 		protected float fadeSpeed;
-		protected bool isImmediateTransition;
+		protected bool isImmediate;
 		public Canvas UICanvas => canvas;
 		public bool IsVisible => canvasGroup.alpha == 1f;
 		public bool IsHidden => canvasGroup.alpha == 0f;

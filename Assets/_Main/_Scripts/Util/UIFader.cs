@@ -7,8 +7,8 @@ public class UITransitionHandler
 {
 	const float MinTransitionDuration = 0.001f;
 	const float MaxTransitionDuration = 10f;
-	const float FadeSpeedMultiplier = 5f;
-	const float ColorSpeedMultiplier = 5f;
+	const float FadeSpeedMultiplier = 4f;
+	const float ColorSpeedMultiplier = 4f;
 	readonly float DefaultTransitionSpeed;
 
 	public UITransitionHandler(VNOptionsSO vnOptions)

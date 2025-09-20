@@ -7,7 +7,7 @@ namespace UI
 	{
 		[SerializeField] MenuType menuType;
 		[SerializeField] CanvasGroup imageContainerCanvasGroup;
-		[SerializeField] MenusUI menus;
+		[SerializeField] SideMenuUI sideMenu;
 
 		void SetBackgroundImageVisibility(bool isVisible)
 		{
@@ -16,7 +16,15 @@ namespace UI
 
 		void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
 		{
-			menus.OpenMenu(menuType);
+			if (menuType == MenuType.Title)
+			{
+				string title = "Return to the title screen?\nAny unsaved progress will be lost.";
+				sideMenu.ConfirmationMenu.Open(title, () => sideMenu.Menus.OpenMenu(MenuType.Title));
+			}
+			else
+			{
+				sideMenu.Menus.OpenMenu(menuType);
+			}
 		}
 
 		void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)

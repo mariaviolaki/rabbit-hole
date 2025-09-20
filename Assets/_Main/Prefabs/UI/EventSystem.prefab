@@ -64,17 +64,17 @@ MonoBehaviour:
   m_MoveRepeatDelay: 0.5
   m_MoveRepeatRate: 0.1
   m_XRTrackingOrigin: {fileID: 0}
-  m_ActionsAsset: {fileID: -944628639613478452, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_PointAction: {fileID: -1654692200621890270, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MoveAction: {fileID: -8784545083839296357, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_SubmitAction: {fileID: 392368643174621059, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_CancelAction: {fileID: 7727032971491509709, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_LeftClickAction: {fileID: 3001919216989983466, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_MiddleClickAction: {fileID: -2185481485913320682, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_RightClickAction: {fileID: -4090225696740746782, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
-  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: ca9f5fa95ffab41fb9a615ab714db018, type: 3}
+  m_ActionsAsset: {fileID: -944628639613478452, guid: 25c8a67479f8ee343ab4f6fb8b58bf81, type: 3}
+  m_PointAction: {fileID: 2049006443702614528, guid: 25c8a67479f8ee343ab4f6fb8b58bf81, type: 3}
+  m_MoveAction: {fileID: 6458408365524030558, guid: 25c8a67479f8ee343ab4f6fb8b58bf81, type: 3}
+  m_SubmitAction: {fileID: -3565079857806727159, guid: 25c8a67479f8ee343ab4f6fb8b58bf81, type: 3}
+  m_CancelAction: {fileID: 0}
+  m_LeftClickAction: {fileID: 8931251360234804278, guid: 25c8a67479f8ee343ab4f6fb8b58bf81, type: 3}
+  m_MiddleClickAction: {fileID: 5778865469098110897, guid: 25c8a67479f8ee343ab4f6fb8b58bf81, type: 3}
+  m_RightClickAction: {fileID: 149860170323524157, guid: 25c8a67479f8ee343ab4f6fb8b58bf81, type: 3}
+  m_ScrollWheelAction: {fileID: 7037203558548072542, guid: 25c8a67479f8ee343ab4f6fb8b58bf81, type: 3}
+  m_TrackedDevicePositionAction: {fileID: -7726251848873249250, guid: 25c8a67479f8ee343ab4f6fb8b58bf81, type: 3}
+  m_TrackedDeviceOrientationAction: {fileID: -8561650762564783820, guid: 25c8a67479f8ee343ab4f6fb8b58bf81, type: 3}
   m_DeselectOnBackgroundClick: 1
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0

@@ -34,7 +34,7 @@ namespace UI
 
 		void OnDisable()
 		{
-			slotButton.onClick.RemoveAllListeners();
+			slotButton.onClick.RemoveListener(SaveOrLoad);
 		}
 
 		public void Initialize(SaveMenuUI saveMenu, int siblingNumber)
@@ -101,14 +101,30 @@ namespace UI
 		{
 			if (saveMenu.Game.Scenes.CurrentScene != GameScene.VisualNovel) return;
 
-			saveMenu.Game.VN.Saving.SaveSlot(slotNumber);
-			SetData();
+			if (saveMenu.SaveFiles.HasSave(slotNumber))
+				saveMenu.ConfirmationMenu.Open("Overwrite slot?", () => ConfirmGameSave(slotNumber));
+			else
+				ConfirmGameSave(slotNumber);
 		}
 
 		void LoadGame(int slotNumber)
 		{
 			if (slotData == null) return;
 
+			if (saveMenu.Game.Scenes.CurrentScene == GameScene.VisualNovel)
+				saveMenu.ConfirmationMenu.Open("Load game?\nAny unsaved progress will be lost.", () => ConfirmGameLoad(slotNumber));
+			else
+				ConfirmGameLoad(slotNumber);
+		}
+
+		void ConfirmGameSave(int slotNumber)
+		{
+			saveMenu.Game.VN.Saving.SaveSlot(slotNumber);
+			SetData();
+		}
+
+		void ConfirmGameLoad(int slotNumber)
+		{
 			saveMenu.Game.LoadGame(slotNumber);
 			saveMenu.Menus.CloseMenu();
 		}

@@ -11,6 +11,7 @@ namespace Game
 	{
 		[SerializeField] SaveFileManagerSO saveFileManager;
 		[SerializeField] GameManager gameManager;
+		[SerializeField] GameSceneManager sceneManager;
 
 		PlayerProgress progress;
 		HashSet<string> readLines;
@@ -30,6 +31,16 @@ namespace Game
 
 			readLines = progress.readLines == null ? new HashSet<string>() : new HashSet<string>(progress.readLines);
 			unlockedCGs = progress.unlockedCGs == null ? new HashSet<UnlockedCG>() : new HashSet<UnlockedCG>(progress.unlockedCGs);
+		}
+
+		void Start()
+		{
+			sceneManager.OnLoadSceneStart += SaveBeforeSceneChange;
+		}
+
+		void OnDestroy()
+		{
+			sceneManager.OnLoadSceneStart -= SaveBeforeSceneChange;
 		}
 
 		void OnApplicationQuit()
@@ -100,6 +111,11 @@ namespace Game
 
 			progress = new();
 			saveFileManager.SavePlayerProgress(progress);
+		}
+
+		void SaveBeforeSceneChange()
+		{
+			SavePlayerProgress();
 		}
 	}
 }

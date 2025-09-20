@@ -40,14 +40,11 @@ namespace VN
 		void OnDestroy()
 		{
 			sceneManager.OnLoadSceneStart -= AutosaveBeforeSceneChange;
-
-			// TODO Trigger this when taking showing the confirmation message instead of here
-			//Autosave();
 		}
 
 		public bool Autosave()
 		{
-			if (historyManager.HistoryState == null) return false;
+			if (historyManager.HistoryState == null || screenshotCamera == null) return false;
 
 			autosaveTime = Time.time;
 			string currentDialogueNodeId = historyManager.HistoryState.Dialogue.DialogueNodeId;
