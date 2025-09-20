@@ -15,7 +15,7 @@ namespace IO
 	{
 		[SerializeField] VNOptionsSO vnOptions;
 
-		const int screenshotQuality = 90;
+		const int ScreenshotQuality = 90;
 		readonly byte[] EncryptionKeyBytes = Encoding.UTF8.GetBytes("VNSaveKey");
 
 		public bool HasSettingsSave() => File.Exists(FilePaths.SettingsSavePath);
@@ -55,7 +55,7 @@ namespace IO
 			if (vnOptions.IO.UseSlotScreenshots && screenshot != null)
 				SaveScreenshot(screenshot, slot);
 
-			return SaveJson(gameSave, filePath);
+			return Save(gameSave, filePath);
 		}
 
 		public SaveSlot LoadSlot(int slot)
@@ -67,7 +67,7 @@ namespace IO
 			}
 
 			string filePath = Path.Combine(FilePaths.SlotsDirectory, $"{slot}{FilePaths.SaveFileExtension}");
-			SaveSlot gameSave = LoadJson<SaveSlot>(filePath);
+			SaveSlot gameSave = Load<SaveSlot>(filePath);
 
 			Texture2D screenshot = vnOptions.IO.UseSlotScreenshots ? LoadScreenshot(slot) : null;
 			if (gameSave != null && screenshot != null)
@@ -87,11 +87,6 @@ namespace IO
 			return SaveJson(dialogueLookup, FilePaths.DialogueLookupFilePath);
 		}
 
-		public DialogueTreeMap LoadDialogueLookup()
-		{
-			return LoadJson<DialogueTreeMap>(FilePaths.DialogueLookupFilePath);
-		}
-
 		public bool SaveCompiledDialogue(DialogueTree dialogueTree)
 		{
 			if (dialogueTree == null)
@@ -102,57 +97,6 @@ namespace IO
 
 			string filePath = Path.Combine(FilePaths.DialogueFileDirectory, $"{dialogueTree.Name}{FilePaths.DialogueFileExtension}");
 			return SaveJson(dialogueTree, filePath);
-		}
-
-		public DialogueTree LoadCompiledDialogue(string fileName)
-		{
-			string filePath = Path.Combine(FilePaths.DialogueFileDirectory, $"{fileName}{FilePaths.DialogueFileExtension}");
-			return LoadJson<DialogueTree>(filePath);
-		}
-
-		bool SavePersistentData<T>(T persistentData, string persistentFilePath) where T : class
-		{
-			if (persistentData == null)
-			{
-				Debug.LogWarning($"Given invalid persistent data while saving. Save aborted.");
-				return false;
-			}
-
-			return SaveJson(persistentData, persistentFilePath);
-		}
-
-		T LoadPersistentState<T>(string persistentFilePath) where T : class
-		{
-			return LoadJson<T>(persistentFilePath);
-		}
-
-		public bool SaveJson<T>(T data, string filePath) where T : class
-		{
-			try
-			{
-				string gameSaveJson = JsonUtility.ToJson(data, true);
-				File.WriteAllText(filePath, gameSaveJson);
-				return true;
-			}
-			catch (Exception e)
-			{
-				Debug.LogWarning($"Unable to save json in path '{filePath}': {e.Message}");
-				return false;
-			}
-		}
-
-		public T LoadJson<T>(string filePath) where T : class
-		{
-			try
-			{
-				string gameSaveJson = File.ReadAllText(filePath);
-				return JsonUtility.FromJson<T>(gameSaveJson);
-			}
-			catch (Exception e)
-			{
-				Debug.LogWarning($"Unable to load json from path '{filePath}': {e.Message}");
-				return null;
-			}
 		}
 
 		public T ParseJson<T>(string json) where T : class
@@ -168,7 +112,99 @@ namespace IO
 			}
 		}
 
+		bool SavePersistentData<T>(T persistentData, string persistentFilePath) where T : class
+		{
+			if (persistentData == null)
+			{
+				Debug.LogWarning($"Given invalid persistent data while saving. Save aborted.");
+				return false;
+			}
+
+			return Save(persistentData, persistentFilePath);
+		}
+
+		T LoadPersistentState<T>(string persistentFilePath) where T : class
+		{
+			return Load<T>(persistentFilePath);
+		}
+
 		bool Save<T>(T data, string filePath) where T : class
+		{
+			if (vnOptions.IO.Encrypt)
+				return SaveEncrypted(data, filePath);
+			else
+				return SaveJson(data, filePath);
+		}
+
+		T Load<T>(string filePath) where T : class
+		{
+			if (vnOptions.IO.Encrypt)
+				return LoadEncrypted<T>(filePath);
+			else
+				return LoadJson<T>(filePath);
+		}
+
+		bool SaveScreenshot(Texture2D screenshot, int slot)
+		{
+			if (screenshot == null) return false;
+
+			byte[] screenshotBytes = screenshot.EncodeToJPG(ScreenshotQuality);
+			string filePath = Path.Combine(FilePaths.SlotsDirectory, $"{slot}.jpg");
+
+			if (vnOptions.IO.Encrypt)
+				screenshotBytes = GetXORBytes(screenshotBytes, EncryptionKeyBytes);
+
+			File.WriteAllBytes(filePath, screenshotBytes);
+
+			return true;
+		}
+
+		Texture2D LoadScreenshot(int slot)
+		{
+			string filePath = Path.Combine(FilePaths.SlotsDirectory, $"{slot}.jpg");
+			if (!File.Exists(filePath)) return null;
+
+			byte[] screenshotBytes = File.ReadAllBytes(filePath);
+
+			if (vnOptions.IO.Encrypt)
+				screenshotBytes = GetXORBytes(screenshotBytes, EncryptionKeyBytes);
+
+			Texture2D screenshot = new(1, 1);
+			screenshot.LoadImage(screenshotBytes);
+
+			return screenshot;
+		}
+
+		bool SaveJson<T>(T data, string filePath) where T : class
+		{
+			try
+			{
+				string gameSaveJson = JsonUtility.ToJson(data, true);
+				File.WriteAllText(filePath, gameSaveJson);
+				return true;
+			}
+			catch (Exception e)
+			{
+				Debug.LogWarning($"Unable to save json in path '{filePath}': {e.Message}");
+				return false;
+			}
+		}
+
+		T LoadJson<T>(string filePath) where T : class
+		{
+			try
+			{
+				string gameSaveJson = File.ReadAllText(filePath);
+				return JsonUtility.FromJson<T>(gameSaveJson);
+			}
+			catch (Exception e)
+			{
+				Debug.LogWarning($"Unable to load json from path '{filePath}': {e.Message}");
+				return null;
+			}
+		}
+
+		bool SaveEncrypted<T>(T data, string filePath) where T : class
 		{
 			try
 			{
@@ -185,7 +221,7 @@ namespace IO
 			}
 		}
 
-		T Load<T>(string filePath) where T : class
+		T LoadEncrypted<T>(string filePath) where T : class
 		{
 			try
 			{
@@ -199,30 +235,6 @@ namespace IO
 				Debug.LogWarning($"Unable to load game save from path '{filePath}': {e.Message}");
 				return null;
 			}
-		}
-
-		bool SaveScreenshot(Texture2D screenshot, int slot)
-		{
-			if (screenshot == null) return false;
-
-			byte[] screenshotBytes = screenshot.EncodeToJPG(screenshotQuality);
-			string filePath = Path.Combine(FilePaths.SlotsDirectory, $"{slot}.jpg");
-
-			File.WriteAllBytes(filePath, screenshotBytes);
-
-			return true;
-		}
-
-		Texture2D LoadScreenshot(int slot)
-		{
-			string filePath = Path.Combine(FilePaths.SlotsDirectory, $"{slot}.jpg");
-			if (!File.Exists(filePath)) return null;
-
-			byte[] screenshotBytes = File.ReadAllBytes(filePath);
-			Texture2D screenshot = new(1, 1);
-			screenshot.LoadImage(screenshotBytes);
-
-			return screenshot;
 		}
 
 		byte[] GetXORBytes(byte[] historyStateBytes, byte[] keyBytes)

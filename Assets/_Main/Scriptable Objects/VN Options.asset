@@ -63,5 +63,6 @@ MonoBehaviour:
     autosaveTimer: 1
     autosaveTimerInterval: 60
     slotCount: 60
+    encrypt: 1
     audioExtension: 2
     videoExtension: 1

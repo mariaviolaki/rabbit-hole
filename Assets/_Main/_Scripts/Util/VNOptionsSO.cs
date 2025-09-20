@@ -170,6 +170,7 @@ namespace VN
 			[SerializeField] bool autosaveTimer;
 			[SerializeField][Range(30, 600)] float autosaveTimerInterval;
 			[SerializeField] int slotCount;
+			[SerializeField] bool encrypt;
 
 			[Header("Default Extensions")]
 			[SerializeField] FileExtension audioExtension;
@@ -179,6 +180,7 @@ namespace VN
 			public bool HasAutosaveTimer => autosaveTimer;
 			public float AutosaveTimerInterval => autosaveTimerInterval;
 			public int SlotCount => slotCount;
+			public bool Encrypt => encrypt;
 			public FileExtension AudioExtension => audioExtension;
 			public FileExtension VideoExtension => videoExtension;
 		}
