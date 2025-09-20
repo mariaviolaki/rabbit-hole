@@ -34,7 +34,7 @@ namespace UI
 
 		void Start()
 		{
-			gameManager = FindObjectOfType<GameManager>();
+			gameManager = FindAnyObjectByType<GameManager>();
 			menus = gameManager.Menus;
 
 			startButton.OnMainMenuAction += gameManager.StartGame;

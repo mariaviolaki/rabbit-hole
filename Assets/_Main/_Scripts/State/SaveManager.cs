@@ -25,7 +25,7 @@ namespace VN
 
 		void Start()
 		{
-			sceneManager = FindObjectOfType<GameSceneManager>();
+			sceneManager = FindAnyObjectByType<GameSceneManager>();
 			variableManager = vnManager.Game.Variables;
 
 			sceneManager.OnLoadSceneStart += AutosaveBeforeSceneChange;
@@ -39,7 +39,8 @@ namespace VN
 
 		void OnDestroy()
 		{
-			sceneManager.OnLoadSceneStart -= AutosaveBeforeSceneChange;
+			if (sceneManager != null)
+				sceneManager.OnLoadSceneStart -= AutosaveBeforeSceneChange;
 		}
 
 		public bool Autosave()

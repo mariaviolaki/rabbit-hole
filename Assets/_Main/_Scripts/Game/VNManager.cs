@@ -31,7 +31,7 @@ namespace VN
 
 		void Awake()
 		{
-			gameManager = FindObjectOfType<GameManager>();
+			gameManager = FindAnyObjectByType<GameManager>();
 		}
 
 		void Start()

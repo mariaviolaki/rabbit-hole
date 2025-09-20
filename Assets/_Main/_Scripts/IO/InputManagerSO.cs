@@ -54,6 +54,15 @@ namespace IO
 			lastInputTime = Time.time;
 		}
 
+		void OnDisable()
+		{
+			if (inputActions == null) return;
+
+			inputActions.VN.RemoveCallbacks(this);
+			inputActions.VN.Disable();
+			inputActions = null;
+		}
+
 		public void TriggerClick()
 		{
 			if (CurrentMenu == MenuType.Dialogue && !IsChoicePanelOpen && !IsInputPanelOpen)

@@ -41,9 +41,9 @@ namespace Game
 		void Start()
 		{
 			if (sceneManager.CurrentScene == GameScene.VisualNovel)
-				vnManager = FindObjectOfType<VNManager>();
+				vnManager = FindAnyObjectByType<VNManager>();
 			else if (sceneManager.CurrentScene == GameScene.MainMenu)
-				mainMenuManager = FindObjectOfType<MainMenuManager>();
+				mainMenuManager = FindAnyObjectByType<MainMenuManager>();
 
 			sceneManager.OnLoadScene += ProcessSceneChange;
 
@@ -94,13 +94,13 @@ namespace Game
 		{
 			if (sceneManager.CurrentScene == GameScene.VisualNovel)
 			{
-				vnManager = FindObjectOfType<VNManager>();
+				vnManager = FindAnyObjectByType<VNManager>();
 				loadManager.Load(pendingLoadSlot);
 				pendingLoadSlot = -1;
 			}
 			else if (sceneManager.CurrentScene == GameScene.MainMenu)
 			{
-				mainMenuManager = FindObjectOfType<MainMenuManager>();
+				mainMenuManager = FindAnyObjectByType<MainMenuManager>();
 				sceneManager.StartLoading(GameScene.VisualNovel);
 			}
 		}

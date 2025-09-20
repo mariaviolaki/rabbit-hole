@@ -38,8 +38,8 @@ namespace Game
 
 		void OnEnable()
 		{
-			mainMenu = FindObjectOfType<MainMenuUI>();
-			vnManager = FindObjectOfType<VNManager>();
+			mainMenu = FindAnyObjectByType<MainMenuUI>();
+			vnManager = FindAnyObjectByType<VNManager>();
 
 			currentScene = mainMenu == null ? GameScene.VisualNovel : GameScene.MainMenu;
 		}
@@ -115,9 +115,9 @@ namespace Game
 		void SaveSceneReferences(GameScene gameScene)
 		{
 			if (gameScene == GameScene.MainMenu)
-				mainMenu = FindObjectOfType<MainMenuUI>();
+				mainMenu = FindAnyObjectByType<MainMenuUI>();
 			else if (gameScene == GameScene.VisualNovel)
-				vnManager = FindObjectOfType<VNManager>();
+				vnManager = FindAnyObjectByType<VNManager>();
 		}
 
 		void LoadCharacters()

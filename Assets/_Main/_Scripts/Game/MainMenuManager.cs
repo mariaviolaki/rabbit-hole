@@ -13,7 +13,7 @@ namespace Game
 	
 		void Start()
 		{
-			gameManager = FindObjectOfType<GameManager>();
+			gameManager = FindAnyObjectByType<GameManager>();
 
 			StartCoroutine(PlayMusic());
 		}

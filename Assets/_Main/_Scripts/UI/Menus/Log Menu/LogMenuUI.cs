@@ -323,7 +323,7 @@ namespace UI
 		void InitializeVN()
 		{
 			if (sceneManager.CurrentScene == GameScene.VisualNovel)
-				historyManager = FindObjectOfType<HistoryManager>();
+				historyManager = FindAnyObjectByType<HistoryManager>();
 		}
 
 		override protected void SubscribeListeners()

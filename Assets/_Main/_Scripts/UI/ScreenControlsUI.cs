@@ -14,7 +14,7 @@ namespace UI
 
 		void Start()
 		{
-			menus = FindObjectOfType<MenusUI>();
+			menus = FindAnyObjectByType<MenusUI>();
 		}
 
 		void OnEnable()

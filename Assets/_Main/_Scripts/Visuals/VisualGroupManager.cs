@@ -44,7 +44,7 @@ namespace Visuals
 
 		void Start()
 		{
-			gameProgressManager = FindObjectOfType<GameProgressManager>();
+			gameProgressManager = FindAnyObjectByType<GameProgressManager>();
 		}
 
 		public VisualLayerGroup GetLayerGroup(VisualType visualType)

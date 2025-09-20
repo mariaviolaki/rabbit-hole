@@ -30,7 +30,7 @@ namespace Game
 			}
 
 			if (!vnManager)
-				vnManager = FindObjectOfType<VNManager>();
+				vnManager = FindAnyObjectByType<VNManager>();
 
 			saveFileCoroutine = StartCoroutine(ApplySlotData());
 			return true;
