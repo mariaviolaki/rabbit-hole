@@ -48,7 +48,7 @@ MonoBehaviour:
   images:
     backgroundLayers: 2
     foregroundLayers: 2
-    cinematicLayers: 0
+    cinematicLayers: 1
     transitionSpeed: 10
   audio:
     layers: 10
